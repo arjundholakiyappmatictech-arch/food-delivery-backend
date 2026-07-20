@@ -1,16 +1,16 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AddressController;
-use App\Http\Controllers\RestaurantController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\MenuItemController;
-use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\OrderDeliveryController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\ReviewController;
+use Illuminate\Support\Facades\Route;
 
 // auth routes
 Route::post('register', [AuthController::class, 'register']);

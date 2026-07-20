@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePaymentRequest;
 use App\Http\Resources\PaymentResource;
+use App\Models\Order;
 use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
-use App\Models\Order;
 
 class PaymentController extends Controller
 {

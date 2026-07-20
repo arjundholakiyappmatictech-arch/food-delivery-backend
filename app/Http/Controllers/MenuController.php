@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Exception;
-use App\Services\MenuService;
 use App\Http\Requests\StoreMenuRequest;
 use App\Http\Resources\MenuResource;
+use App\Services\MenuService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 
 class MenuController extends Controller
@@ -16,6 +16,7 @@ class MenuController extends Controller
     {
         try {
             $menu = $this->menuService->store($request->validated());
+
             return $this->successResponse('Menu created successfully', new MenuResource($menu), 201);
         } catch (Exception $exception) {
             return $this->errorResponse($exception->getMessage(), null, $exception->getCode());

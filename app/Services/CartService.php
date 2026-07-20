@@ -2,15 +2,15 @@
 
 namespace App\Services;
 
+use App\Exceptions\carts\MenuItemUnavailableException;
+use App\Exceptions\carts\RestaurantClosedException;
 use App\Models\Cart;
+use App\Models\MenuItem;
+use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
-use App\Exceptions\carts\MenuItemUnavailableException;
-use App\Exceptions\carts\RestaurantClosedException;
-use App\Models\MenuItem;
-use App\Models\Restaurant;
 
 class CartService
 {
@@ -92,20 +92,20 @@ class CartService
     private function ensureMenuItemIsAvailable(MenuItem $menuItem): void
     {
         if ($menuItem->availability === false) {
-            throw new MenuItemUnavailableException();
+            throw new MenuItemUnavailableException;
         }
     }
 
     private function ensureRestaurantIsOpen(MenuItem $menuItem): void
     {
         $hasOpenRestaurant = $menuItem->menu->restaurants->contains(
-            fn(Restaurant $restaurant): bool => $restaurant->status === 'open',
+            fn (Restaurant $restaurant): bool => $restaurant->status === 'open',
         );
 
         /* dd($hasOpenRestaurant); */
 
-        if (!$hasOpenRestaurant) {
-            throw new RestaurantClosedException();
+        if (! $hasOpenRestaurant) {
+            throw new RestaurantClosedException;
         }
     }
 }

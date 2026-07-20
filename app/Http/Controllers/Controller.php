@@ -65,6 +65,7 @@ abstract class Controller
             $pagination['last_page'] = $paginator->lastPage();
             $pagination['total'] = $paginator->total();
         }
+
         return $pagination;
     }
 }

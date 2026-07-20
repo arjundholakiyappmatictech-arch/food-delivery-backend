@@ -9,7 +9,6 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
-
 class SendWelcomeEmailJob implements ShouldQueue
 {
     use Queueable;

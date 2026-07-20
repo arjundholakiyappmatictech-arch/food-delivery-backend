@@ -26,7 +26,7 @@ class OrderItemService
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             throw new HttpException(401, 'Please login first.');
         }
 

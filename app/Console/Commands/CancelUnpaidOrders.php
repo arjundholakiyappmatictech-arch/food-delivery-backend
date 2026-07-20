@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Order;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
-use App\Models\Order;
 
 class CancelUnpaidOrders extends Command
 {

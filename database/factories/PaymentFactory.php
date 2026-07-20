@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\Order;
 
 /**
  * @extends Factory<Payment>

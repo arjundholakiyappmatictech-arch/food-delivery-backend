@@ -47,7 +47,7 @@ class MenuItemService
         }
 
         if ($query->exists()) {
-            throw new DuplicateMenuItemException();
+            throw new DuplicateMenuItemException;
         }
     }
 }

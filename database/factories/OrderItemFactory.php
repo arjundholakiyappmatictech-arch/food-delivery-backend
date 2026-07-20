@@ -2,10 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Models\MenuItem;
+use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\Order;
-use App\Models\MenuItem;
 
 /**
  * @extends Factory<OrderItem>

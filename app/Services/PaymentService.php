@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
-use App\Models\Payment;
 use App\Models\Order;
+use App\Models\Payment;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class PaymentService
@@ -39,7 +39,7 @@ class PaymentService
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             throw new HttpException(401, 'Please login first.');
         }
 

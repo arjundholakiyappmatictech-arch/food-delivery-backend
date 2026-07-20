@@ -7,10 +7,10 @@ use App\Models\Address;
 use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class RestaurantService
@@ -75,7 +75,7 @@ class RestaurantService
         $restaurants = Restaurant::query()
             ->select(['id', 'name', 'address', 'status', 'latitude', 'longitude'])
             ->selectRaw(
-                "
+                '
             (
                 6371 * acos(
                     LEAST(1, GREATEST(-1,
@@ -87,7 +87,7 @@ class RestaurantService
                     ))
                 )
             ) AS distance
-        ",
+        ',
                 [$latitude, $longitude, $latitude],
             )
             ->when($include === 'menus', function ($query) {
@@ -126,7 +126,7 @@ class RestaurantService
             $restaurants->getCollection()->transform(function ($restaurant) {
                 $distance = (float) $restaurant->distance;
 
-                $restaurant->distance = $distance < 1 ? round($distance * 1000) . ' m' : round($distance, 1) . ' km';
+                $restaurant->distance = $distance < 1 ? round($distance * 1000).' m' : round($distance, 1).' km';
 
                 return $restaurant;
             }),

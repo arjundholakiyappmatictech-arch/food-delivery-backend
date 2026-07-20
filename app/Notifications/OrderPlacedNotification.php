@@ -2,8 +2,8 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
 use App\Models\Order;
+use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
 class OrderPlacedNotification extends Notification
@@ -21,7 +21,7 @@ class OrderPlacedNotification extends Notification
     {
         return [
             'title' => 'Order Placed',
-            'message' => 'Your order #' . $this->order->id . ' has been placed successfully.',
+            'message' => 'Your order #'.$this->order->id.' has been placed successfully.',
             'order_id' => $this->order->id,
         ];
     }

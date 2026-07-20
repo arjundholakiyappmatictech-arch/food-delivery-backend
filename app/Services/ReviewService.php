@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\Order;
-use App\Models\User;
 use App\Models\OrderReview;
+use App\Models\User;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -51,7 +51,7 @@ class ReviewService
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             throw new HttpException(401, 'Please login first.');
         }
 

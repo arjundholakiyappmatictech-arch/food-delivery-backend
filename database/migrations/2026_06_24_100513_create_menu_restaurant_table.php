@@ -20,7 +20,7 @@ return new class extends Migration
 
             $table->primary([
                 'restaurant_id',
-                'menu_id'
+                'menu_id',
             ]);
         });
     }

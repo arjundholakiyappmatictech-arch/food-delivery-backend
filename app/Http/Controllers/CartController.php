@@ -6,9 +6,9 @@ use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
 use App\Http\Resources\CartResource;
 use App\Models\Cart;
-use Illuminate\Http\JsonResponse;
 use App\Services\CartService;
 use Exception;
+use Illuminate\Http\JsonResponse;
 
 class CartController extends Controller
 {
@@ -30,6 +30,7 @@ class CartController extends Controller
     {
         try {
             $cart = $this->cartService->store($request->validated());
+
             return $this->successResponse('Item added to cart successfully', new CartResource($cart), 201);
         } catch (Exception $exception) {
             return $this->errorResponse($exception->getMessage(), null, $exception->getCode());

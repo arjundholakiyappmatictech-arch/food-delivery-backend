@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PlaceOrderRequest;
 use App\Http\Resources\InvoiceResource;
 use App\Http\Resources\OrderResource;
-use App\Models\Address;
 use App\Models\Order;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;

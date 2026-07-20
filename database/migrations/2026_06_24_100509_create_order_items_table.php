@@ -19,7 +19,7 @@ return new class extends Migration
 
             $table->foreignId('menu_item_id')
                 ->constrained();
-                
+
             $table->unsignedInteger('quantity');
 
             $table->decimal(

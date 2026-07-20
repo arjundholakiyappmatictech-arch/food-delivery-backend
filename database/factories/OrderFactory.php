@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use App\Models\Order;
-use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\User;
 use App\Models\Address;
+use App\Models\Order;
 use App\Models\Restaurant;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends Factory<Order>

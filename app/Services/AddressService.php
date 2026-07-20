@@ -2,18 +2,18 @@
 
 namespace App\Services;
 
-use App\Exceptions\Address\DuplicateAddressException;
-use App\Models\Address;
-use App\Models\User;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Symfony\Component\HttpKernel\Exception\HttpException;
-use Illuminate\Support\Facades\Auth;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use App\Exceptions\Address\AddressLimitExceededException;
 use App\Exceptions\Address\DefaultAddressCannotBeUnsetException;
+use App\Exceptions\Address\DuplicateAddressException;
 use App\Exceptions\Address\LastAddressCannotBeDeletedException;
+use App\Models\Address;
+use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class AddressService
 {
@@ -57,7 +57,7 @@ class AddressService
             'pincode' => $data['pincode'],
             'latitude' => $data['latitude'],
             'longitude' => $data['longitude'],
-            'is_default' => !$hasAddress,
+            'is_default' => ! $hasAddress,
         ]);
     }
 
@@ -70,7 +70,7 @@ class AddressService
         $this->authorize($address, $user);
 
         if (array_key_exists('is_default', $data) && $data['is_default'] === false && $address->is_default) {
-            throw new DefaultAddressCannotBeUnsetException();
+            throw new DefaultAddressCannotBeUnsetException;
         }
 
         $updatedData = array_merge(
@@ -113,7 +113,7 @@ class AddressService
             $addressCount = Address::query()->where('user_id', $user->id)->count();
 
             if ($addressCount === 1) {
-                throw new LastAddressCannotBeDeletedException();
+                throw new LastAddressCannotBeDeletedException;
             }
 
             $wasDefault = $address->is_default;
@@ -160,7 +160,7 @@ class AddressService
         }
 
         if ($query->exists()) {
-            throw new DuplicateAddressException();
+            throw new DuplicateAddressException;
         }
     }
 

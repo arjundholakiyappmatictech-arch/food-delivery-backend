@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Invoice;
+use App\Models\Order;
 use App\Services\InvoiceService;
 use Illuminate\Http\JsonResponse;
-use App\Models\Order;
 
 class InvoiceController extends Controller
 {

@@ -7,7 +7,6 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
-use Exception;
 use Illuminate\Http\JsonResponse;
 
 class AuthController extends Controller

@@ -3,7 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\UserRegistered;
-use App\Jobs\SendEmailVerificationJob;;
+use App\Jobs\SendEmailVerificationJob;
 
 class SendEmailVerificationListener
 {

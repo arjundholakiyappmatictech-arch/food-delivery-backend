@@ -2,15 +2,15 @@
 
 namespace App\Services;
 
-use App\Models\Order;
-use App\Models\User;
-use App\Notifications\OrderPlacedNotification;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use App\Models\Address;
 use App\Models\Cart;
+use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\User;
+use App\Notifications\OrderPlacedNotification;
 use Illuminate\Pagination\CursorPaginator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class OrderService
@@ -39,7 +39,7 @@ class OrderService
         return DB::transaction(function () use ($data, $user) {
             $address = Address::where('id', $data['address_id'])->where('user_id', $user->id)->first();
 
-            if (!$address) {
+            if (! $address) {
                 throw new HttpException(403, 'This address does not belong to you.');
             }
 
@@ -49,7 +49,7 @@ class OrderService
                 throw new HttpException(400, 'Cart is empty.');
             }
 
-            $subtotal = $cartItems->sum(fn($cart) => (float) $cart->menuItem->price * $cart->quantity);
+            $subtotal = $cartItems->sum(fn ($cart) => (float) $cart->menuItem->price * $cart->quantity);
 
             $deliveryFee = 40;
 
@@ -106,7 +106,7 @@ class OrderService
         return [
             'id' => $order->invoice?->id,
             'order_id' => $order->id,
-            'invoice_number' => $order->invoice?->invoice_number ?? 'INV-' . $order->id,
+            'invoice_number' => $order->invoice?->invoice_number ?? 'INV-'.$order->id,
             'delivery_fee' => $order->delivery_fee,
             'total' => $order->total,
             'generated_at' => now()->toDateTimeString(),
@@ -122,7 +122,7 @@ class OrderService
     {
         $this->authorizeOrderOwner($order);
 
-        if (!in_array($order->status, ['placed', 'confirmed'])) {
+        if (! in_array($order->status, ['placed', 'confirmed'])) {
             throw new HttpException(400, 'This order cannot be cancelled now.');
         }
 
@@ -146,7 +146,7 @@ class OrderService
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             throw new HttpException(401, 'Please login first.');
         }
 

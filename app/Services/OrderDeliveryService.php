@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\OrderDelivery;
-use Illuminate\Support\Facades\Auth;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Models\Order;
+use App\Models\OrderDelivery;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class OrderDeliveryService
 {
@@ -42,7 +42,7 @@ class OrderDeliveryService
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             throw new HttpException(401, 'Please login first.');
         }
 
@@ -67,7 +67,7 @@ class OrderDeliveryService
     {
         $deliveryAgent = User::find($userId);
 
-        if (!$deliveryAgent) {
+        if (! $deliveryAgent) {
             throw new HttpException(404, 'Delivery agent not found.');
         }
 

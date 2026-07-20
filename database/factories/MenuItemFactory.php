@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Menu;
 use App\Models\MenuItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Models\Menu;
 
 /**
  * @extends Factory<MenuItem>

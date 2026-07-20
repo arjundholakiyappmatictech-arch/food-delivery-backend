@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use App\Models\Invoice;
+use App\Models\Order;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use App\Models\Order;
 
 class InvoiceService
 {
@@ -13,7 +13,7 @@ class InvoiceService
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             throw new HttpException(401, 'Please login first.');
         }
 
@@ -31,7 +31,7 @@ class InvoiceService
 
         return Invoice::create([
             'order_id' => $order->id,
-            'invoice_number' => 'INV-' . now()->format('YmdHis') . '-' . $order->id,
+            'invoice_number' => 'INV-'.now()->format('YmdHis').'-'.$order->id,
             'delivery_fee' => $order->delivery_fee,
             'total' => $order->total,
             'generated_at' => now(),
@@ -49,7 +49,7 @@ class InvoiceService
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             throw new HttpException(401, 'Please login first.');
         }
 

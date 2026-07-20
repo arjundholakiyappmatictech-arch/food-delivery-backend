@@ -2,9 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\Invoice;
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Order;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 class InvoiceFactory extends Factory
 {
@@ -13,7 +12,7 @@ class InvoiceFactory extends Factory
         return [
             'order_id' => Order::inRandomOrder()->value('id'),
 
-            'invoice_number' => 'INV-' . fake()->unique()->numberBetween(1000, 9999),
+            'invoice_number' => 'INV-'.fake()->unique()->numberBetween(1000, 9999),
 
             'delivery_fee' => fake()->randomFloat(2, 20, 80),
 

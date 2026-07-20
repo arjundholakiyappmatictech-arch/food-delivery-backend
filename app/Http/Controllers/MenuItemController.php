@@ -16,6 +16,7 @@ class MenuItemController extends Controller
     {
         try {
             $menuItem = $this->menuItemService->store($request->validated());
+
             return $this->successResponse('MenuItem created successfully', new MenuItemResource($menuItem), 201);
         } catch (Exception $exception) {
             return $this->errorResponse($exception->getMessage(), null, $exception->getCode());

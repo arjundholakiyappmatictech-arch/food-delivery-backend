@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Address;
 use App\Models\Cart;
 use App\Models\CartItem;
-use App\Models\Invoice;
 use App\Models\Menu;
 use App\Models\MenuItem;
 use App\Models\Order;
