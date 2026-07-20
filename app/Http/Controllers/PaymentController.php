@@ -6,6 +6,7 @@ use App\Http\Requests\StorePaymentRequest;
 use App\Http\Resources\PaymentResource;
 use App\Models\Order;
 use App\Services\PaymentService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 
 class PaymentController extends Controller
@@ -14,8 +15,12 @@ class PaymentController extends Controller
 
     public function store(StorePaymentRequest $request, Order $order): JsonResponse
     {
-        $payment = $this->paymentService->makePayment($order, $request->validated());
+        try {
+            $payment = $this->paymentService->makePayment($order, $request->validated());
 
-        return $this->successResponse('Payment created successfully.', new PaymentResource($payment), 201);
+            return $this->successResponse('Payment created successfully.', new PaymentResource($payment), 201);
+        } catch (Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
+        }
     }
 }

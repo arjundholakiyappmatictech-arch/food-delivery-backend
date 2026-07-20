@@ -6,6 +6,7 @@ use App\Http\Requests\StoreOrderDeliveryRequest;
 use App\Http\Resources\OrderDeliveryResource;
 use App\Models\Order;
 use App\Services\OrderDeliveryService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 
 class OrderDeliveryController extends Controller
@@ -31,8 +32,16 @@ class OrderDeliveryController extends Controller
 
     public function store(StoreOrderDeliveryRequest $request, Order $order): JsonResponse
     {
-        $delivery = $this->deliveryService->assignDelivery($order, $request->validated());
+        try {
+            $delivery = $this->deliveryService->assignDelivery($order, $request->validated());
 
-        return $this->successResponse('Deliveries Assigned Successfully', new OrderDeliveryResource($delivery), 201);
+            return $this->successResponse(
+                'Deliveries Assigned Successfully',
+                new OrderDeliveryResource($delivery),
+                201,
+            );
+        } catch (Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
+        }
     }
 }

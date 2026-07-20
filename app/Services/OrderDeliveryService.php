@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Exceptions\deliveries\AssignOnlyPlacedOrder;
+use App\Exceptions\deliveries\DeliveryAgentAlreadyAssignedExceptions;
+use App\Exceptions\deliveries\PaymentNotFoundException;
 use App\Models\Order;
 use App\Models\OrderDelivery;
 use App\Models\User;
@@ -9,16 +12,15 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class OrderDeliveryService
 {
     public function index(): LengthAwarePaginator
     {
-        $user = $this->authUser();
+        $user = Auth::user();
 
         if ($user->type !== 'delivery_agent') {
-            throw new HttpException(403, 'Only delivery agents can view deliveries.');
+            throw new AuthorizationException('Only delivery agents can view deliveries');
         }
 
         return OrderDelivery::query()
@@ -31,10 +33,11 @@ class OrderDeliveryService
 
     public function assignDelivery(Order $order, array $data): OrderDelivery
     {
-        $user = $this->authUser();
+        $user = Auth::user();
 
         $this->authorizeRestaurantOwner($user);
         $this->ensureOrderCanBeAssigned($order);
+        $this->ensurePaymentCompleted($order);
         $this->ensureDeliveryNotAssigned($order);
 
         $deliveryAgent = $this->findDeliveryAgent($data['user_id']);
@@ -54,14 +57,6 @@ class OrderDeliveryService
         });
     }
 
-    private function authUser(): User
-    {
-        /** @var User|null $user */
-        $user = Auth::user();
-
-        return $user;
-    }
-
     private function authorizeRestaurantOwner(User $user): void
     {
         if ($user->type !== 'restaurant_owner') {
@@ -71,15 +66,15 @@ class OrderDeliveryService
 
     private function ensureOrderCanBeAssigned(Order $order): void
     {
-        if ($order->status !== 'placed') {
-            throw new HttpException(409, 'A delivery agent can only be assigned to a placed order.');
+        if (!in_array($order->status, ['placed', 'pending'], true)) {
+            throw new AssignOnlyPlacedOrder();
         }
     }
 
     private function ensureDeliveryNotAssigned(Order $order): void
     {
         if ($order->delivery()->exists()) {
-            throw new HttpException(409, 'A delivery agent has already been assigned to this order.');
+            throw new DeliveryAgentAlreadyAssignedExceptions();
         }
     }
 
@@ -87,14 +82,23 @@ class OrderDeliveryService
     {
         $deliveryAgent = User::query()->find($userId);
 
-        if (! $deliveryAgent) {
-            throw new HttpException(404, 'Delivery agent not found.');
+        if (!$deliveryAgent) {
+            throw new AuthorizationException('Delivery agent not found');
         }
 
         if ($deliveryAgent->type !== 'delivery_agent') {
-            throw new HttpException(422, 'The selected user is not a delivery agent.');
+            throw new AuthorizationException('The selected user is not a delivery agent');
         }
 
         return $deliveryAgent;
+    }
+
+    private function ensurePaymentCompleted(Order $order): void
+    {
+        $payment = $order->payment;
+
+        if (!$payment) {
+            throw new PaymentNotFoundException();
+        }
     }
 }
