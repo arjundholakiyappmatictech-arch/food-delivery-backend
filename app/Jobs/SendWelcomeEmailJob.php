@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Mail\WelcomMail;
+use App\Models\User;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+
+
+class SendWelcomeEmailJob implements ShouldQueue
+{
+    use Queueable;
+
+    public function __construct(public User $user) {}
+
+    public function handle(): void
+    {
+        /* Log::info('Welcome email sent', [
+            'user_id' => $this->user->id,
+            'email' => $this->user->email,
+        ]); */
+
+        Mail::to($this->user->email)->send(new WelcomMail($this->user));
+    }
+}
