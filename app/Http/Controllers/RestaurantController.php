@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\Restaurant\DuplicateRestaurantException;
 use App\Http\Requests\NearByRestaurantRequest;
 use App\Models\Restaurant;
 use Illuminate\Http\JsonResponse;
@@ -10,6 +9,7 @@ use App\Services\RestaurantService;
 use App\Http\Resources\MenuResource;
 use App\Http\Resources\RestaurantResource;
 use App\Http\Requests\StoreRestaurantRequest;
+use Exception;
 
 class RestaurantController extends Controller
 {
@@ -27,8 +27,8 @@ class RestaurantController extends Controller
         try {
             $restaurant = $this->restaurantService->store($request->validated());
             return $this->successResponse('Restaurant created successfully', new RestaurantResource($restaurant), 201);
-        } catch (DuplicateRestaurantException $exception) {
-            return $this->errorResponse($exception->getMessage(), null, 409);
+        } catch (Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
         }
     }
 

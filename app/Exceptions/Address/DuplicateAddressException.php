@@ -8,6 +8,6 @@ class DuplicateAddressException extends Exception
 {
     public function __construct()
     {
-        parent::__construct('This address is already exist');
+        parent::__construct(message: 'This address is already exist', code: 409);
     }
 }

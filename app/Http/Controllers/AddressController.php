@@ -2,10 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\Address\AddressLimitExceededException;
-use App\Exceptions\Address\DefaultAddressCannotBeUnsetException;
-use App\Exceptions\Address\DuplicateAddressException;
-use App\Exceptions\Address\LastAddressCannotBeDeletedException;
 use App\Models\Address;
 use App\Services\AddressService;
 use App\Http\Resources\AddressResource;
@@ -35,10 +31,8 @@ class AddressController extends Controller
         try {
             $address = $this->addressService->store($request->validated());
             return $this->successResponse('Address created successfully', new AddressResource($address), 201);
-        } catch (AddressLimitExceededException $exception) {
-            return $this->errorResponse($exception->getMessage(), null, 422);
         } catch (Exception $exception) {
-            return $this->errorResponse($exception->getMessage(), null, 409);
+            return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
         }
     }
 
@@ -47,8 +41,8 @@ class AddressController extends Controller
         try {
             $address = $this->addressService->update($address, $request->validated());
             return $this->successResponse('Address updated successfully', new AddressResource($address));
-        } catch (DuplicateAddressException | DefaultAddressCannotBeUnsetException $exception) {
-            return $this->errorResponse($exception->getMessage(), null, 409);
+        } catch (Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
         }
     }
 
@@ -57,8 +51,8 @@ class AddressController extends Controller
         try {
             $this->addressService->destroy($address);
             return $this->successResponse('Address deleted successfully');
-        } catch (LastAddressCannotBeDeletedException $exception) {
-            return $this->errorResponse($exception->getMessage(), null, 409);
+        } catch (Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
         }
     }
 }

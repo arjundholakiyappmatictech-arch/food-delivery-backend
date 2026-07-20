@@ -8,6 +8,6 @@ class RestaurantClosedException extends Exception
 {
     public function __construct()
     {
-        parent::__construct('This restaurant is currently closed');
+        parent::__construct(message: 'This restaurant is currently closed', code: 409);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\Menu\DuplicateMenuException;
+use Exception;
 use App\Services\MenuService;
 use App\Http\Requests\StoreMenuRequest;
 use App\Http\Resources\MenuResource;
@@ -17,8 +17,8 @@ class MenuController extends Controller
         try {
             $menu = $this->menuService->store($request->validated());
             return $this->successResponse('Menu created successfully', new MenuResource($menu), 201);
-        } catch (DuplicateMenuException $exception) {
-            return $this->errorResponse($exception->getMessage(), null, 409);
+        } catch (Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
         }
     }
 }

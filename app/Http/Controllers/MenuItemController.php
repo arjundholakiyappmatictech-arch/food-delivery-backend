@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\MenuItem\DuplicateMenuItemException;
 use App\Http\Requests\StoreMenuItemRequest;
 use App\Http\Resources\MenuItemResource;
 use App\Services\MenuItemService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 
 class MenuItemController extends Controller
@@ -16,10 +16,9 @@ class MenuItemController extends Controller
     {
         try {
             $menuItem = $this->menuItemService->store($request->validated());
-
             return $this->successResponse('MenuItem created successfully', new MenuItemResource($menuItem), 201);
-        } catch (DuplicateMenuItemException $exception) {
-            return $this->errorResponse($exception->getMessage(), null, 409);
+        } catch (Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
         }
     }
 }

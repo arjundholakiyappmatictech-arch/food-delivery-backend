@@ -8,6 +8,6 @@ class LastAddressCannotBeDeletedException extends Exception
 {
     public function __construct()
     {
-        parent::__construct('At least one address keep at saved');
+        parent::__construct(message: 'At least one address keep at saved', code: 409);
     }
 }
