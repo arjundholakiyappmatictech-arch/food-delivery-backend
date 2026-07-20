@@ -13,7 +13,7 @@ class OrderResource extends JsonResource
             'id' => $this->id,
             'user_id' => $this->user_id,
             'address_id' => $this->address_id,
-            'status' => $this->status,
+            'status' => $this?->status,
             'total' => $this->total,
             'delivery_fee' => $this->delivery_fee,
             'delivery_instructions' => $this->delivery_instructions,
@@ -21,11 +21,11 @@ class OrderResource extends JsonResource
 
             'user' => new UserResource($this->whenLoaded('user')),
             'address' => new AddressResource($this->whenLoaded('address')),
-            'items' => OrderItemResource::collection($this->whenLoaded('items')),
+            'order_items' => OrderItemResource::collection($this->whenLoaded('items')),
             'payment' => new PaymentResource($this->whenLoaded('payment')),
             'invoice' => new InvoiceResource($this->whenLoaded('invoice')),
-            'reviews' => new ReviewResource($this->whenLoaded('orderReview')),
-            'deliveries' => new OrderDeliveryResource($this->whenLoaded('delivery')),
+            'order_review' => new ReviewResource($this->whenLoaded('orderReview')),
+            'order_delivery' => new OrderDeliveryResource($this->whenLoaded('delivery')),
         ];
     }
 }

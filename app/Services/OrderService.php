@@ -2,12 +2,15 @@
 
 namespace App\Services;
 
+use App\Exceptions\Order\EmptyCartException;
+use App\Exceptions\order\OrderAlreadyCancelledException;
+use App\Exceptions\order\OrderCanNotCancelledAfterDeliveryException;
 use App\Models\Address;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
-use App\Notifications\OrderPlacedNotification;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,41 +24,48 @@ class OrderService
     {
         $user = $this->authorizeCustomer();
 
-        $order = Order::query()
+        return Order::query()
             ->with(self::COMMON_RELATIONS)
             ->where('user_id', $user->id)
             ->orderByDesc('orders.created_at')
-            ->orderByDesc('id')
+            ->orderByDesc('orders.id')
             ->cursorPaginate(4)
             ->withQueryString();
-
-        return $order;
     }
 
     public function store(array $data): Order
     {
         $user = $this->authorizeCustomer();
 
-        return DB::transaction(function () use ($data, $user) {
-            $address = Address::where('id', $data['address_id'])->where('user_id', $user->id)->first();
+        $address = Address::query()->whereKey($data['address_id'])->where('user_id', $user->id)->first();
 
-            if (! $address) {
-                throw new HttpException(403, 'This address does not belong to you.');
-            }
+        if (! $address) {
+            throw new HttpException(403, 'This address does not belong to you.');
+        }
 
-            $cartItems = Cart::with('menuItem')->where('user_id', $user->id)->get();
+        $cartItems = Cart::query()->with('menuItem')->where('user_id', $user->id)->get();
 
-            if ($cartItems->isEmpty()) {
-                throw new HttpException(400, 'Cart is empty.');
-            }
+        if ($cartItems->isEmpty()) {
+            throw new EmptyCartException;
+        }
 
-            $subtotal = $cartItems->sum(fn ($cart) => (float) $cart->menuItem->price * $cart->quantity);
+        if ($cartItems->contains(fn (Cart $cart) => ! $cart->menuItem)) {
+            throw new HttpException(409, 'One or more cart items no longer exist');
+        }
 
-            $deliveryFee = 40;
+        if ($cartItems->contains(fn (Cart $cart) => ! $cart->menuItem->availability)) {
+            throw new HttpException(409, 'One or more menu items are currently unavailable');
+        }
 
+        $subtotal = $cartItems->sum(fn (Cart $cart): float => (float) $cart->menuItem->price * $cart->quantity);
+
+        $deliveryFee = 40;
+
+        return DB::transaction(function () use ($data, $user, $address, $cartItems, $subtotal, $deliveryFee) {
             $order = Order::create([
                 'user_id' => $user->id,
                 'address_id' => $address->id,
+                'status' => 'placed',
                 'total' => $subtotal + $deliveryFee,
                 'delivery_fee' => $deliveryFee,
                 'delivery_instructions' => $data['delivery_instructions'] ?? null,
@@ -71,22 +81,15 @@ class OrderService
                 ]);
             }
 
-            /** @var User $user */
-            $user = Auth::user();
-
-            $user->notify(new OrderPlacedNotification($order));
-
             Cart::query()->where('user_id', $user->id)->delete();
 
-            return $order->load('items.menuItem', 'address', 'user');
+            return $order->load(['items.menuItem', 'address', 'user']);
         });
     }
 
     public function show(Order $order): Order
     {
         $this->authorizeOrderOwner($order);
-
-        /* dd($order); */
 
         return $order->load(self::COMMON_RELATIONS);
     }
@@ -95,19 +98,14 @@ class OrderService
     {
         $this->authorizeOrderOwner($order);
 
-        $order->load(['address', 'items.menuItem', 'payment', 'user']);
-
-        /* dd(collect($order->getRelations())->map(fn($relation) => get_debug_type($relation))); */
-
-        $subtotal = $order->items->sum(function ($item) {
-            return $item->quantity * $item->price_at_purchase;
-        });
+        $order->load(['address', 'items.menuItem', 'payment', 'user', 'invoice']);
 
         return [
             'id' => $order->invoice?->id,
             'order_id' => $order->id,
             'invoice_number' => $order->invoice?->invoice_number ?? 'INV-'.$order->id,
             'delivery_fee' => $order->delivery_fee,
+            'subtotal' => $order->items->sum(fn (OrderItem $item) => $item->quantity * $item->price_at_purchase),
             'total' => $order->total,
             'generated_at' => now()->toDateTimeString(),
 
@@ -122,36 +120,42 @@ class OrderService
     {
         $this->authorizeOrderOwner($order);
 
-        if (! in_array($order->status, ['placed', 'confirmed'])) {
-            throw new HttpException(400, 'This order cannot be cancelled now.');
+        if ($order->status === 'cancelled') {
+            throw new OrderAlreadyCancelledException;
+        }
+
+        if ($order->delivery()->exists()) {
+            throw new OrderCanNotCancelledAfterDeliveryException;
+        }
+
+        $cancellableStatuses = ['pending', 'placed', 'confirmed'];
+
+        if (! in_array($order->status, $cancellableStatuses, true)) {
+            throw new HttpException(409, 'This order cannot be cancelled now.');
         }
 
         return DB::transaction(function () use ($order) {
             $order->update([
                 'status' => 'cancelled',
-                'payment_status' => $order->payment_status === 'paid' ? 'refunded' : $order->payment_status,
             ]);
 
-            if ($order->payment && $order->payment->status === 'paid') {
+            if ($order->payment?->payment_status === 'paid') {
                 $order->payment->update([
-                    'status' => 'refunded',
+                    'payment_status' => 'refunded',
                 ]);
             }
 
-            return $order->load(['address', 'items.menuItem', 'payment']);
+            return $order->refresh()->load(['address', 'items.menuItem', 'payment']);
         });
     }
 
     private function authorizeCustomer(): User
     {
+        /** @var User|null $user */
         $user = Auth::user();
 
-        if (! $user) {
-            throw new HttpException(401, 'Please login first.');
-        }
-
         if ($user->type !== 'customer') {
-            throw new HttpException(403, 'Only customers can access orders.');
+            throw new AuthorizationException('Only customers can access orders.');
         }
 
         return $user;
@@ -162,7 +166,7 @@ class OrderService
         $user = $this->authorizeCustomer();
 
         if ($order->user_id !== $user->id) {
-            throw new HttpException(403, 'This order does not belong to you.');
+            throw new AuthorizationException('This order does not belong to you.');
         }
     }
 }

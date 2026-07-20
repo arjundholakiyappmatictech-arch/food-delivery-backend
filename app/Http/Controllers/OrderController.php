@@ -7,6 +7,7 @@ use App\Http\Resources\InvoiceResource;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Services\OrderService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 
 class OrderController extends Controller
@@ -27,9 +28,13 @@ class OrderController extends Controller
 
     public function store(PlaceOrderRequest $request): JsonResponse
     {
-        $order = $this->orderService->store($request->validated());
+        try {
+            $order = $this->orderService->store($request->validated());
 
-        return $this->successResponse('Order placed successfully', new OrderResource($order), 201);
+            return $this->successResponse('Order placed successfully', new OrderResource($order), 201);
+        } catch (Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
+        }
     }
 
     public function show(Order $order): JsonResponse
@@ -50,8 +55,12 @@ class OrderController extends Controller
 
     public function cancel(Order $order): JsonResponse
     {
-        $order = $this->orderService->cancel($order);
+        try {
+            $order = $this->orderService->cancel($order);
 
-        return $this->successResponse('Order cancelled successfully', new OrderResource($order));
+            return $this->successResponse('Order cancelled successfully', new OrderResource($order));
+        } catch (Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
+        }
     }
 }

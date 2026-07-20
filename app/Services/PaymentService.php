@@ -13,38 +13,31 @@ class PaymentService
 {
     public function makePayment(Order $order, array $data): Payment
     {
-        $this->authorize($order);
+        $this->authorizeOrderOwner($order);
+        $this->ensureOrderCanBePaid($order);
         $this->ensurePaymentNotExists($order);
 
-        $paymentStatus = $data['payment_method'] === 'cod' ? 'pending' : 'paid';
+        $paymentMethod = $data['payment_method'];
 
-        return DB::transaction(function () use ($order, $data, $paymentStatus) {
-            $payment = Payment::create([
+        $paymentStatus = $paymentMethod === 'cod' ? 'pending' : 'paid';
+
+        return DB::transaction(function () use ($order, $paymentMethod, $paymentStatus) {
+            return Payment::create([
                 'order_id' => $order->id,
-                'payment_method' => $data['payment_method'],
+                'payment_method' => $paymentMethod,
                 'payment_status' => $paymentStatus,
                 'paid_at' => $paymentStatus === 'paid' ? now() : null,
-            ]);
-
-            $order->update([
-                'payment_method' => $data['payment_method'],
-                'payment_status' => $paymentStatus,
-            ]);
-
-            return $payment->load('order');
+            ])->load('order');
         });
     }
 
-    private function authorize(Order $order): User
+    private function authorizeOrderOwner(Order $order): User
     {
+        /** @var User|null $user */
         $user = Auth::user();
 
-        if (! $user) {
-            throw new HttpException(401, 'Please login first.');
-        }
-
         if ($user->type !== 'customer') {
-            throw new HttpException(403, 'Only customers can make payment.');
+            throw new HttpException(403, 'Only customers can make payments.');
         }
 
         if ($order->user_id !== $user->id) {
@@ -54,9 +47,20 @@ class PaymentService
         return $user;
     }
 
+    private function ensureOrderCanBePaid(Order $order): void
+    {
+        if ($order->status === 'cancelled') {
+            throw new HttpException(409, 'A cancelled order cannot be paid.');
+        }
+
+        if ($order->status === 'delivered') {
+            throw new HttpException(409, 'This order has already been delivered.');
+        }
+    }
+
     private function ensurePaymentNotExists(Order $order): void
     {
-        if ($order->payment) {
+        if ($order->payment()->exists()) {
             throw new HttpException(409, 'Payment already exists for this order.');
         }
     }
