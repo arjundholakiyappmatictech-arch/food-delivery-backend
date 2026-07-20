@@ -2,12 +2,15 @@
 
 namespace App\Services;
 
+use App\Exceptions\order\OrderAlreadyCancelledException;
+use App\Exceptions\payment\OrderAlreadyDeliveredExceptions;
+use App\Exceptions\payment\PaymentAlreadyExistsExceptions;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class PaymentService
 {
@@ -37,11 +40,11 @@ class PaymentService
         $user = Auth::user();
 
         if ($user->type !== 'customer') {
-            throw new HttpException(403, 'Only customers can make payments.');
+            throw new AuthorizationException('Only customers can make payments');
         }
 
         if ($order->user_id !== $user->id) {
-            throw new HttpException(403, 'You are not allowed to pay for this order.');
+            throw new AuthorizationException('You are not allowed to pay for this order');
         }
 
         return $user;
@@ -50,18 +53,18 @@ class PaymentService
     private function ensureOrderCanBePaid(Order $order): void
     {
         if ($order->status === 'cancelled') {
-            throw new HttpException(409, 'A cancelled order cannot be paid.');
+            throw new OrderAlreadyCancelledException();
         }
 
-        if ($order->status === 'delivered') {
-            throw new HttpException(409, 'This order has already been delivered.');
+        if ($order->status === 'out_for_delivery') {
+            throw new OrderAlreadyDeliveredExceptions();
         }
     }
 
     private function ensurePaymentNotExists(Order $order): void
     {
         if ($order->payment()->exists()) {
-            throw new HttpException(409, 'Payment already exists for this order.');
+            throw new PaymentAlreadyExistsExceptions();
         }
     }
 }
