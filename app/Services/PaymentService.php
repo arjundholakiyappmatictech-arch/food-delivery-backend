@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Exceptions\order\OrderAlreadyCancelledException;
-use App\Exceptions\payment\OrderAlreadyDeliveredExceptions;
-use App\Exceptions\payment\PaymentAlreadyExistsExceptions;
+use App\Exceptions\Order\OrderAlreadyCancelledException;
+use App\Exceptions\Payment\OrderAlreadyDeliveredExceptions;
+use App\Exceptions\Payment\PaymentAlreadyExistsExceptions;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
@@ -56,7 +56,7 @@ class PaymentService
             throw new OrderAlreadyCancelledException();
         }
 
-        if ($order->status === 'out_for_delivery') {
+        if ($order->status === 'delivered') {
             throw new OrderAlreadyDeliveredExceptions();
         }
     }

@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Exceptions\carts\MenuItemUnavailableException;
-use App\Exceptions\carts\RestaurantClosedException;
+use App\Exceptions\Carts\MenuItemUnavailableException;
+use App\Exceptions\Carts\RestaurantClosedException;
 use App\Models\Cart;
 use App\Models\MenuItem;
 use App\Models\Restaurant;

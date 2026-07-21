@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
-use App\Exceptions\deliveries\AssignOnlyPlacedOrder;
-use App\Exceptions\deliveries\DeliveryAgentAlreadyAssignedExceptions;
-use App\Exceptions\deliveries\PaymentNotFoundException;
+use App\Exceptions\Deliveries\AssignOnlyPlacedOrder;
+use App\Exceptions\Deliveries\DeliveryAgentAlreadyAssignedExceptions;
+use App\Exceptions\Deliveries\DeliveryAlreadyOutForDeliveryException;
+use App\Exceptions\Deliveries\PaymentNotFoundException;
+use App\Exceptions\Payment\OrderAlreadyDeliveredExceptions;
 use App\Models\Order;
 use App\Models\OrderDelivery;
 use App\Models\User;
@@ -53,11 +55,16 @@ class OrderDeliveryService
         });
     }
 
+    // out for delivery
     public function makeOutForDelivery(OrderDelivery $delivery): OrderDelivery
     {
         $user = Auth::user();
 
         $this->authorizeAssignedDeliveryAgent($delivery, $user);
+
+        if ($delivery->status === 'picked') {
+            throw new DeliveryAlreadyOutForDeliveryException();
+        }
 
         if ($delivery->status !== 'assigned') {
             throw new AuthorizationException('This delivery cannot be marked as picked');
@@ -76,11 +83,16 @@ class OrderDeliveryService
         });
     }
 
+    // delivered
     public function makeDelivered(OrderDelivery $delivery): OrderDelivery
     {
         $user = Auth::user();
 
         $this->authorizeAssignedDeliveryAgent($delivery, $user);
+
+        if ($delivery->status === 'delivered') {
+            throw new OrderAlreadyDeliveredExceptions();
+        }
 
         if ($delivery->status !== 'picked') {
             throw new AuthorizationException('This delivery cannot be marked as delivered');

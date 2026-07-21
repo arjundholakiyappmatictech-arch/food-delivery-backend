@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exceptions\payment;
+namespace App\Exceptions\Payment;
 
 use Exception;
 

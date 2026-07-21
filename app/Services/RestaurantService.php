@@ -11,7 +11,6 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class RestaurantService
 {
@@ -40,7 +39,7 @@ class RestaurantService
         $user = Auth::user();
 
         if ($user->type !== 'customer') {
-            throw new HttpException(403, 'Only customers can view restaurant menus');
+            throw new AuthorizationException('Only customers can view restaurant menus');
         }
 
         return $restaurant
@@ -126,7 +125,7 @@ class RestaurantService
             $restaurants->getCollection()->transform(function ($restaurant) {
                 $distance = (float) $restaurant->distance;
 
-                $restaurant->distance = $distance < 1 ? round($distance * 1000).' m' : round($distance, 1).' km';
+                $restaurant->distance = $distance < 1 ? round($distance * 1000) . ' m' : round($distance, 1) . ' km';
 
                 return $restaurant;
             }),

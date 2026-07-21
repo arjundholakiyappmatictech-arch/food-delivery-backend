@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Exceptions\reviews\AlreadyReviewException;
-use App\Exceptions\reviews\ReviewOnlyDeliveredOrderException;
+use App\Exceptions\Reviews\AlreadyReviewException;
+use App\Exceptions\Reviews\ReviewOnlyDeliveredOrderException;
 use App\Models\Order;
 use App\Models\OrderReview;
 use App\Models\User;

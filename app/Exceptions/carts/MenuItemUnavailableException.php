@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exceptions\carts;
+namespace App\Exceptions\Carts;
 
 use Exception;
 

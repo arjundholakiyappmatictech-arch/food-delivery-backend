@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Exceptions\Order\EmptyCartException;
-use App\Exceptions\order\OrderAlreadyCancelledException;
-use App\Exceptions\order\OrderCanNotCancelledAfterDeliveryException;
+use App\Exceptions\Order\OrderAlreadyCancelledException;
+use App\Exceptions\Order\OrderCanNotCancelledAfterDeliveryException;
 use App\Models\Address;
 use App\Models\Cart;
 use App\Models\Order;

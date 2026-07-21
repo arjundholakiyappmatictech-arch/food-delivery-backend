@@ -44,15 +44,23 @@ class OrderDeliveryController extends Controller
 
     public function makeOutForDelivery(OrderDelivery $delivery): JsonResponse
     {
-        $delivery = $this->deliveryService->makeOutForDelivery($delivery);
+        try {
+            $delivery = $this->deliveryService->makeOutForDelivery($delivery);
 
-        return $this->successResponse('Order is now out for delivery', new OrderDeliveryResource($delivery));
+            return $this->successResponse('Order is now out for delivery', new OrderDeliveryResource($delivery));
+        } catch (Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
+        }
     }
 
     public function markDelivered(OrderDelivery $delivery): JsonResponse
     {
-        $delivery = $this->deliveryService->makeDelivered($delivery);
+        try {
+            $delivery = $this->deliveryService->makeDelivered($delivery);
 
-        return $this->successResponse('Order is Delivered', new OrderDeliveryResource($delivery));
+            return $this->successResponse('Order is Delivered', new OrderDeliveryResource($delivery));
+        } catch (Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
+        }
     }
 }
