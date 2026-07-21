@@ -4,9 +4,6 @@ namespace App\Services;
 
 use App\Exceptions\deliveries\AssignOnlyPlacedOrder;
 use App\Exceptions\deliveries\DeliveryAgentAlreadyAssignedExceptions;
-
-use App\Exceptions\deliveries\AssignOnlyPlacedOrder;
-use App\Exceptions\deliveries\DeliveryAgentAlreadyAssignedExceptions;
 use App\Exceptions\deliveries\PaymentNotFoundException;
 use App\Models\Order;
 use App\Models\OrderDelivery;
