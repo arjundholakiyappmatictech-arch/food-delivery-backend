@@ -19,10 +19,10 @@ class OrderResource extends JsonResource
             'delivery_instructions' => $this->delivery_instructions,
             'delivered_at' => $this->delivered_at,
 
-            'user' => new UserResource($this->whenLoaded('user')),
-            'address' => new AddressResource($this->whenLoaded('address')),
+            'customer' => new UserResource($this->whenLoaded('user')),
+            'delivery_address' => new AddressResource($this->whenLoaded('address')),
             'order_items' => OrderItemResource::collection($this->whenLoaded('items')),
-            'payment' => new PaymentResource($this->whenLoaded('payment')),
+            'order_payment' => new PaymentResource($this->whenLoaded('payment')),
             'invoice' => new InvoiceResource($this->whenLoaded('invoice')),
             'order_review' => new ReviewResource($this->whenLoaded('orderReview')),
             'order_delivery' => new OrderDeliveryResource($this->whenLoaded('delivery')),

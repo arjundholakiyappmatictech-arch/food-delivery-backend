@@ -7,6 +7,7 @@ use App\Http\Resources\ReviewResource;
 use App\Models\Order;
 use App\Models\OrderReview;
 use App\Services\ReviewService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 
 class ReviewController extends Controller
@@ -32,9 +33,13 @@ class ReviewController extends Controller
 
     public function store(StoreOrderReviewRequest $request, Order $order): JsonResponse
     {
-        $review = $this->reviewService->store($order, $request->validated());
+        try {
+            $review = $this->reviewService->store($order, $request->validated());
 
-        return $this->successResponse('Reviews Added Successfully', new ReviewResource($review));
+            return $this->successResponse('Reviews Added Successfully', new ReviewResource($review));
+        } catch (Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
+        }
     }
 
     public function destroy(OrderReview $review): JsonResponse

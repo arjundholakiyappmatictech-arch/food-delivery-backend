@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreOrderDeliveryRequest;
 use App\Http\Resources\OrderDeliveryResource;
 use App\Models\Order;
+use App\Models\OrderDelivery;
 use App\Services\OrderDeliveryService;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -35,13 +36,23 @@ class OrderDeliveryController extends Controller
         try {
             $delivery = $this->deliveryService->assignDelivery($order, $request->validated());
 
-            return $this->successResponse(
-                'Deliveries Assigned Successfully',
-                new OrderDeliveryResource($delivery),
-                201,
-            );
+            return $this->successResponse('Delivery Assigned Successfully', new OrderDeliveryResource($delivery), 201);
         } catch (Exception $exception) {
             return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
         }
+    }
+
+    public function makeOutForDelivery(OrderDelivery $delivery): JsonResponse
+    {
+        $delivery = $this->deliveryService->makeOutForDelivery($delivery);
+
+        return $this->successResponse('Order is now out for delivery', new OrderDeliveryResource($delivery));
+    }
+
+    public function markDelivered(OrderDelivery $delivery): JsonResponse
+    {
+        $delivery = $this->deliveryService->makeDelivered($delivery);
+
+        return $this->successResponse('Order is Delivered', new OrderDeliveryResource($delivery));
     }
 }

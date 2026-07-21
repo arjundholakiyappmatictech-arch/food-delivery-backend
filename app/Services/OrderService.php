@@ -39,25 +39,25 @@ class OrderService
 
         $address = Address::query()->whereKey($data['address_id'])->where('user_id', $user->id)->first();
 
-        if (! $address) {
+        if (!$address) {
             throw new HttpException(403, 'This address does not belong to you.');
         }
 
         $cartItems = Cart::query()->with('menuItem')->where('user_id', $user->id)->get();
 
         if ($cartItems->isEmpty()) {
-            throw new EmptyCartException;
+            throw new EmptyCartException();
         }
 
-        if ($cartItems->contains(fn (Cart $cart) => ! $cart->menuItem)) {
+        if ($cartItems->contains(fn(Cart $cart) => !$cart->menuItem)) {
             throw new HttpException(409, 'One or more cart items no longer exist');
         }
 
-        if ($cartItems->contains(fn (Cart $cart) => ! $cart->menuItem->availability)) {
+        if ($cartItems->contains(fn(Cart $cart) => !$cart->menuItem->availability)) {
             throw new HttpException(409, 'One or more menu items are currently unavailable');
         }
 
-        $subtotal = $cartItems->sum(fn (Cart $cart): float => (float) $cart->menuItem->price * $cart->quantity);
+        $subtotal = $cartItems->sum(fn(Cart $cart): float => (float) $cart->menuItem->price * $cart->quantity);
 
         $deliveryFee = 40;
 
@@ -103,9 +103,9 @@ class OrderService
         return [
             'id' => $order->invoice?->id,
             'order_id' => $order->id,
-            'invoice_number' => $order->invoice?->invoice_number ?? 'INV-'.$order->id,
+            'invoice_number' => $order->invoice?->invoice_number ?? 'INV-' . $order->id,
             'delivery_fee' => $order->delivery_fee,
-            'subtotal' => $order->items->sum(fn (OrderItem $item) => $item->quantity * $item->price_at_purchase),
+            'subtotal' => $order->items->sum(fn(OrderItem $item) => $item->quantity * $item->price_at_purchase),
             'total' => $order->total,
             'generated_at' => now()->toDateTimeString(),
 
@@ -121,16 +121,16 @@ class OrderService
         $this->authorizeOrderOwner($order);
 
         if ($order->status === 'cancelled') {
-            throw new OrderAlreadyCancelledException;
+            throw new OrderAlreadyCancelledException();
         }
 
         if ($order->delivery()->exists()) {
-            throw new OrderCanNotCancelledAfterDeliveryException;
+            throw new OrderCanNotCancelledAfterDeliveryException();
         }
 
         $cancellableStatuses = ['pending', 'placed', 'confirmed'];
 
-        if (! in_array($order->status, $cancellableStatuses, true)) {
+        if (!in_array($order->status, $cancellableStatuses, true)) {
             throw new HttpException(409, 'This order cannot be cancelled now.');
         }
 

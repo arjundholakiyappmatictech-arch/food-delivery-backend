@@ -49,11 +49,54 @@ class OrderDeliveryService
                 'status' => 'assigned',
             ]);
 
-            $order->update([
+            return $delivery->load(['order.address', 'order.user', 'deliveryAgent']);
+        });
+    }
+
+    public function makeOutForDelivery(OrderDelivery $delivery): OrderDelivery
+    {
+        $user = Auth::user();
+
+        $this->authorizeAssignedDeliveryAgent($delivery, $user);
+
+        if ($delivery->status !== 'assigned') {
+            throw new AuthorizationException('This delivery cannot be marked as picked');
+        }
+
+        return DB::transaction(function () use ($delivery) {
+            $delivery->update([
+                'status' => 'picked',
+            ]);
+
+            $delivery->order->update([
                 'status' => 'out_for_delivery',
             ]);
 
-            return $delivery->load(['order.address', 'order.user', 'deliveryAgent']);
+            return $delivery->refresh()->load(['order.address', 'order.user', 'deliveryAgent']);
+        });
+    }
+
+    public function makeDelivered(OrderDelivery $delivery): OrderDelivery
+    {
+        $user = Auth::user();
+
+        $this->authorizeAssignedDeliveryAgent($delivery, $user);
+
+        if ($delivery->status !== 'picked') {
+            throw new AuthorizationException('This delivery cannot be marked as delivered');
+        }
+
+        return DB::transaction(function () use ($delivery) {
+            $delivery->update([
+                'status' => 'delivered',
+            ]);
+
+            $delivery->order->update([
+                'status' => 'delivered',
+                'delivered_at' => now(),
+            ]);
+
+            return $delivery->refresh()->load(['order.address', 'order.user', 'deliveryAgent']);
         });
     }
 
@@ -99,6 +142,17 @@ class OrderDeliveryService
 
         if (!$payment) {
             throw new PaymentNotFoundException();
+        }
+    }
+
+    private function authorizeAssignedDeliveryAgent(OrderDelivery $delivery, User $user): void
+    {
+        if ($user->type !== 'delivery_agent') {
+            throw new AuthorizationException('Only delivery agents can update deliveries.');
+        }
+
+        if ($delivery->user_id !== $user->id) {
+            throw new AuthorizationException('You are not assigned to this delivery.');
         }
     }
 }
