@@ -20,7 +20,7 @@ class CartService
 
         return Cart::query()
             ->with(['menuItem', 'user'])
-            ->where('user_id', '=', $user->id)
+            ->where('user_id', $user->id)
             ->latest()
             ->paginate(2);
     }

@@ -71,24 +71,24 @@ class RestaurantService
 
         $operator = config('database.default') === 'pgsql' ? 'ilike' : 'like';
 
+        // calculated distance using Nowdoc syntax
+        $distanceSQL = <<<'SQL'
+                (
+            6371 * acos(
+                LEAST(1, GREATEST(-1,
+                    cos(radians(?))
+                    * cos(radians(latitude))
+                    * cos(radians(longitude) - radians(?))
+                    + sin(radians(?))
+                    * sin(radians(latitude))
+                ))
+            )
+        ) AS distance
+        SQL;
+
         $restaurants = Restaurant::query()
             ->select(['id', 'name', 'address', 'status', 'latitude', 'longitude'])
-            ->selectRaw(
-                '
-            (
-                6371 * acos(
-                    LEAST(1, GREATEST(-1,
-                        cos(radians(?))
-                        * cos(radians(latitude))
-                        * cos(radians(longitude) - radians(?))
-                        + sin(radians(?))
-                        * sin(radians(latitude))
-                    ))
-                )
-            ) AS distance
-        ',
-                [$latitude, $longitude, $latitude],
-            )
+            ->selectRaw($distanceSQL, [$latitude, $longitude, $latitude])
             ->when($include === 'menus', function ($query) {
                 $query->with('menus');
             })
@@ -157,10 +157,8 @@ class RestaurantService
 
         $radiusInKm = self::DUPLICATE_RADIUS_METERS / 1000;
 
-        $query = Restaurant::query()
-            ->select(['id', 'name', 'address', 'status', 'latitude', 'longitude'])
-            ->selectRaw(
-                '
+        // calculated distance using Nowdoc syntax
+        $distanceSql = <<<'SQL'
             restaurants.*,
             (
                 6371 * ACOS(
@@ -171,9 +169,11 @@ class RestaurantService
                     * SIN(RADIANS(latitude))
                 )
             ) AS distance
-            ',
-                [$latitude, $longitude, $latitude],
-            )
+        SQL;
+
+        $query = Restaurant::query()
+            ->select(['id', 'name', 'address', 'status', 'latitude', 'longitude'])
+            ->selectRaw($distanceSql, [$latitude, $longitude, $latitude])
             ->whereRaw('LOWER(TRIM(name)) = LOWER(TRIM(?))', [$data['name']]);
 
         if ($currentRestaurant) {

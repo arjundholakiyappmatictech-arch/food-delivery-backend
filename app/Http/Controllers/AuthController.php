@@ -7,6 +7,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\AuthResource;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
+use Exception;
 use Illuminate\Http\JsonResponse;
 
 class AuthController extends Controller
@@ -15,15 +16,23 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request): JsonResponse
     {
-        $user = $this->authService->register($request->validated());
+        try {
+            $user = $this->authService->register($request->validated());
 
-        return $this->successResponse('user registered successfully', new UserResource($user), 201);
+            return $this->successResponse('user registered successfully', new UserResource($user), 201);
+        } catch (Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
+        }
     }
 
     public function login(LoginRequest $request): JsonResponse
     {
-        $result = $this->authService->login($request->validated());
+        try {
+            $result = $this->authService->login($request->validated());
 
-        return $this->successResponse('user loggedIn successfully', new AuthResource($result));
+            return $this->successResponse('user loggedIn successfully', new AuthResource($result));
+        } catch (Exception $exception) {
+            return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
+        }
     }
 }

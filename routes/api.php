@@ -71,7 +71,7 @@ Route::middleware('auth:sanctum')
     ->group(function () {
         Route::get('deliveries', 'index');
         Route::post('orders/{order}/delivery', 'store');
-        Route::patch('deliveries/{delivery}/out-for-delivery', 'makeOutForDelivery');
+        Route::patch('deliveries/{delivery}/pickup', 'makeOutForDelivery');
         Route::patch('deliveries/{delivery}/delivered', 'markDelivered');
     });
 

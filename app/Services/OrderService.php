@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Exceptions\Carts\CartMenuItemMissingException;
+use App\Exceptions\Carts\MenuItemUnavailableException;
 use App\Exceptions\Order\EmptyCartException;
 use App\Exceptions\Order\OrderAlreadyCancelledException;
-use App\Exceptions\Order\OrderCanNotCancelledAfterDeliveryException;
+use App\Exceptions\Order\OrderCannotBeCancelledException;
 use App\Models\Address;
 use App\Models\Cart;
 use App\Models\Order;
@@ -14,7 +16,6 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class OrderService
 {
@@ -40,7 +41,7 @@ class OrderService
         $address = Address::query()->whereKey($data['address_id'])->where('user_id', $user->id)->first();
 
         if (!$address) {
-            throw new HttpException(403, 'This address does not belong to you.');
+            throw new AuthorizationException('This address does not belong to you');
         }
 
         $cartItems = Cart::query()->with('menuItem')->where('user_id', $user->id)->get();
@@ -49,15 +50,22 @@ class OrderService
             throw new EmptyCartException();
         }
 
-        if ($cartItems->contains(fn(Cart $cart) => !$cart->menuItem)) {
-            throw new HttpException(409, 'One or more cart items no longer exist');
-        }
+        $subtotal = 0;
 
-        if ($cartItems->contains(fn(Cart $cart) => !$cart->menuItem->availability)) {
-            throw new HttpException(409, 'One or more menu items are currently unavailable');
-        }
+        // simple version
+        foreach ($cartItems as $cart) {
+            $menuItem = $cart->menuItem;
 
-        $subtotal = $cartItems->sum(fn(Cart $cart): float => (float) $cart->menuItem->price * $cart->quantity);
+            if ($menuItem === null) {
+                throw new CartMenuItemMissingException();
+            }
+
+            if (!$menuItem->availability) {
+                throw new MenuItemUnavailableException();
+            }
+
+            $subtotal += (float) $menuItem->price * $cart->quantity;
+        }
 
         $deliveryFee = 40;
 
@@ -124,14 +132,10 @@ class OrderService
             throw new OrderAlreadyCancelledException();
         }
 
-        if ($order->delivery()->exists()) {
-            throw new OrderCanNotCancelledAfterDeliveryException();
-        }
-
         $cancellableStatuses = ['pending', 'placed', 'confirmed'];
 
         if (!in_array($order->status, $cancellableStatuses, true)) {
-            throw new HttpException(409, 'This order cannot be cancelled now.');
+            throw new OrderCannotBeCancelledException();
         }
 
         return DB::transaction(function () use ($order) {

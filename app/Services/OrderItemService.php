@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\OrderItem;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class OrderItemService
 {
@@ -26,10 +26,6 @@ class OrderItemService
     {
         $user = Auth::user();
 
-        if (! $user) {
-            throw new HttpException(401, 'Please login first.');
-        }
-
         $orderItem->loadMissing('order.restaurants', 'order.delivery');
 
         $order = $orderItem->order;
@@ -42,6 +38,6 @@ class OrderItemService
             return;
         }
 
-        throw new HttpException(403, 'You are not allowed to access this order item.');
+        throw new AuthorizationException('You are not allowed to access this order item');
     }
 }

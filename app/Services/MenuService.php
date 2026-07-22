@@ -13,7 +13,7 @@ class MenuService
 {
     public function store(array $data): Menu
     {
-        $restaurantIds = collect($data['restaurant_ids'])->map(fn ($id): int => (int) $id)->unique()->sort()->values();
+        $restaurantIds = collect($data['restaurant_ids'])->map(fn($id): int => (int) $id)->unique()->sort()->values();
 
         $restaurants = Restaurant::query()->whereIn('id', $restaurantIds)->get();
 
@@ -57,7 +57,7 @@ class MenuService
 
         $query = Menu::query()
             ->with('restaurants:id')
-            ->whereRaw('LOWER(TRIM(name)) = LOWER(TRIM(?))', [$name]);
+            ->WhereRaw('LOWER(TRIM(name)) = LOWER(TRIM(?))', [$name]);
 
         if ($currentMenu !== null) {
             $query->whereKeyNot($currentMenu->id);
@@ -66,7 +66,7 @@ class MenuService
         $duplicateExists = $query->get()->contains(function (Menu $menu) use ($restaurantIds): bool {
             $existingRestaurantIds = $menu->restaurants
                 ->pluck('id')
-                ->map(fn ($id): int => (int) $id)
+                ->map(fn($id): int => (int) $id)
                 ->sort()
                 ->values()
                 ->all();
@@ -75,7 +75,7 @@ class MenuService
         });
 
         if ($duplicateExists) {
-            throw new DuplicateMenuException;
+            throw new DuplicateMenuException();
         }
     }
 }

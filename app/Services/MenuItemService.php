@@ -18,7 +18,12 @@ class MenuItemService
 
         $this->duplicateMenuItemCheck(menu: $menu, name: $data['name']);
 
-        return MenuItem::create($data);
+        return MenuItem::create([
+            'menu_id' => $data['menu_id'],
+            'name' => $data['name'],
+            'price' => $data['price'],
+            'availability' => $data['availability'],
+        ]);
     }
 
     private function authorizeMenuOwner(Menu $menu): void
@@ -26,13 +31,13 @@ class MenuItemService
         $user = Auth::user();
 
         if ($user->type !== 'restaurant_owner') {
-            throw new AuthorizationException(403, 'Only restaurant owners can manage menu items');
+            throw new AuthorizationException('Only restaurant owners can manage menu items');
         }
 
         $hasOtherOwnerRestaurant = $menu->restaurants()->where('restaurant_owner_id', '!=', $user->id)->exists();
 
         if ($hasOtherOwnerRestaurant) {
-            throw new AuthorizationException(403, 'You are not allowed to manage this menu items');
+            throw new AuthorizationException('You are not allowed to manage this menu items');
         }
     }
 
@@ -47,7 +52,7 @@ class MenuItemService
         }
 
         if ($query->exists()) {
-            throw new DuplicateMenuItemException;
+            throw new DuplicateMenuItemException();
         }
     }
 }
