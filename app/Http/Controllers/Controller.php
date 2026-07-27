@@ -43,10 +43,8 @@ abstract class Controller
     protected function pagination(LengthAwarePaginator|Paginator|CursorPaginator $paginator): array
     {
         $pagination = [
-            'per_page' => $paginator->perPage(),
+            'per_page' => (int) $paginator->perPage(),
             'count' => $paginator->count(),
-            'previous_page_url' => $paginator->previousPageUrl(),
-            'next_page_url' => $paginator->nextPageUrl(),
             'has_more_pages' => $paginator->hasMorePages(),
         ];
 
@@ -59,7 +57,9 @@ abstract class Controller
         }
 
         $pagination['current_page'] = $paginator->currentPage();
-        $pagination['loaded_records'] = $paginator->lastItem() ?? 0;
+        $pagination['records_loaded'] = $paginator->lastItem() ?? 0;
+        $pagination['previous_page_url'] = $paginator->previousPageUrl();
+        $pagination['next_page_url'] = $paginator->nextPageUrl();
 
         if ($paginator instanceof LengthAwarePaginator) {
             $pagination['last_page'] = $paginator->lastPage();

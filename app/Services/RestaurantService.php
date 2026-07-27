@@ -55,10 +55,9 @@ class RestaurantService
 
     public function nearby(array $data): Paginator
     {
-        $address = Address::query()
-            ->where('id', '=', $data['address_id'])
-            ->where('user_id', '=', Auth::id())
-            ->firstOrFail();
+        $user = Auth::user();
+
+        $address = $user->addresses()->whereKey($data['address_id'])->firstOrFail();
 
         $this->authorizeAddressOwner($address);
 

@@ -41,8 +41,6 @@ class OrderController extends Controller
     {
         $order = $this->orderService->show($order);
 
-        /* dd($order->relationsToArray()); */
-
         return $this->successResponse('Order fetched successfully.', new OrderResource($order));
     }
 

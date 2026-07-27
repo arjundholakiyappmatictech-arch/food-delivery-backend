@@ -25,13 +25,14 @@ class AuthService
 
         if (!$user || !Hash::check($data['password'], $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['Invalid email or password.'],
+                'email' => ['Invalid email or password'],
             ]);
         }
 
         return [
             'user' => $user,
             'token' => $this->createAuthToken($user),
+            'test' => $data['unknown_key'],
         ];
     }
 
