@@ -8,5 +8,5 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('orders:cancel-unpaid')
-    ->everyMinute();
+Schedule::command('orders:cancel-unpaid')->everyMinute()->withoutOverlapping();
+Schedule::command('payments:refund-cancelled')->everyMinute()->withoutOverlapping();

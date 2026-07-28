@@ -55,6 +55,7 @@ class OrderController extends Controller
     {
         try {
             $order = $this->orderService->cancel($order);
+            
 
             return $this->successResponse('Order cancelled successfully', new OrderResource($order));
         } catch (Exception $exception) {

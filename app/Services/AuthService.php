@@ -32,7 +32,6 @@ class AuthService
         return [
             'user' => $user,
             'token' => $this->createAuthToken($user),
-            'test' => $data['unknown_key'],
         ];
     }
 

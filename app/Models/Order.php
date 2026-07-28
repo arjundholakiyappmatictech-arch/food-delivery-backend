@@ -18,6 +18,7 @@ class Order extends Model
         'delivery_instructions',
         'delivery_fee',
         'delivered_at',
+        'cancelled_at',
     ];
 
     public function user()

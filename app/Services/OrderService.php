@@ -132,22 +132,15 @@ class OrderService
             throw new OrderAlreadyCancelledException();
         }
 
-        $cancellableStatuses = ['pending', 'placed', 'confirmed'];
-
-        if (!in_array($order->status, $cancellableStatuses, true)) {
+        if ($order->status !== 'placed') {
             throw new OrderCannotBeCancelledException();
         }
 
         return DB::transaction(function () use ($order) {
             $order->update([
                 'status' => 'cancelled',
+                'cancelled_at' => now(),
             ]);
-
-            if ($order->payment?->payment_status === 'paid') {
-                $order->payment->update([
-                    'payment_status' => 'refunded',
-                ]);
-            }
 
             return $order->refresh()->load(['address', 'items.menuItem', 'payment']);
         });
