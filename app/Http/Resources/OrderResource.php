@@ -18,6 +18,7 @@ class OrderResource extends JsonResource
             'delivery_fee' => $this->delivery_fee,
             'delivery_instructions' => $this->delivery_instructions,
             'delivered_at' => $this->delivered_at,
+            'cancelled_at' => $this->cancelled_at,
 
             'customer' => new UserResource($this->whenLoaded('user')),
             'delivery_address' => new AddressResource($this->whenLoaded('address')),

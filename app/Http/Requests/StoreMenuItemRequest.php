@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\File;
 
 class StoreMenuItemRequest extends FormRequest
 {
@@ -27,6 +28,7 @@ class StoreMenuItemRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'price' => ['required', 'numeric', 'min:1'],
             'availability' => ['required', 'boolean'],
+            'image' => ['required', File::image()->max('2mb'), 'extensions:jpg,jpeg,png,webp'],
         ];
     }
 }

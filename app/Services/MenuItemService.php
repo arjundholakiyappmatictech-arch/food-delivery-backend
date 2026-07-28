@@ -6,7 +6,12 @@ use App\Exceptions\MenuItem\DuplicateMenuItemException;
 use App\Models\Menu;
 use App\Models\MenuItem;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use RuntimeException;
+use Throwable;
 
 class MenuItemService
 {
@@ -18,12 +23,43 @@ class MenuItemService
 
         $this->duplicateMenuItemCheck(menu: $menu, name: $data['name']);
 
-        return MenuItem::create([
-            'menu_id' => $data['menu_id'],
-            'name' => $data['name'],
-            'price' => $data['price'],
-            'availability' => $data['availability'],
-        ]);
+        /** @var UploadedFile $image */
+        $image = $data['image'];
+
+        // Do not send the uploadfile object to MenuItem::create().
+        unset($data['image']);
+
+        $storedImagePath = null;
+
+        try {
+            return DB::transaction(function () use ($data, $menu, $image, &$storedImagePath): MenuItem {
+                $menuItem = MenuItem::create([
+                    'menu_id' => $menu->id,
+                    'name' => $data['name'],
+                    'price' => $data['price'],
+                    'availability' => $data['availability'] ?? true,
+                ]);
+
+                $storedImagePath = $image->store("menu-items/{$menuItem->id}", 'public');
+
+                if ($storedImagePath === false) {
+                    throw new RuntimeException('The menu-item image could not be stored.');
+                }
+
+                $menuItem->update([
+                    'image_path' => $storedImagePath,
+                ]);
+
+                return $menuItem->refresh()->load('menu');
+            });
+        } catch (Throwable $exception) {
+            // to cleanup orphan file
+            if ($storedImagePath !== null) {
+                Storage::disk('public')->delete($storedImagePath);
+            }
+
+            throw $exception;
+        }
     }
 
     private function authorizeMenuOwner(Menu $menu): void
