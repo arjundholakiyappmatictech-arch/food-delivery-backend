@@ -11,3 +11,11 @@ Route::get('/logo', function () {
         public_path('/images/logo.png')
     );
 });
+
+/* Route::get('/', function () {
+    return response()->json([
+        'status' => true,
+        'message' => 'Laravel backend is working',
+    ]);
+});
+ */
