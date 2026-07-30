@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
@@ -15,6 +14,8 @@ import { registerSchema } from '@/lib/schemas/registerSchema';
 import { register } from '@/services/authService';
 import { formatZodErrors } from '@/utils/zodErrors';
 import { parseApiError } from '@/utils/apiError';
+import SubmitButton from '@/components/common/SubmitButton';
+import { BorderBeam } from '@/components/ui/border-beam';
 
 const initialForm = {
    full_name: '',
@@ -148,15 +149,15 @@ const RegisterForm = () => {
    };
 
    return (
-      <section className="relative flex min-h-screen items-center justify-center bg-foreground dark:bg-background">
+      <section className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50">
          <div className="mx-auto w-full max-w-lg px-4 py-10 sm:px-0 md:py-20">
-            <Card className="relative max-w-lg gap-6 px-6 py-8 sm:p-12">
+            <Card className="relative max-w-lg gap-6 px-6 py-8 sm:p-10 border-none">
                <CardHeader className="gap-6 p-0 text-center">
-                  <div className="flex flex-col gap-1">
-                     <CardTitle className="text-2xl font-medium text-card-foreground">Create Account</CardTitle>
+                  <div className="space-y-1">
+                     <CardTitle className="text-2xl font-semibold">Create your account</CardTitle>
 
-                     <CardDescription className="text-sm font-normal text-muted-foreground">
-                        Sign up for your account now
+                     <CardDescription className="text-orange-400">
+                        Sign up to start ordering delicious food.
                      </CardDescription>
                   </div>
                </CardHeader>
@@ -277,18 +278,13 @@ const RegisterForm = () => {
                         </div>
 
                         <Field className="gap-4">
-                           <Button
-                              type="submit"
-                              size="lg"
-                              disabled={loading}
-                              className="h-10 cursor-pointer rounded-lg hover:bg-primary/80"
-                           >
-                              {loading ? 'Creating account...' : 'Sign up'}
-                           </Button>
+                           <SubmitButton loading={loading} loadingText="Creating account...">
+                              Create Account
+                           </SubmitButton>
 
                            <FieldDescription className="text-center text-sm font-normal text-muted-foreground">
                               Already have an account?{' '}
-                              <Link href="/login" className="font-medium text-card-foreground no-underline!">
+                              <Link href="/login" className="text-amber-600 hover:!text-amber-700">
                                  Sign In
                               </Link>
                            </FieldDescription>
@@ -296,6 +292,13 @@ const RegisterForm = () => {
                      </FieldGroup>
                   </form>
                </CardContent>
+               <BorderBeam
+                  duration={6}
+                  delay={3}
+                  size={400}
+                  borderWidth={2}
+                  className="from-transparent via-blue-500 to-transparent"
+               />
             </Card>
          </div>
       </section>

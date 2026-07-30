@@ -1,3 +1,11 @@
+'use client';
+import useAuthGuard from '@/lib/hooks/auth';
+
 export default function Home() {
-   return <div>Hello</div>;
+   useAuthGuard();
+   return (
+      <>
+         <div>Hello</div>
+      </>
+   );
 }
