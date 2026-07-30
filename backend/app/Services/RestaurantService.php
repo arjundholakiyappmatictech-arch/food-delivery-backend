@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Exceptions\Restaurant\DuplicateRestaurantException;
-use App\Models\Address;
 use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -11,6 +10,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class RestaurantService
 {
@@ -55,58 +55,74 @@ class RestaurantService
 
     public function nearby(array $data): Paginator
     {
+        /** @var User $user */
         $user = Auth::user();
 
-        $address = $user->addresses()->whereKey($data['address_id'])->firstOrFail();
+        if (isset($data['address_id'])) {
+            $address = $user
+                ->addresses()
+                ->select(['id', 'latitude', 'longitude'])
+                ->findOrFail($data['address_id']);
 
-        $this->authorizeAddressOwner($address);
+            if ($address->latitude === null || $address->longitude === null) {
+                throw ValidationException::withMessages([
+                    'address_id' => ['The selected address does not contain valid location coordinates.'],
+                ]);
+            }
+
+            $latitude = (float) $address->latitude;
+            $longitude = (float) $address->longitude;
+        } else {
+            $latitude = (float) $data['latitude'];
+            $longitude = (float) $data['longitude'];
+        }
 
         $include = $data['include'] ?? null;
         $search = $data['q'] ?? null;
         $perPage = $data['per_page'] ?? 2;
 
-        $latitude = $address->latitude;
-        $longitude = $address->longitude;
-
         $operator = config('database.default') === 'pgsql' ? 'ilike' : 'like';
 
-        // calculated distance using Nowdoc syntax
-        $distanceSQL = <<<'SQL'
-                (
-            6371 * acos(
-                LEAST(1, GREATEST(-1,
-                    cos(radians(?))
-                    * cos(radians(latitude))
-                    * cos(radians(longitude) - radians(?))
-                    + sin(radians(?))
-                    * sin(radians(latitude))
-                ))
-            )
-        ) AS distance
+        $distanceSql = <<<'SQL'
+            (
+                6371 * acos(
+                    LEAST(
+                        1,
+                        GREATEST(
+                            -1,
+                            cos(radians(?))
+                            * cos(radians(latitude))
+                            * cos(radians(longitude) - radians(?))
+                            + sin(radians(?))
+                            * sin(radians(latitude))
+                        )
+                    )
+                )
+            ) AS distance
         SQL;
 
         $restaurants = Restaurant::query()
             ->select(['id', 'name', 'address', 'status', 'latitude', 'longitude'])
-            ->selectRaw($distanceSQL, [$latitude, $longitude, $latitude])
+            ->selectRaw($distanceSql, [$latitude, $longitude, $latitude])
             ->when($include === 'menus', function ($query) {
                 $query->with('menus');
             })
             ->when($include === 'menus.menuItems', function ($query) use ($search, $operator) {
                 $query->with([
                     'menus' => function ($menuQuery) use ($search, $operator) {
-                        if ($search) {
-                            $menuQuery->whereHas('menuItems', function ($itemQuery) use ($search, $operator) {
-                                $itemQuery->where('name', $operator, "%{$search}%");
-                            });
-                        }
-
-                        $menuQuery->with([
-                            'menuItems' => function ($itemQuery) use ($search, $operator) {
-                                if ($search) {
+                        $menuQuery
+                            ->when($search, function ($menuQuery) use ($search, $operator) {
+                                $menuQuery->whereHas('menuItems', function ($itemQuery) use ($search, $operator) {
                                     $itemQuery->where('name', $operator, "%{$search}%");
-                                }
-                            },
-                        ]);
+                                });
+                            })
+                            ->with([
+                                'menuItems' => function ($itemQuery) use ($search, $operator) {
+                                    $itemQuery->when($search, function ($itemQuery) use ($search, $operator) {
+                                        $itemQuery->where('name', $operator, "%{$search}%");
+                                    });
+                                },
+                            ]);
                     },
                 ]);
             })
@@ -118,10 +134,11 @@ class RestaurantService
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->orderBy('distance')
-            ->simplePaginate($perPage);
+            ->simplePaginate($perPage)
+            ->withQueryString();
 
         $restaurants->setCollection(
-            $restaurants->getCollection()->transform(function ($restaurant) {
+            $restaurants->getCollection()->map(function (Restaurant $restaurant) {
                 $distance = (float) $restaurant->distance;
 
                 $restaurant->distance = $distance < 1 ? round($distance * 1000) . ' m' : round($distance, 1) . ' km';
@@ -131,15 +148,6 @@ class RestaurantService
         );
 
         return $restaurants;
-    }
-
-    private function authorizeAddressOwner(Address $address): void
-    {
-        $user = Auth::user();
-
-        if ($address->user_id !== $user->id) {
-            throw new AuthorizationException('You are not allowed to use this address.');
-        }
     }
 
     private function ensureRestaurantOwner(User $user): void

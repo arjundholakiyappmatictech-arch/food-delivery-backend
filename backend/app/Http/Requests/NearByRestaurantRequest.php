@@ -14,7 +14,24 @@ class NearByRestaurantRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'address_id' => ['required', 'exists:addresses,id'],
+            'address_id' => [
+            'nullable',
+            'integer',
+            'exists:addresses,id',
+        ],
+        'latitude' => [
+            'nullable',
+            'required_without:address_id',
+            'numeric',
+            'between:-90,90',
+        ],
+
+        'longitude' => [
+            'nullable',
+            'required_without:address_id',
+            'numeric',
+            'between:-180,180',
+        ],
             'include' => ['nullable', 'in:menus,menus.menuItems'],
             'q' => ['nullable', 'string', 'max:100'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
