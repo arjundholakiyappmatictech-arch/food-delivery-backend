@@ -8,7 +8,6 @@ import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import { registerSchema } from '@/lib/schemas/registerSchema';
 import { register } from '@/services/authService';
@@ -22,7 +21,6 @@ const initialForm = {
    email: '',
    phone_number: '',
    password: '',
-   type: '',
 };
 
 const initialErrors = {
@@ -30,23 +28,7 @@ const initialErrors = {
    email: [],
    phone_number: [],
    password: [],
-   type: [],
 };
-
-const userTypes = [
-   {
-      label: 'Customer',
-      value: 'customer',
-   },
-   {
-      label: 'Delivery Agent',
-      value: 'delivery_agent',
-   },
-   {
-      label: 'Restaurant Owner',
-      value: 'restaurant_owner',
-   },
-];
 
 const RegisterForm = () => {
    const router = useRouter();
@@ -66,18 +48,6 @@ const RegisterForm = () => {
       setErrors((previousErrors) => ({
          ...previousErrors,
          [name]: [],
-      }));
-   };
-
-   const handleTypeChange = (value) => {
-      setForm((previousForm) => ({
-         ...previousForm,
-         type: value,
-      }));
-
-      setErrors((previousErrors) => ({
-         ...previousErrors,
-         type: [],
       }));
    };
 
@@ -115,8 +85,6 @@ const RegisterForm = () => {
                phone_number: apiError.errors.phone_number ? [apiError.errors.phone_number[0]] : [],
 
                password: apiError.errors.password ? [apiError.errors.password[0]] : [],
-
-               type: apiError.errors.type ? [apiError.errors.type[0]] : [],
             });
 
             toast.error(apiError.message);
@@ -250,30 +218,6 @@ const RegisterForm = () => {
                               />
 
                               {errors.password[0] && <p className="text-sm text-red-500">{errors.password[0]}</p>}
-                           </Field>
-
-                           <Field className="gap-1.5">
-                              <FieldLabel htmlFor="type" className="text-sm font-normal text-muted-foreground">
-                                 Select Type<span className="text-red-500">*</span>
-                              </FieldLabel>
-
-                              <Select value={form.type} onValueChange={handleTypeChange} disabled={loading}>
-                                 <SelectTrigger id="type" aria-invalid={errors.type.length > 0} className="w-full">
-                                    <SelectValue placeholder="Select account type" />
-                                 </SelectTrigger>
-
-                                 <SelectContent>
-                                    <SelectGroup>
-                                       {userTypes.map((item) => (
-                                          <SelectItem key={item.value} value={item.value}>
-                                             {item.label}
-                                          </SelectItem>
-                                       ))}
-                                    </SelectGroup>
-                                 </SelectContent>
-                              </Select>
-
-                              {errors.type[0] && <p className="text-sm text-red-500">{errors.type[0]}</p>}
                            </Field>
                         </div>
 

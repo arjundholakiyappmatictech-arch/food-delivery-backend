@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { LocationDialog } from '@/components/location/LocationDialog';
 import { getAddresses } from '@/services/addressService';
 import { getNearbyRestaurants } from '@/services/restaurantService';
+import useAuthGuard from '@/lib/hooks/useAuth';
 
 export default function HomePage() {
+   useAuthGuard();
    const [addresses, setAddresses] = useState([]);
    const [selectedLocation, setSelectedLocation] = useState(null);
    const [addressesLoading, setAddressesLoading] = useState(true);

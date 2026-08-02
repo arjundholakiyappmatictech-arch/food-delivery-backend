@@ -2,6 +2,7 @@ import api from '@/lib/api/api';
 
 export async function getAddresses() {
    const response = await api.get('/addresses');
+   console.log(response);
 
    const addresses = response.data?.data;
 

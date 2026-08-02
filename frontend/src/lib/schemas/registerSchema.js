@@ -31,8 +31,4 @@ export const registerSchema = z.object({
       .min(1, 'Password is required.')
       .min(8, 'Password must contain at least 8 characters.')
       .max(255, 'Password must not exceed 255 characters.'),
-
-   type: z.enum(['customer', 'restaurant_owner', 'delivery_agent'], {
-      message: 'Please select a user type.',
-   }),
 });
