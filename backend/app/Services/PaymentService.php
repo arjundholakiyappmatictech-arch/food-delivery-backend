@@ -34,6 +34,18 @@ class PaymentService
         });
     }
 
+    public function refundCancelledOrders(): int
+    {
+        return Payment::query()
+            ->where('payment_status', 'paid')
+            ->whereHas('order', function ($query) {
+                $query->where('status', 'cancelled')->where('cancelled_at', '<=', now()->subMinutes(2));
+            })
+            ->update([
+                'payment_status' => 'refunded',
+            ]);
+    }
+
     private function authorizeOrderOwner(Order $order): User
     {
         /** @var User|null $user */

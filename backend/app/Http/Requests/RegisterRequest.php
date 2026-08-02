@@ -18,7 +18,7 @@ class RegisterRequest extends FormRequest
             'email' => 'required|email|unique:users,email',
             'phone_number' => 'required|digits_between:10,15|unique:users,phone_number',
             'password' => 'required|string|min:8',
-            'type' => 'required|in:customer,delivery_agent,restaurant_owner',
+            'type' => 'sometimes|in:customer,delivery_agent,restaurant_owner',
         ];
     }
 }

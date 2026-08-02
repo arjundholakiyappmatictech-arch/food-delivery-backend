@@ -5,13 +5,13 @@ namespace App\Services;
 use App\Exceptions\MenuItem\DuplicateMenuItemException;
 use App\Models\Menu;
 use App\Models\MenuItem;
+use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
-use Throwable;
 
 class MenuItemService
 {
@@ -41,7 +41,7 @@ class MenuItemService
                 ]);
 
                 $storedImagePath = $image->store("menu-items/{$menuItem->id}", 'public');
-
+                
                 if ($storedImagePath === false) {
                     throw new RuntimeException('The menu-item image could not be stored.');
                 }
@@ -52,7 +52,7 @@ class MenuItemService
 
                 return $menuItem->refresh()->load('menu');
             });
-        } catch (Throwable $exception) {
+        } catch (Exception $exception) {
             // to cleanup orphan file
             if ($storedImagePath !== null) {
                 Storage::disk('public')->delete($storedImagePath);

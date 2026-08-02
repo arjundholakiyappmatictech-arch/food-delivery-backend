@@ -15,7 +15,7 @@ class AuthService
             'email' => $data['email'],
             'phone_number' => $data['phone_number'],
             'password' => Hash::make($data['password']),
-            'type' => $data['type'],
+            'type' => $data['type'] ?? 'customer',
         ]);
     }
 

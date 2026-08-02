@@ -2,9 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Payment;
+use App\Services\PaymentService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class RefundCancelledOrders extends Command
 {
@@ -12,21 +11,16 @@ class RefundCancelledOrders extends Command
 
     protected $description = 'Refund paid cancelled orders after 5 minutes';
 
+    public function __construct(protected PaymentService $paymentService)
+    {
+        return parent::__construct();
+    }
+
     public function handle()
     {
-        $refundedPayments = Payment::query()
-            ->where('payment_status', 'paid')
-            ->whereHas('order', function ($query): void {
-                $query->where('status', 'cancelled')->where('cancelled_at', '<=', now()->subMinutes(2));
-            })
-            ->update([
-                'payment_status' => 'refunded',
-            ]);
-
-        dump($refundedPayments);
+        $refundedPayments = $this->paymentService->refundCancelledOrders();
 
         $this->info("Refunded {$refundedPayments} cancelled order payments");
-        Log::info('pc');
 
         return Command::SUCCESS;
     }

@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Order;
+use App\Services\OrderService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -12,19 +12,14 @@ class CancelUnpaidOrders extends Command
 
     protected $description = 'Cancel unpaid online orders after 1 minutes';
 
+    public function __construct(private OrderService $orderService)
+    {
+        parent::__construct();
+    }
+
     public function handle(): int
     {
-        $cancelledOrders = Order::where('status', 'placed')
-            ->where('created_at', '<=', now()->subMinutes())
-            ->where(function ($query) {
-                $query->whereDoesntHave('payment')->orWhereHas('payment', function ($paymentQuery) {
-                    $paymentQuery->where('payment_status', '!=', 'paid')->where('payment_method', '!=', 'cod');
-                });
-            })
-            ->update([
-                'status' => 'cancelled',
-                'cancelled_at' => now(),
-            ]);
+        $cancelledOrders = $this->orderService->cancelExpiredUnpaidOrders();
 
         $this->info("Cancelled {$cancelledOrders} unpaid orders.");
 

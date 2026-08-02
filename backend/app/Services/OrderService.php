@@ -146,6 +146,21 @@ class OrderService
         });
     }
 
+    public function cancelExpiredUnpaidOrders(): int
+    {
+        return Order::where('status', 'placed')
+            ->where('created_at', '<=', now()->subMinute())
+            ->where(function ($query) {
+                $query->whereDoesntHave('payment')->orWhereHas('payment', function ($paymentQuery) {
+                    $paymentQuery->where('payment_status', '!=', 'paid')->where('payment_method', '!=', 'cod');
+                });
+            })
+            ->update([
+                'status' => 'cancelled',
+                'cancelled_at' => now(),
+            ]);
+    }
+
     private function authorizeCustomer(): User
     {
         /** @var User|null $user */
