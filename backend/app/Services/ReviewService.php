@@ -25,7 +25,7 @@ class ReviewService
                 ->simplePaginate(1);
         }
 
-        throw new AuthorizationException('You are not allowed to view reviews');
+        throw new AuthorizationException('You are not allowed to view reviews', 403);
     }
 
     public function store(Order $order, array $data): OrderReview
@@ -52,11 +52,11 @@ class ReviewService
     private function authorizeCanReview(Order $order, User $user): void
     {
         if ($user->type !== 'customer') {
-            throw new AuthorizationException('Only customers can create reviews');
+            throw new AuthorizationException('Only customers can create reviews', 403);
         }
 
         if ($order->user_id !== $user->id) {
-            throw new AuthorizationException('You can only review your own order');
+            throw new AuthorizationException('You can only review your own order', 403);
         }
 
         if ($order->status !== 'delivered') {
@@ -73,7 +73,7 @@ class ReviewService
     private function authorizeReviewOwner(OrderReview $review, User $user): void
     {
         if ($review->user_id !== $user->id) {
-            throw new AuthorizationException('This review does not belong to you');
+            throw new AuthorizationException('This review does not belong to you', 403);
         }
     }
 }

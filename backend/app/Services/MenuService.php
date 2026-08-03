@@ -18,7 +18,7 @@ class MenuService
         $restaurants = Restaurant::query()->whereIn('id', $restaurantIds)->get();
 
         if ($restaurants->count() !== $restaurantIds->count()) {
-            throw new AuthorizationException('One or more selected restaurants are invalid');
+            throw new AuthorizationException('One or more selected restaurants are invalid', 403);
         }
 
         foreach ($restaurants as $restaurant) {
@@ -43,11 +43,11 @@ class MenuService
         $user = Auth::user();
 
         if ($user->type !== 'restaurant_owner') {
-            throw new AuthorizationException('Only restaurant owners can manage menus');
+            throw new AuthorizationException('Only restaurant owners can manage menus', 403);
         }
 
         if ($restaurant->restaurant_owner_id !== $user->id) {
-            throw new AuthorizationException('You are not allowed to manage this restaurant menu');
+            throw new AuthorizationException('You are not allowed to manage this restaurant menu', 403);
         }
     }
 

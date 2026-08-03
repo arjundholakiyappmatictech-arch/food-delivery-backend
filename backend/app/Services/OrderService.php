@@ -41,7 +41,7 @@ class OrderService
         $address = Address::query()->whereKey($data['address_id'])->where('user_id', $user->id)->first();
 
         if (!$address) {
-            throw new AuthorizationException('This address does not belong to you');
+            throw new AuthorizationException('This address does not belong to you', 403);
         }
 
         $cartItems = Cart::query()->with('menuItem')->where('user_id', $user->id)->get();
@@ -167,7 +167,7 @@ class OrderService
         $user = Auth::user();
 
         if ($user->type !== 'customer') {
-            throw new AuthorizationException('Only customers can access orders.');
+            throw new AuthorizationException('Only customers can access orders.', 403);
         }
 
         return $user;
@@ -178,7 +178,7 @@ class OrderService
         $user = $this->authorizeCustomer();
 
         if ($order->user_id !== $user->id) {
-            throw new AuthorizationException('This order does not belong to you.');
+            throw new AuthorizationException('This order does not belong to you.', 403);
         }
     }
 }

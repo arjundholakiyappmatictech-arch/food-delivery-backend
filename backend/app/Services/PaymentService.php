@@ -52,11 +52,11 @@ class PaymentService
         $user = Auth::user();
 
         if ($user->type !== 'customer') {
-            throw new AuthorizationException('Only customers can make payments');
+            throw new AuthorizationException('Only customers can make payments', 403);
         }
 
         if ($order->user_id !== $user->id) {
-            throw new AuthorizationException('You are not allowed to pay for this order');
+            throw new AuthorizationException('You are not allowed to pay for this order', 403);
         }
 
         return $user;

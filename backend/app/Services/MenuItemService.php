@@ -41,7 +41,7 @@ class MenuItemService
                 ]);
 
                 $storedImagePath = $image->store("menu-items/{$menuItem->id}", 'public');
-                
+
                 if ($storedImagePath === false) {
                     throw new RuntimeException('The menu-item image could not be stored.');
                 }
@@ -67,13 +67,13 @@ class MenuItemService
         $user = Auth::user();
 
         if ($user->type !== 'restaurant_owner') {
-            throw new AuthorizationException('Only restaurant owners can manage menu items');
+            throw new AuthorizationException('Only restaurant owners can manage menu items', 403);
         }
 
         $hasOtherOwnerRestaurant = $menu->restaurants()->where('restaurant_owner_id', '!=', $user->id)->exists();
 
         if ($hasOtherOwnerRestaurant) {
-            throw new AuthorizationException('You are not allowed to manage this menu items');
+            throw new AuthorizationException('You are not allowed to manage this menu items', 403);
         }
     }
 

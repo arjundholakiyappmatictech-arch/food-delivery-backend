@@ -12,7 +12,6 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class AddressService
@@ -21,7 +20,7 @@ class AddressService
     {
         $user = Auth::user();
 
-        $this->ensureCustomer($user, 'Only customers can view addresses');
+        $this->ensureCustomer($user);
 
         $addresses = Address::query()
             ->where('user_id', $user->id)
@@ -40,7 +39,7 @@ class AddressService
     {
         $user = Auth::user();
 
-        $this->ensureCustomer($user, 'Only customers can create addresses');
+        $this->ensureCustomer($user);
 
         $this->addressLimitCheck($user);
 
@@ -65,7 +64,7 @@ class AddressService
     {
         $user = Auth::user();
 
-        $this->ensureCustomer($user, 'Only customers can update addresses.');
+        $this->ensureCustomer($user);
 
         $this->authorize($address, $user);
 
@@ -105,7 +104,7 @@ class AddressService
     {
         $user = Auth::user();
 
-        $this->ensureCustomer($user, 'Only customers can delete addresses.');
+        $this->ensureCustomer($user);
 
         $this->authorize($address, $user);
 
@@ -132,17 +131,17 @@ class AddressService
         });
     }
 
-    private function ensureCustomer(User $user, string $message): void
+    private function ensureCustomer(User $user): void
     {
         if ($user->type !== 'customer') {
-            throw new AccessDeniedHttpException($message);
+            throw new AuthorizationException('only customer can able to manage address', 403);
         }
     }
 
     private function authorize(Address $address, User $user): void
     {
         if ($address->user_id !== $user->id) {
-            throw new AuthorizationException('You are not authorized to access this address');
+            throw new AuthorizationException('You are not authorized to access this address', 403);
         }
     }
 

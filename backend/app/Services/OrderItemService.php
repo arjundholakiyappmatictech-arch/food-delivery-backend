@@ -38,6 +38,6 @@ class OrderItemService
             return;
         }
 
-        throw new AuthorizationException('You are not allowed to access this order item');
+        throw new AuthorizationException('You are not allowed to access this order item', 403);
     }
 }

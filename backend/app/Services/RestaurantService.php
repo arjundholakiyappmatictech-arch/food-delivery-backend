@@ -24,7 +24,7 @@ class RestaurantService
 
         $this->duplicateRestaurantCheck($data);
 
-        return Restaurant::create([
+        $res = Restaurant::create([
             'restaurant_owner_id' => $user->id,
             'name' => $data['name'],
             'address' => $data['address'],
@@ -32,6 +32,10 @@ class RestaurantService
             'latitude' => $data['latitude'],
             'longitude' => $data['longitude'],
         ]);
+
+        /* dd($res); */
+
+        return $res;
     }
 
     public function getMenus(Restaurant $restaurant): Collection
@@ -39,7 +43,7 @@ class RestaurantService
         $user = Auth::user();
 
         if ($user->type !== 'customer') {
-            throw new AuthorizationException('Only customers can view restaurant menus');
+            throw new AuthorizationException('Only customers can view restaurant menus', 403);
         }
 
         return $restaurant
@@ -153,7 +157,7 @@ class RestaurantService
     private function ensureRestaurantOwner(User $user): void
     {
         if ($user->type !== 'restaurant_owner') {
-            throw new AuthorizationException('Only restaurant owners can manage restaurants.');
+            throw new AuthorizationException('Only restaurant owners can manage restaurants.', 403);
         }
     }
 

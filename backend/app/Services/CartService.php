@@ -74,7 +74,7 @@ class CartService
         $user = Auth::user();
 
         if ($user->type !== 'customer') {
-            throw new AuthorizationException('Only customers can access carts');
+            throw new AuthorizationException('Only customers can access carts', 403);
         }
 
         return $user;
@@ -85,7 +85,7 @@ class CartService
         $user = $this->authorizeCustomer();
 
         if ($cart->user_id !== $user->id) {
-            throw new AuthorizationException('Unauthorized');
+            throw new AuthorizationException('Unauthorized', 403);
         }
     }
 

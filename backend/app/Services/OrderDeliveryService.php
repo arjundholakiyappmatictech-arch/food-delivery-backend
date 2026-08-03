@@ -22,7 +22,7 @@ class OrderDeliveryService
         $user = Auth::user();
 
         if ($user->type !== 'delivery_agent') {
-            throw new AuthorizationException('Only delivery agents can view deliveries');
+            throw new AuthorizationException('Only delivery agents can view deliveries', 403);
         }
 
         return OrderDelivery::query()
@@ -67,7 +67,7 @@ class OrderDeliveryService
         }
 
         if ($delivery->status !== 'assigned') {
-            throw new AuthorizationException('This delivery cannot be marked as picked');
+            throw new AuthorizationException('This delivery cannot be marked as picked', 403);
         }
 
         return DB::transaction(function () use ($delivery) {
@@ -95,7 +95,7 @@ class OrderDeliveryService
         }
 
         if ($delivery->status !== 'picked') {
-            throw new AuthorizationException('This delivery cannot be marked as delivered');
+            throw new AuthorizationException('This delivery cannot be marked as delivered', 403);
         }
 
         return DB::transaction(function () use ($delivery) {
@@ -115,7 +115,7 @@ class OrderDeliveryService
     private function authorizeRestaurantOwner(User $user): void
     {
         if ($user->type !== 'restaurant_owner') {
-            throw new AuthorizationException('Only restaurant owners can assign delivery agents.');
+            throw new AuthorizationException('Only restaurant owners can assign delivery agents.', 403);
         }
     }
 
@@ -138,11 +138,11 @@ class OrderDeliveryService
         $deliveryAgent = User::query()->find($userId);
 
         if (!$deliveryAgent) {
-            throw new AuthorizationException('Delivery agent not found');
+            throw new AuthorizationException('Delivery agent not found', 403);
         }
 
         if ($deliveryAgent->type !== 'delivery_agent') {
-            throw new AuthorizationException('The selected user is not a delivery agent');
+            throw new AuthorizationException('The selected user is not a delivery agent', 403);
         }
 
         return $deliveryAgent;
@@ -160,11 +160,11 @@ class OrderDeliveryService
     private function authorizeAssignedDeliveryAgent(OrderDelivery $delivery, User $user): void
     {
         if ($user->type !== 'delivery_agent') {
-            throw new AuthorizationException('Only delivery agents can update deliveries.');
+            throw new AuthorizationException('Only delivery agents can update deliveries.', 403);
         }
 
         if ($delivery->user_id !== $user->id) {
-            throw new AuthorizationException('You are not assigned to this delivery.');
+            throw new AuthorizationException('You are not assigned to this delivery.', 403);
         }
     }
 }
