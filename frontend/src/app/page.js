@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
@@ -8,15 +9,25 @@ import { getAddresses } from '@/services/addressService';
 import { getNearbyRestaurants } from '@/services/restaurantService';
 import useAuthGuard from '@/lib/hooks/useAuth';
 
+function formatSavedAddress(address) {
+   return {
+      type: 'saved_address',
+      addressId: address.id,
+      title: address.label,
+      address: [address.address_line, address.city, address.state, address.pincode].filter(Boolean).join(', '),
+   };
+}
+
 export default function HomePage() {
    useAuthGuard();
    const [addresses, setAddresses] = useState([]);
    const [selectedLocation, setSelectedLocation] = useState(null);
+
    const [addressesLoading, setAddressesLoading] = useState(true);
    const [locationLoading, setLocationLoading] = useState(false);
+
    const [addressesError, setAddressesError] = useState('');
    const [locationError, setLocationError] = useState('');
-   const [successMessage, setSuccessMessage] = useState('');
 
    const fetchAddresses = useCallback(async () => {
       try {
@@ -36,20 +47,17 @@ export default function HomePage() {
    }, []);
 
    useEffect(() => {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchAddresses();
    }, [fetchAddresses]);
 
-   const fetchNearbyAndSelectLocation = async (location) => {
+   const selectLocation = async (location) => {
       try {
          setLocationLoading(true);
          setLocationError('');
-         setSuccessMessage('');
 
          await getNearbyRestaurants(location);
 
          setSelectedLocation(location);
-         setSuccessMessage('Nearby restaurants fetched successfully.');
       } catch (error) {
          const message = error.response?.data?.message || 'Unable to fetch nearby restaurants.';
 
@@ -59,19 +67,10 @@ export default function HomePage() {
       }
    };
 
-   const handleCurrentLocation = async (location) => {
-      await fetchNearbyAndSelectLocation(location);
-   };
-
    const handleSelectAddress = async (address) => {
-      const location = {
-         type: 'saved_address',
-         addressId: address.id,
-         title: address.label,
-         address: [address.address_line, address.city, address.state, address.pincode].filter(Boolean).join(', '),
-      };
+      const location = formatSavedAddress(address);
 
-      await fetchNearbyAndSelectLocation(location);
+      await selectLocation(location);
    };
 
    const showLocationDialog = !addressesLoading && !addressesError && selectedLocation === null;
@@ -106,16 +105,16 @@ export default function HomePage() {
             loading={locationLoading}
             error={locationError}
             onSelectAddress={handleSelectAddress}
-            onLocationDetected={handleCurrentLocation}
+            onLocationDetected={selectLocation}
          />
 
-         {successMessage && (
+         {selectedLocation && (
             <div className="rounded-2xl border bg-card p-6">
-               <p className="font-medium text-foreground">{successMessage}</p>
+               <p className="font-medium text-foreground">Nearby restaurants fetched successfully.</p>
 
-               {selectedLocation && (
-                  <p className="mt-2 text-sm text-muted-foreground">Selected location: {selectedLocation.title}</p>
-               )}
+               <p className="mt-2 text-sm capitalize text-muted-foreground">
+                  Selected location: {selectedLocation.title}
+               </p>
             </div>
          )}
       </main>
