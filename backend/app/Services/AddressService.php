@@ -12,27 +12,34 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class AddressService
 {
-    public function index(): LengthAwarePaginator
+    public function index(array $data): LengthAwarePaginator
     {
         $user = Auth::user();
+        $search = $data['q'] ?? null;
+
+        $operator = config('database.default') === 'pgsql' ? 'ilike' : 'like';
 
         $this->ensureCustomer($user);
 
-        $addresses = Address::query()
-            ->where('user_id', $user->id)
+        return $user
+            ->addresses()
             ->select(['id', 'user_id', 'label', 'address_line', 'city', 'state', 'pincode', 'latitude', 'longitude'])
+            ->when($search, function ($query) use ($search, $operator) {
+                $query->where(function ($query) use ($search, $operator) {
+                    $query
+                        ->where('label', $operator, "%{$search}%")
+                        ->orWhere('address_line', $operator, "%{$search}%")
+                        ->orWhere('city', $operator, "%{$search}%")
+                        ->orWhere('state', $operator, "%{$search}%")
+                        ->orWhere('pincode', $operator, "%{$search}%");
+                });
+            })
             ->latest()
-            ->paginate(2);
-
-        if ($addresses->isEmpty() && $addresses->currentPage() > 1) {
-            throw new HttpException(404, 'The requested page does not exist.');
-        }
-
-        return $addresses;
+            ->paginate(2)
+            ->withQueryString();
     }
 
     public function store(array $data): Address

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SearchAddressRequest;
 use App\Http\Requests\StoreAddressRequest;
 use App\Http\Requests\UpdateAddressRequest;
 use App\Http\Resources\AddressResource;
@@ -14,9 +15,9 @@ class AddressController extends Controller
 {
     public function __construct(protected AddressService $addressService) {}
 
-    public function index(): JsonResponse
+    public function index(SearchAddressRequest $request): JsonResponse
     {
-        $addresses = $this->addressService->index();
+        $addresses = $this->addressService->index($request->validated());
 
         return $this->successResponse(
             'Addresses fetched successfully',
