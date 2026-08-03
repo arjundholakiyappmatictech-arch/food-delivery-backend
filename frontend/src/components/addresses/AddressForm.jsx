@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { LoaderCircle, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
@@ -11,105 +10,83 @@ import { Label } from '@/components/ui/label';
 
 import { createAddress } from '@/services/addressService';
 import { addressSchema } from '@/lib/schemas/addressSchema';
-
-const initialForm = {
-   label: 'home',
-   address_line: '',
-   city: '',
-   state: '',
-   pincode: '',
-   latitude: '',
-   longitude: '',
-};
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 export function AddressForm() {
    const router = useRouter();
 
-   const [form, setForm] = useState(initialForm);
-   const [errors, setErrors] = useState({});
-   const [formError, setFormError] = useState('');
-   const [loading, setLoading] = useState(false);
+   const {
+      register,
+      handleSubmit,
+      setError,
+      formState: { errors, isSubmitting },
+   } = useForm({
+      resolver: zodResolver(addressSchema),
+   });
 
-   const handleChange = (event) => {
-      const { name, value } = event.target;
-
-      setForm((currentForm) => ({
-         ...currentForm,
-         [name]: value,
-      }));
-
-      setErrors((currentErrors) => ({
-         ...currentErrors,
-         [name]: undefined,
-      }));
-
-      setFormError('');
-   };
-
-   const handleSubmit = async (event) => {
-      event.preventDefault();
-
-      setErrors({});
-      setFormError('');
-
-      const result = addressSchema.safeParse(form);
-
-      if (!result.success) {
-         const validationErrors = {};
-
-         result.error.issues.forEach((issue) => {
-            const field = issue.path[0];
-
-            if (field && !validationErrors[field]) {
-               validationErrors[field] = issue.message;
-            }
-         });
-
-         setErrors(validationErrors);
-
-         return;
-      }
-
+   const onSubmit = async (data) => {
       try {
-         setLoading(true);
-
-         await createAddress(result.data);
+         await createAddress(data);
 
          toast.success('Address added successfully.');
 
          router.replace('/');
       } catch (error) {
-         const backendErrors = error.response?.data?.errors;
+         const apiError = parseApiError(error);
 
-         if (backendErrors) {
-            const formattedErrors = {};
+         if (apiError.status === 422) {
+            const backendErrors = apiError.errors ?? {};
 
             Object.entries(backendErrors).forEach(([field, messages]) => {
-               formattedErrors[field] = Array.isArray(messages) ? messages[0] : messages;
+               const message = Array.isArray(messages) ? messages[0] : messages;
+
+               if (message) {
+                  setError(field, {
+                     type: 'server',
+                     message,
+                  });
+               }
             });
 
-            setErrors(formattedErrors);
+            toast.error(apiError.message ?? 'Please check the address details.');
+
+            return;
          }
 
-         setFormError(error.response?.data?.message || 'Unable to add address. Please try again.');
-      } finally {
-         setLoading(false);
+         if (apiError.status === 409) {
+            toast.error(apiError.message ?? 'This address already exists.');
+
+            return;
+         }
+
+         if (apiError.status === 403) {
+            toast.error(apiError.message ?? 'You are not allowed to add an address.');
+
+            return;
+         }
+
+         if (apiError.isNetworkError) {
+            toast.error('Unable to connect to the server. Please check your connection.');
+
+            return;
+         }
+
+         toast.error(apiError.message ?? 'Unable to add address. Please try again.');
       }
    };
 
    return (
-      <form onSubmit={handleSubmit} noValidate className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
          <div className="space-y-2">
             <Label htmlFor="label">
-               Save address as<span className="text-red-500">*</span>
+               Save address as <span className="text-red-500">*</span>
             </Label>
 
             <select
                id="label"
-               name="label"
-               value={form.label}
-               disabled={loading}
-               onChange={handleChange}
+               disabled={isSubmitting}
+               {...register('label')}
                className="h-10 w-full rounded-lg border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring"
             >
                <option value="home">Home</option>
@@ -117,7 +94,7 @@ export function AddressForm() {
                <option value="other">Other</option>
             </select>
 
-            {errors.label && <p className="text-sm text-destructive">{errors.label}</p>}
+            {errors.label?.message && <p className="text-sm text-red-500">{errors.label.message}</p>}
          </div>
 
          <div className="space-y-2">
@@ -127,15 +104,13 @@ export function AddressForm() {
 
             <Input
                id="address_line"
-               name="address_line"
-               value={form.address_line}
-               disabled={loading}
-               onChange={handleChange}
+               disabled={isSubmitting}
+               {...register('address_line')}
                placeholder="Flat, house, society, street or landmark"
                autoComplete="street-address"
             />
 
-            {errors.address_line && <p className="text-sm text-destructive">{errors.address_line}</p>}
+            {errors.address_line?.message && <p className="text-sm text-destructive">{errors.address_line.message}</p>}
          </div>
 
          <div className="grid gap-5 sm:grid-cols-2">
@@ -146,15 +121,13 @@ export function AddressForm() {
 
                <Input
                   id="city"
-                  name="city"
-                  value={form.city}
-                  disabled={loading}
-                  onChange={handleChange}
+                  disabled={isSubmitting}
+                  {...register('city')}
                   placeholder="Ahmedabad"
                   autoComplete="address-level2"
                />
 
-               {errors.city && <p className="text-sm text-destructive">{errors.city}</p>}
+               {errors.city?.message && <p className="text-sm text-destructive">{errors.city.message}</p>}
             </div>
 
             <div className="space-y-2">
@@ -164,15 +137,13 @@ export function AddressForm() {
 
                <Input
                   id="state"
-                  name="state"
-                  value={form.state}
-                  disabled={loading}
-                  onChange={handleChange}
+                  disabled={isSubmitting}
+                  {...register('state')}
                   placeholder="Gujarat"
                   autoComplete="address-level1"
                />
 
-               {errors.state && <p className="text-sm text-destructive">{errors.state}</p>}
+               {errors.state?.message && <p className="text-sm text-destructive">{errors.state.message}</p>}
             </div>
          </div>
 
@@ -183,17 +154,15 @@ export function AddressForm() {
 
             <Input
                id="pincode"
-               name="pincode"
-               value={form.pincode}
-               disabled={loading}
-               onChange={handleChange}
+               disabled={isSubmitting}
+               {...register('pincode')}
                placeholder="395002"
                inputMode="numeric"
                maxLength={6}
                autoComplete="postal-code"
             />
 
-            {errors.pincode && <p className="text-sm text-destructive">{errors.pincode}</p>}
+            {errors.pincode?.message && <p className="text-sm text-destructive">{errors.pincode.message}</p>}
          </div>
 
          <div className="rounded-xl border bg-muted/30 p-4">
@@ -217,16 +186,14 @@ export function AddressForm() {
 
                   <Input
                      id="latitude"
-                     name="latitude"
                      type="number"
                      step="any"
-                     value={form.latitude}
-                     disabled={loading}
-                     onChange={handleChange}
+                     disabled={isSubmitting}
+                     {...register('latitude')}
                      placeholder="21.1702"
                   />
 
-                  {errors.latitude && <p className="text-sm text-destructive">{errors.latitude}</p>}
+                  {errors.latitude?.message && <p className="text-sm text-destructive">{errors.latitude.message}</p>}
                </div>
 
                <div className="space-y-2">
@@ -239,30 +206,23 @@ export function AddressForm() {
                      name="longitude"
                      type="number"
                      step="any"
-                     value={form.longitude}
-                     disabled={loading}
-                     onChange={handleChange}
+                     disabled={isSubmitting}
+                     {...register('longitude')}
                      placeholder="72.8311"
                   />
 
-                  {errors.longitude && <p className="text-sm text-destructive">{errors.longitude}</p>}
+                  {errors.longitude?.message && <p className="text-sm text-destructive">{errors.longitude.message}</p>}
                </div>
             </div>
          </div>
 
-         {formError && (
-            <div role="alert" className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3">
-               <p className="text-sm text-destructive">{formError}</p>
-            </div>
-         )}
-
          <Button
             type="submit"
             size="lg"
-            disabled={loading}
-            className="h-11 w-full rounded-xl bg-orange-600 text-white hover:bg-orange-700"
+            disabled={isSubmitting}
+            className="h-11 w-full rounded-xl bg-orange-600 text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
          >
-            {loading ? (
+            {isSubmitting ? (
                <>
                   <LoaderCircle className="size-4 animate-spin" />
                   Saving address...
