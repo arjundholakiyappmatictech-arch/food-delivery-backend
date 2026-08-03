@@ -25,6 +25,7 @@ export default function HomePage() {
 
    const [addressesLoading, setAddressesLoading] = useState(true);
    const [locationLoading, setLocationLoading] = useState(false);
+   const [addressesSearching, setAddressesSearching] = useState(false);
 
    const [addressesError, setAddressesError] = useState('');
    const [locationError, setLocationError] = useState('');
@@ -49,6 +50,23 @@ export default function HomePage() {
    useEffect(() => {
       fetchAddresses();
    }, [fetchAddresses]);
+
+   const searchAddresses = useCallback(async (search) => {
+      try {
+         setAddressesSearching(true);
+         setAddressesError('');
+
+         const data = await getAddresses(search);
+
+         setAddresses(data);
+      } catch (error) {
+         const message = error.response?.data?.message || 'Unable to search your saved addresses.';
+
+         setAddressesError(message);
+      } finally {
+         setAddressesSearching(false);
+      }
+   }, []);
 
    const selectLocation = async (location) => {
       try {
@@ -104,6 +122,7 @@ export default function HomePage() {
             addresses={addresses}
             loading={locationLoading}
             error={locationError}
+            onSearch={searchAddresses}
             onSelectAddress={handleSelectAddress}
             onLocationDetected={selectLocation}
          />

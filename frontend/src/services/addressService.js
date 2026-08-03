@@ -1,12 +1,15 @@
 import api from '@/lib/api/api';
 
-export async function getAddresses() {
-   const response = await api.get('/addresses');
-   console.log(response);
+export async function getAddresses(search = '') {
+   const response = await api.get('/addresses', {
+      params: search.trim()
+         ? {
+              q: search.trim(),
+           }
+         : {},
+   });
 
-   const addresses = response.data?.data;
-
-   return Array.isArray(addresses) ? addresses : [];
+   return Array.isArray(response.data?.data) ? response.data.data : [];
 }
 
 export async function createAddress(data) {

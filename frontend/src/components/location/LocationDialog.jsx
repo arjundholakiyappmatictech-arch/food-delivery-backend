@@ -8,8 +8,17 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 
 import { CurrentLocationButton } from './CurrentLocationButton';
 import { SavedAddressItem } from './SavedAddressItem';
+import { AddressSearch } from './AdddressSearch';
 
-export function LocationDialog({ open, addresses, onSelectAddress, onLocationDetected, loading = false, error = '' }) {
+export function LocationDialog({
+   open,
+   addresses,
+   onSearch,
+   onSelectAddress,
+   onLocationDetected,
+   loading = false,
+   error = '',
+}) {
    const hasAddresses = addresses.length > 0;
 
    return (
@@ -50,6 +59,9 @@ export function LocationDialog({ open, addresses, onSelectAddress, onLocationDet
 
                         <div className="h-px flex-1 bg-border" />
                      </div>
+
+                     {/* search button */}
+                     <AddressSearch onSearch={onSearch} />
 
                      <div className="max-h-64 space-y-3 overflow-y-auto pr-1">
                         {addresses.map((address) => (
