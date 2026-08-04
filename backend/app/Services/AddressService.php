@@ -17,25 +17,33 @@ class AddressService
 {
     public function index(array $data): LengthAwarePaginator
     {
+        /** @var User $user */
         $user = Auth::user();
-        $search = $data['q'] ?? null;
+
+        $this->ensureCustomer($user);
+
+        $search = trim($data['q'] ?? '');
 
         $operator = config('database.default') === 'pgsql' ? 'ilike' : 'like';
 
-        $this->ensureCustomer($user);
+        $searchTerms = preg_split('/\s+/', $search, -1, PREG_SPLIT_NO_EMPTY);
+
+        $searchTerms = array_slice($searchTerms ?: [], 0, 5);
 
         return $user
             ->addresses()
             ->select(['id', 'user_id', 'label', 'address_line', 'city', 'state', 'pincode', 'latitude', 'longitude'])
-            ->when($search, function ($query) use ($search, $operator) {
-                $query->where(function ($query) use ($search, $operator) {
-                    $query
-                        ->where('label', $operator, "%{$search}%")
-                        ->orWhere('address_line', $operator, "%{$search}%")
-                        ->orWhere('city', $operator, "%{$search}%")
-                        ->orWhere('state', $operator, "%{$search}%")
-                        ->orWhere('pincode', $operator, "%{$search}%");
-                });
+            ->when($searchTerms, function ($query) use ($searchTerms, $operator) {
+                foreach ($searchTerms as $term) {
+                    $query->where(function ($query) use ($term, $operator) {
+                        $query
+                            ->where('label', $operator, "%{$term}%")
+                            ->orWhere('address_line', $operator, "%{$term}%")
+                            ->orWhere('city', $operator, "%{$term}%")
+                            ->orWhere('state', $operator, "%{$term}%")
+                            ->orWhere('pincode', $operator, "%{$term}%");
+                    });
+                }
             })
             ->latest()
             ->paginate(2)
