@@ -8,7 +8,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -56,16 +55,6 @@ return Application::configure(basePath: dirname(__DIR__))
             );
         });
 
-        /* $exceptions->render(function (ValidationException $exception, Request $request) {
-            return response()->json(
-                [
-                    'status' => false,
-                    'message' => $exception->getMessage(),
-                    'errors' => null,
-                ],
-                422,
-            );
-        }); */
 
         $exceptions->render(function (MethodNotAllowedHttpException $exception, Request $request) {
             return response()->json(
@@ -114,7 +103,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // 500 - internal server error
-        /*         $exceptions->render(function (QueryException $e, $request) {
+                $exceptions->render(function (QueryException $e, $request) {
             return response()->json(
                 [
                     'status' => false,
@@ -123,6 +112,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 ],
                 500,
             );
-        }); */
+        });
     })
     ->create();
