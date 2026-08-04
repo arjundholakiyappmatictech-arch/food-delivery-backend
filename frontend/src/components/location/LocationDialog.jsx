@@ -1,26 +1,36 @@
+// src/components/location/LocationDialog.jsx
+
 'use client';
 
 import Link from 'next/link';
 import { MapPin, MapPinned } from 'lucide-react';
 
-import { Button, buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-import { CurrentLocationButton } from './CurrentLocationButton';
-import { SavedAddressItem } from './SavedAddressItem';
+import { cn } from '@/lib/utils';
+
 import { AddressSearch } from './AdddressSearch';
+import { CurrentLocationButton } from './CurrentLocationButton';
+import { SavedAddressList } from './SavedAddressList';
 
 export function LocationDialog({
    open,
    addresses,
+   hasSavedAddresses,
+
+   addressesSearching = false,
+   addressesLoadingMore = false,
+   hasMoreAddresses = false,
+
    onSearch,
+   onLoadMoreAddresses,
    onSelectAddress,
    onLocationDetected,
+
    loading = false,
    error = '',
 }) {
-   const hasAddresses = addresses.length > 0;
-
    return (
       <Dialog open={open} disablePointerDismissal>
          <DialogContent
@@ -36,11 +46,11 @@ export function LocationDialog({
             <div className="space-y-6 px-6 pb-7 sm:px-8">
                <DialogHeader className="space-y-2 text-center">
                   <DialogTitle className="text-xl font-semibold">
-                     {hasAddresses ? 'Choose delivery location' : 'Enable location access'}
+                     {hasSavedAddresses ? 'Choose delivery location' : 'Enable location access'}
                   </DialogTitle>
 
                   <DialogDescription className="leading-6">
-                     {hasAddresses
+                     {hasSavedAddresses
                         ? 'Select a saved address or use your current location.'
                         : 'Allow location access to find restaurants delivering near you.'}
                   </DialogDescription>
@@ -48,7 +58,7 @@ export function LocationDialog({
 
                <CurrentLocationButton disabled={loading} onLocationDetected={onLocationDetected} />
 
-               {hasAddresses && (
+               {hasSavedAddresses && (
                   <div className="space-y-3">
                      <div className="flex items-center gap-3">
                         <div className="h-px flex-1 bg-border" />
@@ -60,36 +70,41 @@ export function LocationDialog({
                         <div className="h-px flex-1 bg-border" />
                      </div>
 
-                     {/* search button */}
                      <AddressSearch onSearch={onSearch} />
 
-                     <div className="max-h-64 space-y-3 overflow-y-auto pr-1">
-                        {addresses.map((address) => (
-                           <SavedAddressItem
-                              key={address.id}
-                              address={address}
-                              disabled={loading}
-                              onSelect={onSelectAddress}
-                           />
-                        ))}
-                     </div>
+                     <SavedAddressList
+                        addresses={addresses}
+                        searching={addressesSearching}
+                        loadingMore={addressesLoadingMore}
+                        hasMore={hasMoreAddresses}
+                        locationLoading={loading}
+                        onLoadMore={onLoadMoreAddresses}
+                        onSelectAddress={onSelectAddress}
+                     />
                   </div>
                )}
 
-               <Button type="button" size="lg" variant="outline" disabled={loading} className="h-11 w-full rounded-xl">
-                  <Link
-                     href="/addresses/add"
-                     className={buttonVariants({
+               <Link
+                  href={loading ? '#' : '/addresses/add'}
+                  aria-disabled={loading}
+                  onClick={(event) => {
+                     if (loading) {
+                        event.preventDefault();
+                     }
+                  }}
+                  className={cn(
+                     buttonVariants({
                         variant: 'outline',
                         size: 'lg',
-                        className: 'h-11 w-full rounded-xl',
-                     })}
-                  >
-                     <MapPinned className="size-4" />
+                     }),
+                     'h-11 w-full rounded-xl',
+                     loading && 'pointer-events-none opacity-50',
+                  )}
+               >
+                  <MapPinned className="size-4" />
 
-                     {hasAddresses ? 'Add another address' : 'Add address manually'}
-                  </Link>
-               </Button>
+                  {hasSavedAddresses ? 'Add another address' : 'Add address manually'}
+               </Link>
 
                {error && (
                   <div

@@ -18,8 +18,6 @@ export function AddressSearch({ onSearch }) {
          return;
       }
 
-      console.log('searching', debouncedSearch);
-
       onSearch(debouncedSearch.trim());
    }, [debouncedSearch, onSearch]);
 
@@ -33,6 +31,7 @@ export function AddressSearch({ onSearch }) {
             placeholder="Search saved address..."
             onChange={(event) => setSearch(event.target.value)}
             className="pl-10 border"
+            autoComplete="off"
          />
       </div>
    );

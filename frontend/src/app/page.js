@@ -1,89 +1,42 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-'use client';
+// src/app/page.jsx
 
-import { useCallback, useEffect, useState } from 'react';
+'use client';
 
 import { Button } from '@/components/ui/button';
 import { LocationDialog } from '@/components/location/LocationDialog';
-import { getAddresses } from '@/services/addressService';
-import { getNearbyRestaurants } from '@/services/restaurantService';
-import useAuthGuard from '@/lib/hooks/useAuth';
 
-function formatSavedAddress(address) {
-   return {
-      type: 'saved_address',
-      addressId: address.id,
-      title: address.label,
-      address: [address.address_line, address.city, address.state, address.pincode].filter(Boolean).join(', '),
-   };
-}
+import useAuthGuard from '@/lib/hooks/useAuth';
+import useAddresses from '@/lib/hooks/useAddresses';
+import useSelectedLocation from '@/lib/hooks/useSelectedLocation';
+
+import { formatSavedAddress } from '@/lib/location';
 
 export default function HomePage() {
    useAuthGuard();
-   const [addresses, setAddresses] = useState([]);
-   const [selectedLocation, setSelectedLocation] = useState(null);
 
-   const [addressesLoading, setAddressesLoading] = useState(true);
-   const [locationLoading, setLocationLoading] = useState(false);
-   const [addressesSearching, setAddressesSearching] = useState(false);
+   const {
+      addresses,
+      hasSavedAddresses,
+      hasMore: hasMoreAddresses,
 
-   const [addressesError, setAddressesError] = useState('');
-   const [locationError, setLocationError] = useState('');
+      loading: addressesLoading,
+      searching: addressesSearching,
+      loadingMore: addressesLoadingMore,
+      error: addressesError,
 
-   const fetchAddresses = useCallback(async () => {
-      try {
-         setAddressesLoading(true);
-         setAddressesError('');
+      fetchAddresses,
+      searchAddresses,
+      loadMoreAddresses,
+   } = useAddresses();
 
-         const data = await getAddresses();
-
-         setAddresses(data);
-      } catch (error) {
-         const message = error.response?.data?.message || 'Unable to fetch your saved addresses.';
-
-         setAddressesError(message);
-      } finally {
-         setAddressesLoading(false);
-      }
-   }, []);
-
-   useEffect(() => {
-      fetchAddresses();
-   }, [fetchAddresses]);
-
-   const searchAddresses = useCallback(async (search) => {
-      try {
-         setAddressesSearching(true);
-         setAddressesError('');
-
-         const data = await getAddresses(search);
-
-         setAddresses(data);
-      } catch (error) {
-         const message = error.response?.data?.message || 'Unable to search your saved addresses.';
-
-         setAddressesError(message);
-      } finally {
-         setAddressesSearching(false);
-      }
-   }, []);
-
-   const selectLocation = async (location) => {
-      try {
-         setLocationLoading(true);
-         setLocationError('');
-
-         await getNearbyRestaurants(location);
-
-         setSelectedLocation(location);
-      } catch (error) {
-         const message = error.response?.data?.message || 'Unable to fetch nearby restaurants.';
-
-         setLocationError(message);
-      } finally {
-         setLocationLoading(false);
-      }
-   };
+   const {
+      selectedLocation,
+      loading: locationLoading,
+      initialized: locationInitialized,
+      error: locationError,
+      selectLocation,
+      clearSelectedLocation,
+   } = useSelectedLocation();
 
    const handleSelectAddress = async (address) => {
       const location = formatSavedAddress(address);
@@ -91,9 +44,9 @@ export default function HomePage() {
       await selectLocation(location);
    };
 
-   const showLocationDialog = !addressesLoading && !addressesError && selectedLocation === null;
+   const showLocationDialog = locationInitialized && !addressesLoading && !addressesError && selectedLocation === null;
 
-   if (addressesLoading) {
+   if (!locationInitialized || addressesLoading) {
       return (
          <main className="mx-auto max-w-7xl px-4 py-10">
             <p className="text-sm text-muted-foreground">Loading your saved addresses...</p>
@@ -101,7 +54,7 @@ export default function HomePage() {
       );
    }
 
-   if (addressesError) {
+   if (addressesError && addresses.length === 0) {
       return (
          <main className="flex min-h-[60vh] items-center justify-center px-4">
             <div className="space-y-4 text-center">
@@ -120,21 +73,30 @@ export default function HomePage() {
          <LocationDialog
             open={showLocationDialog}
             addresses={addresses}
+            hasSavedAddresses={hasSavedAddresses}
+            addressesSearching={addressesSearching}
+            addressesLoadingMore={addressesLoadingMore}
+            hasMoreAddresses={hasMoreAddresses}
             loading={locationLoading}
-            error={locationError}
+            error={locationError || addressesError}
             onSearch={searchAddresses}
+            onLoadMoreAddresses={loadMoreAddresses}
             onSelectAddress={handleSelectAddress}
             onLocationDetected={selectLocation}
          />
 
          {selectedLocation && (
-            <div className="rounded-2xl border bg-card p-6">
+            <section className="rounded-2xl border bg-card p-6">
                <p className="font-medium text-foreground">Nearby restaurants fetched successfully.</p>
 
                <p className="mt-2 text-sm capitalize text-muted-foreground">
                   Selected location: {selectedLocation.title}
                </p>
-            </div>
+
+               <Button type="button" variant="outline" onClick={clearSelectedLocation} className="mt-4">
+                  Change location
+               </Button>
+            </section>
          )}
       </main>
    );
