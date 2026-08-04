@@ -1,5 +1,3 @@
-// src/lib/hooks/useInfiniteScroll.js
-
 'use client';
 
 import { useEffect, useRef } from 'react';
@@ -22,11 +20,6 @@ export default function useInfiniteScroll({ onLoadMore, hasMore, loading, rootRe
             if (!entry.isIntersecting) {
                return;
             }
-
-            /*
-             * Stop observing immediately so the same visible
-             * loader cannot trigger repeatedly.
-             */
             observer.unobserve(loaderElement);
 
             onLoadMore();

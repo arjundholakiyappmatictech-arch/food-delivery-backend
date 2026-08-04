@@ -1,5 +1,3 @@
-// src/lib/hooks/useAddresses.js
-
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -21,10 +19,6 @@ export default function useAddresses() {
 
    const [error, setError] = useState('');
 
-   /*
-    * React state updates are scheduled.
-    * This ref changes immediately and blocks duplicate requests.
-    */
    const loadingMoreRef = useRef(false);
 
    const fetchAddresses = useCallback(async () => {
@@ -59,9 +53,6 @@ export default function useAddresses() {
 
          const result = await getAddresses(normalizedSearch, 1);
 
-         /*
-          * A new search replaces the previous list.
-          */
          setAddresses(result.addresses);
 
          setSearch(normalizedSearch);
@@ -99,16 +90,8 @@ export default function useAddresses() {
             return [...currentAddresses, ...uniqueNewAddresses];
          });
 
-         /*
-          * Use the backend's current page instead of
-          * trusting only our calculated value.
-          */
          setPage(result.pagination?.current_page ?? nextPage);
 
-         /*
-          * Page 2 should set this to false when it is
-          * the final page.
-          */
          setHasMore(result.pagination?.has_more_pages ?? false);
       } catch (error) {
          const message = error.response?.data?.message || 'Unable to load more addresses.';
