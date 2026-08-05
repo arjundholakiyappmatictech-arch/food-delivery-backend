@@ -8,9 +8,16 @@ import useAddresses from '@/lib/hooks/useAddresses';
 import useSelectedLocation from '@/lib/hooks/useSelectedLocation';
 
 import { formatSavedAddress } from '@/lib/location';
+import { Header } from '@/components/layout/Header';
+import RestaurantContainer from '@/components/restaurants/RestaurantContainer';
+import Search from '@/components/Search';
+import useRestaurants from '@/lib/hooks/useRestaurants';
+import { useState } from 'react';
 
 export default function HomePage() {
    useAuthGuard();
+
+   const [searchText, setSearchText] = useState('');
 
    const {
       addresses,
@@ -35,6 +42,14 @@ export default function HomePage() {
       selectLocation,
       clearSelectedLocation,
    } = useSelectedLocation();
+
+   const {
+      restaurants,
+      loading: restaurantsLoading,
+      searching: restaurantsSearching,
+      error: restaurantsError,
+      retry: retryRestaurants,
+   } = useRestaurants(selectedLocation, searchText);
 
    const handleSelectAddress = async (address) => {
       const location = formatSavedAddress(address);
@@ -68,6 +83,23 @@ export default function HomePage() {
 
    return (
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+         {!showLocationDialog && selectedLocation && (
+            <>
+               <Header />
+
+               <div className="h-[75px] max-[610px]:h-[60px]" />
+            </>
+         )}
+         <Search searchText={searchText} setSearchText={setSearchText} />
+
+         <RestaurantContainer
+            restaurantsList={restaurants}
+            loading={restaurantsLoading}
+            searching={restaurantsSearching}
+            error={restaurantsError}
+            onRetry={retryRestaurants}
+         />
+
          <LocationDialog
             open={showLocationDialog}
             addresses={addresses}
@@ -82,23 +114,6 @@ export default function HomePage() {
             onSelectAddress={handleSelectAddress}
             onLocationDetected={selectLocation}
          />
-
-         {selectedLocation && (
-            <section className="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-               <p className="font-medium text-gray-900">Nearby restaurants fetched successfully.</p>
-
-               <p className="mt-2 text-sm capitalize text-gray-500">Selected location: {selectedLocation.title}</p>
-
-               <Button
-                  type="button"
-                  color="light"
-                  onClick={clearSelectedLocation}
-                  className="mt-4 border border-gray-300"
-               >
-                  Change location
-               </Button>
-            </section>
-         )}
       </main>
    );
 }
