@@ -1,4 +1,4 @@
-import LoginForm from '@/components/shadcn-space/blocks/login-01/LoginForm';
+import LoginForm from "@/components/auth/LoginForm";
 
 const Page = () => {
    return <LoginForm />;

@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/static-components */
+
 import { BriefcaseBusiness, Home, MapPin } from 'lucide-react';
 
 function getAddressIcon(label) {
@@ -27,16 +28,16 @@ export function SavedAddressItem({ address, onSelect, disabled = false }) {
          type="button"
          disabled={disabled}
          onClick={() => onSelect(address)}
-         className="flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+         className="flex min-h-24 w-full items-start gap-3 rounded-xl border border-gray-200 bg-white p-4 text-left transition-colors hover:border-orange-200 hover:bg-orange-50/50 focus:outline-none focus:ring-2 focus:ring-orange-200 disabled:cursor-not-allowed disabled:opacity-50"
       >
          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-orange-50">
             <AddressIcon className="size-5 text-orange-600" />
          </div>
 
-         <div className="min-w-0">
-            <p className="font-medium capitalize">{address.label}</p>
+         <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold capitalize leading-5 text-gray-900">{address.label}</p>
 
-            <p className="mt-1 line-clamp-2 text-sm leading-5 text-muted-foreground">{completeAddress}</p>
+            <p className="mt-1 break-words text-sm leading-5 text-gray-500">{completeAddress}</p>
          </div>
       </button>
    );

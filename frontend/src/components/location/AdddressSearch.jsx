@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Search } from 'lucide-react';
+import { TextInput } from 'flowbite-react';
 
-import { Input } from '@/components/ui/input';
 import { useDebounce } from '@/lib/hooks/useDebounce';
 
 export function AddressSearch({ onSearch }) {
@@ -22,17 +22,13 @@ export function AddressSearch({ onSearch }) {
    }, [debouncedSearch, onSearch]);
 
    return (
-      <div className="relative">
-         <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-
-         <Input
-            type="text"
-            value={search}
-            placeholder="Search saved address..."
-            onChange={(event) => setSearch(event.target.value)}
-            className="pl-10 border"
-            autoComplete="off"
-         />
-      </div>
+      <TextInput
+         type="text"
+         icon={Search}
+         value={search}
+         placeholder="Search saved address..."
+         onChange={(event) => setSearch(event.target.value)}
+         autoComplete="off"
+      />
    );
 }

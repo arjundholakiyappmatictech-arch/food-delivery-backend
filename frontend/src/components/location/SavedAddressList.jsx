@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { LoaderCircle } from 'lucide-react';
+import { Spinner } from 'flowbite-react';
 
 import useInfiniteScroll from '@/lib/hooks/useInfiniteScroll';
 
@@ -29,9 +29,9 @@ export function SavedAddressList({
    if (searching) {
       return (
          <div className="py-8 text-center">
-            <LoaderCircle className="mx-auto size-5 animate-spin text-muted-foreground" />
+            <Spinner size="sm" aria-label="Searching addresses" />
 
-            <p className="mt-2 text-sm text-muted-foreground">Searching addresses...</p>
+            <p className="mt-2 text-sm text-gray-500">Searching addresses...</p>
          </div>
       );
    }
@@ -39,7 +39,7 @@ export function SavedAddressList({
    if (addresses.length === 0) {
       return (
          <div className="py-8 text-center">
-            <p className="text-sm text-muted-foreground">No saved addresses match your search.</p>
+            <p className="text-sm text-gray-500">No saved addresses match your search.</p>
          </div>
       );
    }
@@ -52,7 +52,7 @@ export function SavedAddressList({
                setHasScrolled(true);
             }
          }}
-         className="max-h-52.5 overflow-y-auto pr-1"
+         className="max-h-52 overflow-y-auto pr-1"
       >
          <div className="space-y-4">
             {addresses.map((address) => (
@@ -68,8 +68,8 @@ export function SavedAddressList({
          {hasMore && (
             <div ref={loaderRef} className="flex min-h-12 items-center justify-center">
                {loadingMore && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                     <LoaderCircle className="size-4 animate-spin" />
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                     <Spinner size="sm" aria-label="Loading more addresses" />
                      Loading more addresses...
                   </div>
                )}
@@ -77,7 +77,7 @@ export function SavedAddressList({
          )}
 
          {!hasMore && addresses.length > 2 && (
-            <p className="py-4 text-center text-xs text-muted-foreground">No more addresses.</p>
+            <p className="py-4 text-center text-xs text-gray-500">No more addresses.</p>
          )}
       </div>
    );

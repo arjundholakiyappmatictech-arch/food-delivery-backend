@@ -1,12 +1,14 @@
 'use client';
 
-import { LoaderCircle, LocateFixed } from 'lucide-react';
+import { LocateFixed } from 'lucide-react';
+import { Button, Spinner } from 'flowbite-react';
 
-import { Button } from '@/components/ui/button';
 import { useCurrentLocation } from '@/lib/hooks/useCurrentLocation';
 
 export function CurrentLocationButton({ onLocationDetected, disabled = false }) {
    const { getCurrentLocation, loading, error } = useCurrentLocation();
+
+   const isLoading = loading || disabled;
 
    const handleClick = async () => {
       try {
@@ -22,26 +24,25 @@ export function CurrentLocationButton({ onLocationDetected, disabled = false }) 
       <div className="space-y-2">
          <Button
             type="button"
-            size="lg"
-            disabled={loading || disabled}
+            disabled={isLoading}
             onClick={handleClick}
-            className="h-11 w-full rounded-xl bg-orange-600 text-white hover:bg-orange-700"
+            className="w-full rounded-xl bg-orange-600 enabled:hover:bg-orange-700 focus:ring-orange-300"
          >
-            {loading || disabled ? (
+            {isLoading ? (
                <>
-                  <LoaderCircle className="size-4 animate-spin" />
+                  <Spinner size="sm" aria-label="Detecting location" className="mr-2" />
                   Detecting location...
                </>
             ) : (
                <>
-                  <LocateFixed className="size-4" />
+                  <LocateFixed className="mr-2 size-4" />
                   Use current location
                </>
             )}
          </Button>
 
          {error && (
-            <p role="alert" className="text-center text-sm text-destructive">
+            <p role="alert" className="text-center text-sm text-red-600">
                {error}
             </p>
          )}

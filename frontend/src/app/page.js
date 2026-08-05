@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { Button } from 'flowbite-react';
 import { LocationDialog } from '@/components/location/LocationDialog';
 
 import useAuthGuard from '@/lib/hooks/useAuth';
@@ -47,7 +47,7 @@ export default function HomePage() {
    if (!locationInitialized || addressesLoading) {
       return (
          <main className="mx-auto max-w-7xl px-4 py-10">
-            <p className="text-sm text-muted-foreground">Loading your saved addresses...</p>
+            <p className="text-sm text-gray-500">Loading your saved addresses...</p>
          </main>
       );
    }
@@ -56,9 +56,9 @@ export default function HomePage() {
       return (
          <main className="flex min-h-[60vh] items-center justify-center px-4">
             <div className="space-y-4 text-center">
-               <p className="text-sm text-destructive">{addressesError}</p>
+               <p className="text-sm text-red-600">{addressesError}</p>
 
-               <Button type="button" variant="outline" onClick={fetchAddresses}>
+               <Button type="button" color="light" onClick={fetchAddresses} className="mx-auto border border-gray-300">
                   Try again
                </Button>
             </div>
@@ -84,14 +84,17 @@ export default function HomePage() {
          />
 
          {selectedLocation && (
-            <section className="rounded-2xl border bg-card p-6">
-               <p className="font-medium text-foreground">Nearby restaurants fetched successfully.</p>
+            <section className="mt-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+               <p className="font-medium text-gray-900">Nearby restaurants fetched successfully.</p>
 
-               <p className="mt-2 text-sm capitalize text-muted-foreground">
-                  Selected location: {selectedLocation.title}
-               </p>
+               <p className="mt-2 text-sm capitalize text-gray-500">Selected location: {selectedLocation.title}</p>
 
-               <Button type="button" variant="outline" onClick={clearSelectedLocation} className="mt-4">
+               <Button
+                  type="button"
+                  color="light"
+                  onClick={clearSelectedLocation}
+                  className="mt-4 border border-gray-300"
+               >
                   Change location
                </Button>
             </section>
