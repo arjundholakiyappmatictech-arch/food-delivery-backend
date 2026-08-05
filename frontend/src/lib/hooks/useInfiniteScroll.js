@@ -9,6 +9,7 @@ export default function useInfiniteScroll({ onLoadMore, hasMore, loading, rootRe
       const loaderElement = loaderRef.current;
       const scrollContainer = rootRef.current;
 
+      // stop when observation is unnecessary
       if (!loaderElement || !scrollContainer || !hasMore || loading) {
          return;
       }

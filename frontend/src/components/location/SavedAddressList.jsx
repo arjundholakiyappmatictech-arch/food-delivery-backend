@@ -65,6 +65,7 @@ export function SavedAddressList({
             ))}
          </div>
 
+         {/* loader marker  */}
          {hasMore && (
             <div ref={loaderRef} className="flex min-h-12 items-center justify-center">
                {loadingMore && (
