@@ -6,11 +6,14 @@ use App\Exceptions\Restaurant\DuplicateRestaurantException;
 use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class RestaurantService
 {
@@ -24,18 +27,24 @@ class RestaurantService
 
         $this->duplicateRestaurantCheck($data);
 
-        $res = Restaurant::create([
-            'restaurant_owner_id' => $user->id,
-            'name' => $data['name'],
-            'address' => $data['address'],
-            'status' => $data['status'] ?? 'closed',
-            'latitude' => $data['latitude'],
-            'longitude' => $data['longitude'],
-        ]);
+        return DB::transaction(function () use ($data, $user) {
+            $restaurant = Restaurant::create([
+                'restaurant_owner_id' => $user->id,
+                'name' => $data['name'],
+                'address' => $data['address'],
+                'status' => $data['status'] ?? 'closed',
+                'latitude' => $data['latitude'],
+                'longitude' => $data['longitude'],
+            ]);
 
-        /* dd($res); */
+            $imagePath = $data['image']->store("restaurants/{$restaurant->id}", 'public');
 
-        return $res;
+            $restaurant->update([
+                'image_path' => $imagePath,
+            ]);
+
+            return $restaurant->refresh();
+        });
     }
 
     public function getMenus(Restaurant $restaurant): Collection
@@ -83,7 +92,7 @@ class RestaurantService
 
         $include = $data['include'] ?? null;
         $search = $data['q'] ?? null;
-        $perPage = $data['per_page'] ?? 2;
+        $perPage = $data['per_page'] ?? 10;
 
         $operator = config('database.default') === 'pgsql' ? 'ilike' : 'like';
 

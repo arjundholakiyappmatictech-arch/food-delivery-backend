@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class RestaurantResource extends JsonResource
 {
@@ -12,6 +13,7 @@ class RestaurantResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'image_url' => $this->image_path ? Storage::disk('public')->url($this->image_path) : null,
             'address' => $this->address,
             'status' => $this->status,
             'latitude' => $this->latitude,

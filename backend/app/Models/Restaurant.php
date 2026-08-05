@@ -10,7 +10,7 @@ class Restaurant extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['restaurant_owner_id', 'name', 'address', 'status', 'latitude', 'longitude'];
+    protected $fillable = ['restaurant_owner_id', 'name', 'image_path', 'address', 'status', 'latitude', 'longitude'];
 
     public function menus(): BelongsToMany
     {

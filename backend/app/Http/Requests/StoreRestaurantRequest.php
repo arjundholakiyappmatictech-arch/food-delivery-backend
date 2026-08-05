@@ -24,6 +24,7 @@ class StoreRestaurantRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'address' => 'required|string|max:255',
             'status' => 'required|in:open,closed',
             'latitude' => 'required|numeric|between:-90,90',
