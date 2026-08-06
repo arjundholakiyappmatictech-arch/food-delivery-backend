@@ -63,6 +63,15 @@ export default function RestaurantDetails({ restaurantId }) {
                </h1>
 
                <h4 className="mt-[10px] text-[14px] font-[500] text-[#02060CEB] max-[600px]:mt-[5px] max-[600px]:text-[12px]">
+                  Status:{' '}
+                  {selectedRestaurant.status === 'open' ? (
+                     <span className="text-green-600">Open</span>
+                  ) : (
+                     <span className="text-red-600">Closed</span>
+                  )}
+               </h4>
+
+               <h4 className="mt-[10px] text-[14px] font-[500] text-[#02060CEB] max-[600px]:mt-[5px] max-[600px]:text-[12px]">
                   <span className="text-[#02060CEB]">
                      {menus.length
                         ? `${menus
@@ -74,20 +83,8 @@ export default function RestaurantDetails({ restaurantId }) {
                </h4>
 
                <h4 className="mt-[10px] text-[14px] font-[500] text-[#02060CEB] max-[600px]:mt-[5px] max-[600px]:text-[12px]">
-                  Outlet: <span className="text-[#02060C99]">{selectedRestaurant.address}</span>
-               </h4>
-
-               <h4 className="mt-[10px] text-[14px] font-[500] text-[#02060CEB] max-[600px]:mt-[5px] max-[600px]:text-[12px]">
-                  Status:{' '}
-                  {selectedRestaurant.status === 'open' ? (
-                     <span className="text-green-600">Open</span>
-                  ) : (
-                     <span className="text-red-600">Closed</span>
-                  )}
-               </h4>
-
-               <h4 className="mt-[10px] text-[14px] font-[500] text-[#02060CEB] max-[600px]:mt-[5px] max-[600px]:text-[12px]">
-                  Distance: <span className="text-[#02060C99]">{selectedRestaurant.distance}</span>
+                  <span className="text-[#02060C99]">{selectedRestaurant.distance}</span> • {''}
+                  <span className="text-[#02060C99]">{selectedRestaurant.address}</span>
                </h4>
             </div>
          </div>

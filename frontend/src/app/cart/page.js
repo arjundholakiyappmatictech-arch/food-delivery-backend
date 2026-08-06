@@ -1,5 +1,10 @@
+import CartDetails from '@/components/cart/CartDetails';
 import React from 'react';
 
 export default function CartPage() {
-   return <div>Cart</div>;
+   return (
+      <div>
+         <CartDetails />
+      </div>
+   );
 }

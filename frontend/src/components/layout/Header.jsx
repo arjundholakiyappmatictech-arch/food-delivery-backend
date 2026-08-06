@@ -9,7 +9,7 @@ import { UserProfile } from './UserProfile';
 export default function Header() {
    const pathname = usePathname();
 
-   const cartCount = 0;
+   let cartCount = 0;
 
    const navItemStyles =
       'text-[20px] font-[500] mx-[30px] my-auto max-[900px]:text-[16px] max-[900px]:mx-[15px] max-[480px]:mx-[10px] max-[425px]:mx-[5px]';
