@@ -1,8 +1,27 @@
 'use client';
 
+import useInfiniteScroll from '@/lib/hooks/useInfiniteScroll';
 import RestaurantCard from './RestaurantCard';
+import { useRef } from 'react';
 
-export default function RestaurantContainer({ restaurantsList, loading, searching, error, onRetry }) {
+export default function RestaurantContainer({
+   restaurantsList,
+   loading,
+   loadingMore,
+   hasMore,
+   loadMore,
+   searching,
+   error,
+   onRetry,
+}) {
+   const rootRef = useRef(null);
+
+   const loaderRef = useInfiniteScroll({
+      hasMore,
+      loading: loadingMore,
+      onLoadMore: loadMore,
+   });
+
    if (loading) {
       return <p className="py-10 text-center text-gray-500">Loading nearby restaurants...</p>;
    }
@@ -28,20 +47,29 @@ export default function RestaurantContainer({ restaurantsList, loading, searchin
          {searching && <p className="text-center text-sm text-gray-500">Searching...</p>}
 
          <div
-            className="restaurant-container my-[20px]
-      grid
-      grid-cols-4
-      gap-[20px]
+            className="
+            restaurant-container
+            my-[20px]
+            grid
+            grid-cols-4
+            gap-[20px]
 
-      max-[1100px]:grid-cols-3
-      max-[800px]:grid-cols-2
-      max-[560px]:grid-cols-2
-      max-[610px]:my-[5px]"
+            max-[1100px]:grid-cols-3
+            max-[800px]:grid-cols-2
+            max-[560px]:grid-cols-2
+            max-[610px]:my-[5px]
+         "
          >
             {restaurantsList.map((restaurant) => (
                <RestaurantCard key={restaurant.id} restaurant={restaurant} />
             ))}
          </div>
+
+         {hasMore && (
+            <div ref={loaderRef} className="flex h-16 items-center justify-center">
+               {loadingMore && <p className="text-sm text-gray-500">Loading...</p>}
+            </div>
+         )}
       </>
    );
 }

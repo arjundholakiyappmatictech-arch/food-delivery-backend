@@ -50,7 +50,7 @@ export function UserProfile() {
          {isProfileOpen && (
             <div
                ref={profileRef}
-               className="absolute top-[85px] right-[10px] z-10 bg-[#F0F8FF] border border-[#E9E9E9] rounded-[0.2cm] max-[610px]:top-[70px]"
+               className="absolute top-[85px] right-[10px] z-10 bg-white border border-[#E9E9E9] rounded-[0.2cm] max-[610px]:top-[70px]"
             >
                <div className="w-[400px] h-[300px] flex flex-col items-center justify-center max-[600px]:w-[300px] max-[600px]:h-[220px]">
                   <img
@@ -68,7 +68,7 @@ export function UserProfile() {
                      Email: <span>{user.email}</span>
                   </p>
 
-                  <button className="mt-3 rounded-[0.2cm] bg-[#FC8019] px-6 py-2 text-white font-[600] hover:opacity-90 transition">
+                  <button className="mt-3 rounded-[0.2cm] bg-white px-6 py-2 text-black font-[600] hover:opacity-90 transition border-2">
                      Logout
                   </button>
                </div>

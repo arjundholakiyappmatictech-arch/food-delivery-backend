@@ -7,7 +7,7 @@ export default function useInfiniteScroll({ onLoadMore, hasMore, loading, rootRe
 
    useEffect(() => {
       const loaderElement = loaderRef.current;
-      const scrollContainer = rootRef.current;
+      const scrollContainer = rootRef?.current ?? null;
 
       // stop when observation is unnecessary
       if (!loaderElement || !scrollContainer || !hasMore || loading) {

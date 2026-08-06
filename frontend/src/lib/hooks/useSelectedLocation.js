@@ -1,8 +1,7 @@
 'use client';
 
+import getNearbyRestaurants from '@/services/restaurantService';
 import { useCallback, useEffect, useState } from 'react';
-
-import { getNearbyRestaurants } from '@/services/restaurantService';
 
 const STORAGE_KEY = 'selectedLocation';
 

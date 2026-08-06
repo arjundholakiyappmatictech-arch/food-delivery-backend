@@ -77,3 +77,17 @@ export const SHOPPING_BAG_SVG = (
 );
 
 export const SEARCH_ICON_URL = 'https://img.icons8.com/ios/100/search--v1.png';
+
+export const MENU_ICON_URL = 'https://img.icons8.com/ios/100/restaurant-menu.png';
+
+export const UP_ARROW_SVG = (
+   <svg width="24" height="24">
+      <path d="m12 6.586-8.707 8.707 1.414 1.414L12 9.414l7.293 7.293 1.414-1.414L12 6.586z" />
+   </svg>
+);
+
+export const DOWN_ARROW_SVG = (
+   <svg width="24" height="24">
+      <path d="M12 17.414 3.293 8.707l1.414-1.414L12 14.586l7.293-7.293 1.414 1.414L12 17.414z" />
+   </svg>
+);

@@ -44,13 +44,10 @@ export default function HomePage() {
       selectLocation,
    } = useSelectedLocation();
 
-   const {
-      restaurants,
-      loading: restaurantsLoading,
-      searching: restaurantsSearching,
-      error: restaurantsError,
-      retry: retryRestaurants,
-   } = useRestaurants(selectedLocation, searchText);
+   const { restaurants, loading, loadingMore, searching, hasMore, error, retry, loadMore } = useRestaurants(
+      selectedLocation,
+      searchText,
+   );
 
    const handleSelectAddress = async (address) => {
       const location = formatSavedAddress(address);
@@ -95,10 +92,13 @@ export default function HomePage() {
 
             <RestaurantContainer
                restaurantsList={restaurants}
-               loading={restaurantsLoading}
-               searching={restaurantsSearching}
-               error={restaurantsError}
-               onRetry={retryRestaurants}
+               loading={loading}
+               loadingMore={loadingMore}
+               hasMore={hasMore}
+               loadMore={loadMore}
+               searching={searching}
+               error={error}
+               onRetry={retry}
             />
          </main>
 
