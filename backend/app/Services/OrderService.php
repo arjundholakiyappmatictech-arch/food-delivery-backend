@@ -105,7 +105,7 @@ class OrderService
     public function generateInvoice(Order $order): array
     {
         $this->authorizeOrderOwner($order);
-
+ 
         $order->load(['address', 'items.menuItem', 'payment', 'user', 'invoice']);
 
         return [

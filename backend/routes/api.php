@@ -41,6 +41,10 @@ Route::post('menus/store', [MenuController::class, 'store'])->middleware('auth:s
 // menuItem routes
 Route::post('menu-items/store', [MenuItemController::class, 'store'])->middleware('auth:sanctum');
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('restaurants/{restaurant}/menus/bulk', [MenuController::class, 'bulkStore']);
+});
+
 // cart routes
 Route::middleware('auth:sanctum')
     ->controller(CartController::class)

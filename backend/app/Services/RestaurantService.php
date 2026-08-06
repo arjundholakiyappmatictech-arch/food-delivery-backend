@@ -115,7 +115,7 @@ class RestaurantService
         SQL;
 
         $restaurants = Restaurant::query()
-            ->select(['id', 'name', 'address', 'status', 'latitude', 'longitude'])
+            ->select(['id', 'name', 'address', 'status', 'latitude', 'longitude', 'image_path'])
             ->selectRaw($distanceSql, [$latitude, $longitude, $latitude])
             ->when($include === 'menus', function ($query) {
                 $query->with('menus');
