@@ -1,3 +1,5 @@
+'use client';
+
 import RestaurantCard from './RestaurantCard';
 
 export default function RestaurantContainer({ restaurantsList, loading, searching, error, onRetry }) {
@@ -11,7 +13,7 @@ export default function RestaurantContainer({ restaurantsList, loading, searchin
             <p className="text-red-600">{error}</p>
 
             <button type="button" onClick={onRetry} className="mt-3 rounded border px-4 py-2">
-               Try again
+               Try Again
             </button>
          </div>
       );
@@ -26,25 +28,15 @@ export default function RestaurantContainer({ restaurantsList, loading, searchin
          {searching && <p className="text-center text-sm text-gray-500">Searching...</p>}
 
          <div
-            className="
-               my-[20px]
-               grid
-               grid-cols-3
-               gap-x-[20px]
-               gap-y-[35px]
+            className="restaurant-container my-[20px]
+      grid
+      grid-cols-4
+      gap-[20px]
 
-               max-[1000px]:grid-cols-3
-               max-[1000px]:gap-x-[15px]
-
-               max-[800px]:grid-cols-2
-               max-[800px]:gap-x-[15px]
-
-               max-[560px]:grid-cols-2
-               max-[560px]:gap-x-[10px]
-               max-[560px]:gap-y-[25px]
-
-               max-[610px]:my-[5px]
-            "
+      max-[1100px]:grid-cols-3
+      max-[800px]:grid-cols-2
+      max-[560px]:grid-cols-2
+      max-[610px]:my-[5px]"
          >
             {restaurantsList.map((restaurant) => (
                <RestaurantCard key={restaurant.id} restaurant={restaurant} />
