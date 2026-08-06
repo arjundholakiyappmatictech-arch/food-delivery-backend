@@ -6,6 +6,7 @@ use App\Exceptions\Restaurant\DuplicateRestaurantException;
 use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
@@ -17,7 +18,7 @@ use Throwable;
 
 class RestaurantService
 {
-    private const DUPLICATE_RADIUS_METERS = 10;
+    private const DUPLICATE_RADIUS_METERS = 8;
 
     public function store(array $data): Restaurant
     {
@@ -66,7 +67,7 @@ class RestaurantService
             ->get();
     }
 
-    public function nearby(array $data): Paginator
+    public function nearby(array $data): LengthAwarePaginator
     {
         /** @var User $user */
         $user = Auth::user();
@@ -92,7 +93,7 @@ class RestaurantService
 
         $include = $data['include'] ?? null;
         $search = $data['q'] ?? null;
-        $perPage = $data['per_page'] ?? 10;
+        $perPage = $data['per_page'] ?? 8;
 
         $operator = config('database.default') === 'pgsql' ? 'ilike' : 'like';
 
@@ -113,6 +114,9 @@ class RestaurantService
                 )
             ) AS distance
         SQL;
+
+        $keywords = preg_split('/\s+/', trim($search));
+        $radius = (float) ($data['radius'] ?? 500);
 
         $restaurants = Restaurant::query()
             ->select(['id', 'name', 'address', 'status', 'latitude', 'longitude', 'image_path'])
@@ -139,15 +143,46 @@ class RestaurantService
                     },
                 ]);
             })
-            ->when($search, function ($query) use ($search, $operator) {
-                $query->whereHas('menus.menuItems', function ($itemQuery) use ($search, $operator) {
-                    $itemQuery->where('name', $operator, "%{$search}%");
-                });
+            ->when($search, function ($query) use ($keywords, $operator) {
+                foreach ($keywords as $keyword) {
+                    $query->where(function ($query) use ($keyword, $operator) {
+                        $query
+                            ->where('name', $operator, "%{$keyword}%")
+                            ->orWhere('address', $operator, "%{$keyword}%")
+                            ->orWhereHas('menus', function ($menuQuery) use ($keyword, $operator) {
+                                $menuQuery->where('name', $operator, "%{$keyword}%");
+                            })
+                            ->orWhereHas('menus.menuItems', function ($itemQuery) use ($keyword, $operator) {
+                                $itemQuery->where('name', $operator, "%{$keyword}%");
+                            });
+                    });
+                }
             })
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
+            ->whereRaw(
+                <<<'SQL'
+                (
+                    6371 * acos(
+                        LEAST(
+                            1,
+                            GREATEST(
+                                -1,
+                                cos(radians(?))
+                                * cos(radians(latitude))
+                                * cos(radians(longitude) - radians(?))
+                                + sin(radians(?))
+                                * sin(radians(latitude))
+                            )
+                        )
+                    )
+                ) <= ?
+                SQL
+                ,
+                [$latitude, $longitude, $latitude, $radius],
+            )
             ->orderBy('distance')
-            ->simplePaginate($perPage)
+            ->paginate($perPage)
             ->withQueryString();
 
         $restaurants->setCollection(

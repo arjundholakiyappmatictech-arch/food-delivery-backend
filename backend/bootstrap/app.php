@@ -103,7 +103,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         // 500 - internal server error
-                $exceptions->render(function (QueryException $e, $request) {
+/*                 $exceptions->render(function (QueryException $e, $request) {
             return response()->json(
                 [
                     'status' => false,
@@ -112,6 +112,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 ],
                 500,
             );
-        });
+        }); */
     })
     ->create();

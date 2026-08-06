@@ -39,42 +39,6 @@ class MenuService
         });
     }
 
-    public function bulkStore(Restaurant $restaurant, array $menusData): Collection
-    {
-        $user = Auth::user();
-
-        if ($restaurant->restaurant_owner_id !== $user->id) {
-            throw new AuthorizationException('You can only add menus to your own restaurant.');
-        }
-
-        return DB::transaction(function () use ($restaurant, $menusData) {
-            $createdMenus = new Collection();
-
-            foreach ($menusData as $menuData) {
-                // Create menu
-                $menu = $restaurant->menus()->create([
-                    'name' => $menuData['name'],
-                ]);
-
-                // Create menu items
-                foreach ($menuData['items'] as $itemData) {
-                    $imagePath = $itemData['image']->store('menu-items', 'public');
-
-                    $menu->menuItems()->create([
-                        'name' => $itemData['name'],
-                        'price' => $itemData['price'],
-                        'availability' => $itemData['availability'] ?? true,
-                        'image' => $imagePath,
-                    ]);
-                }
-
-                $createdMenus->push($menu->load('menuItems'));
-            }
-
-            return $createdMenus;
-        });
-    }
-
     private function authorizeRestaurantOwner(Restaurant $restaurant): void
     {
         $user = Auth::user();
