@@ -1,14 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import { useState } from 'react';
+import useCartStore from '@/lib/store/cartStore';
 
 export default function MenuItemCard({ item, isLast }) {
-   const [quantity, setQuantity] = useState(0);
+   const { cartItems, addItem, increaseQuantity, decreaseQuantity } = useCartStore();
 
-   const handleAdd = () => setQuantity((prev) => prev + 1);
+   const cartItem = cartItems.find((cart) => cart.menu_item.id === item.id);
 
-   const handleRemove = () => setQuantity((prev) => Math.max(prev - 1, 0));
+   const quantity = cartItem?.quantity ?? 0;
 
    const addToCartBtnStyles =
       'absolute bottom-[-10px] left-1/2 flex w-[110px] -translate-x-1/2 rounded-[0.2cm] bg-white text-[18px] font-[700] text-[#1BA672] shadow-[0px_4px_10px_#E9E9E9]';
@@ -50,20 +50,20 @@ export default function MenuItemCard({ item, isLast }) {
                   </div>
                ) : quantity === 0 ? (
                   <button
-                     onClick={handleAdd}
+                     onClick={() => addItem(item.id)}
                      className={`${addToCartBtnStyles} justify-center py-2 transition hover:bg-[#D9DADB]`}
                   >
                      ADD
                   </button>
                ) : (
                   <div className={`${addToCartBtnStyles} justify-between`}>
-                     <button onClick={handleRemove} className="px-4 py-2 hover:bg-[#D9DADB]">
+                     <button onClick={() => decreaseQuantity(cartItem)} className="px-4 py-2 hover:bg-[#D9DADB]">
                         −
                      </button>
 
                      <span className="py-2">{quantity}</span>
 
-                     <button onClick={handleAdd} className="px-4 py-2 hover:bg-[#D9DADB]">
+                     <button onClick={() => increaseQuantity(cartItem)} className="px-4 py-2 hover:bg-[#D9DADB]">
                         +
                      </button>
                   </div>

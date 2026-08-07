@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import Link from 'next/link';
@@ -5,11 +6,20 @@ import { usePathname } from 'next/navigation';
 
 import { CART_SVG, HOME_SVG, SHOPPING_BAG_SVG } from '@/assets/icons';
 import { UserProfile } from './UserProfile';
+import useCartStore from '@/lib/store/cartStore';
+import { useEffect } from 'react';
 
 export default function Header() {
    const pathname = usePathname();
 
-   let cartCount = 0;
+   const cartItems = useCartStore((state) => state.cartItems);
+   const fetchCart = useCartStore((state) => state.fetchCart);
+
+   useEffect(() => {
+      fetchCart();
+   }, [fetchCart]);
+
+   const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
    const navItemStyles =
       'text-[20px] font-[500] mx-[30px] my-auto max-[900px]:text-[16px] max-[900px]:mx-[15px] max-[480px]:mx-[10px] max-[425px]:mx-[5px]';
@@ -29,8 +39,7 @@ export default function Header() {
                <img
                   src="/assets/logo.png"
                   alt="Tomato"
-                  className="h-[70px] w-auto object-contain transition-transform duration-200 hover:scale-105"
-                  draggable="false"
+                  className="h-[70px] w-auto object-contain transition-transform duration-200"
                />
             </Link>
          </div>

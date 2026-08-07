@@ -1,9 +1,10 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Package, MapPin, Star, LogOut, ChevronRight } from 'lucide-react';
-import { SHOPPING_BAG_SVG } from '@/assets/icons';
+import { ChevronRight } from 'lucide-react';
+import { SHOPPING_BAG_SVG2, LOCATION_SVG, REVIEW_SVG, LOGOUT_SVG } from '@/assets/icons';
 
 export function UserProfile() {
    const router = useRouter();
@@ -45,17 +46,17 @@ export function UserProfile() {
          {
             title: 'Orders',
             href: '/orders',
-            icon: SHOPPING_BAG_SVG,
+            icon: SHOPPING_BAG_SVG2,
          },
          {
             title: 'Addresses',
             href: '/addresses',
-            icon: <MapPin size={17} strokeWidth={2} />,
+            icon: LOCATION_SVG,
          },
          {
             title: 'Reviews',
             href: '/reviews',
-            icon: <Star size={17} strokeWidth={2} />,
+            icon: REVIEW_SVG,
          },
       ],
       [],
@@ -112,8 +113,8 @@ export function UserProfile() {
                      {menuItems.map(({ title, href, icon }) => (
                         <button key={title} onClick={() => handleNavigate(href)} className={menuItemClass}>
                            <div className="flex items-center gap-3">
-                              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F8F8F8] text-[#3D4152]">
-                                 {icon}
+                              <div className="flex h-6 w-8 items-center justify-center rounded-lg bg-[#F8F8F8] text-[#3D4152]">
+                                 <div className="h-4 w-4">{icon}</div>
                               </div>
 
                               <span className="text-[15px] font-medium">{title}</span>
@@ -130,8 +131,8 @@ export function UserProfile() {
                      onClick={handleLogout}
                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[#E53935] transition-all duration-150 hover:bg-[#FFF4F4]"
                   >
-                     <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FFF4F4]">
-                        <LogOut size={15} strokeWidth={2} />
+                     <div className="flex h-5 w-7 items-center justify-center rounded-lg bg-[#FFF4F4]">
+                        {LOGOUT_SVG}
                      </div>
 
                      <span className="text-[14px] font-medium">Logout</span>

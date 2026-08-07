@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDebounce } from './useDebounce';
 import getNearbyRestaurants from '@/services/restaurantService';
 
-export default function useRestaurants(selectedLocation, searchText) {
+export default function useRestaurants(selectedLocation, restaurantFilters) {
    const [restaurants, setRestaurants] = useState([]);
 
    const [page, setPage] = useState(1);
@@ -20,7 +20,7 @@ export default function useRestaurants(selectedLocation, searchText) {
 
    const [error, setError] = useState('');
 
-   const debouncedSearch = useDebounce(searchText, 500);
+   const debouncedSearch = useDebounce(restaurantFilters.searchText, 500);
 
    const fetchRestaurants = useCallback(
       async (signal, currentPage = 1) => {
@@ -45,6 +45,8 @@ export default function useRestaurants(selectedLocation, searchText) {
             const response = await getNearbyRestaurants({
                addressId: selectedLocation.addressId,
                query: debouncedSearch,
+               sortBy: restaurantFilters.sortBy,
+               openNow: restaurantFilters.openNow,
                page: currentPage,
                signal,
             });
@@ -74,7 +76,7 @@ export default function useRestaurants(selectedLocation, searchText) {
             setLoadingMore(false);
          }
       },
-      [selectedLocation?.addressId, debouncedSearch],
+      [selectedLocation?.addressId, debouncedSearch, restaurantFilters.sortBy, restaurantFilters.openNow],
    );
 
    useEffect(() => {

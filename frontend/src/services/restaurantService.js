@@ -1,14 +1,29 @@
 import api from '@/lib/api/api';
 
-export default async function getNearbyRestaurants({ addressId, query = '', page = 1, signal }) {
+export default async function getNearbyRestaurants({
+   addressId,
+   query = '',
+   sortBy = '',
+   openNow = false,
+   page = 1,
+   signal,
+}) {
    const params = {
       address_id: addressId,
-      include: 'menus.menuItems',
+      include: 'menus',
       page,
    };
 
    if (query.trim()) {
       params.q = query.trim();
+   }
+
+   if (sortBy) {
+      params.sort_by = sortBy;
+   }
+
+   if (openNow) {
+      params.open_now = 1;
    }
 
    const response = await api.get('/restaurants/nearby', {
