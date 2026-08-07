@@ -24,12 +24,15 @@ export default function Header() {
       <div className="header fixed top-0 left-0 right-0 h-[75px] bg-[#FFF] z-50 flex justify-between shadow-[0_15px_40px_-20px_#282C3F26] max-[610px]:h-[60px]">
          {/* Logo */}
 
-         <div className="app-logo w-2/15 flex h-full">
-            <div className="mx-auto">
-               <Link href="/">
-                  <img src="/assets/tb.png" alt="logo" className="h-full object-contain" draggable="false" />
-               </Link>
-            </div>
+         <div className="app-logo w-2/14 flex items-center justify-center">
+            <Link href="/" className="flex items-center">
+               <img
+                  src="/assets/logo.png"
+                  alt="Tomato"
+                  className="h-[70px] w-auto object-contain transition-transform duration-200 hover:scale-105"
+                  draggable="false"
+               />
+            </Link>
          </div>
 
          {/* Navigation */}
