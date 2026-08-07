@@ -7,14 +7,10 @@ use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
-use Throwable;
 
 class RestaurantService
 {
@@ -93,6 +89,8 @@ class RestaurantService
 
         $include = $data['include'] ?? null;
         $search = $data['q'] ?? null;
+        $sortBy = $data['sort_by'] ?? null;
+        $openNow = filter_var($data['open_now'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $perPage = $data['per_page'] ?? 8;
 
         $operator = config('database.default') === 'pgsql' ? 'ilike' : 'like';
@@ -115,7 +113,7 @@ class RestaurantService
             ) AS distance
         SQL;
 
-        $keywords = preg_split('/\s+/', trim($search));
+        $keywords = $search ? array_filter(preg_split('/\s+/', trim($search))) : [];
         $radius = (float) ($data['radius'] ?? 500);
 
         $restaurants = Restaurant::query()
@@ -143,15 +141,17 @@ class RestaurantService
                     },
                 ]);
             })
-            ->when($search, function ($query) use ($keywords, $operator) {
+            ->when(!empty($keywords), function ($query) use ($keywords, $operator) {
                 foreach ($keywords as $keyword) {
                     $query->where(function ($query) use ($keyword, $operator) {
                         $query
-                            ->where('name', $operator, "%{$keyword}%")
-                            ->orWhere('address', $operator, "%{$keyword}%")
+
+                            ->where('restaurants.name', $operator, "%{$keyword}%")
+                            ->orWhere('restaurants.address', $operator, "%{$keyword}%")
                             ->orWhereHas('menus', function ($menuQuery) use ($keyword, $operator) {
                                 $menuQuery->where('name', $operator, "%{$keyword}%");
                             })
+
                             ->orWhereHas('menus.menuItems', function ($itemQuery) use ($keyword, $operator) {
                                 $itemQuery->where('name', $operator, "%{$keyword}%");
                             });
@@ -160,6 +160,9 @@ class RestaurantService
             })
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
+            ->when($openNow, function ($query) {
+                $query->where('status', 'open');
+            })
             ->whereRaw(
                 <<<'SQL'
                 (
@@ -181,7 +184,15 @@ class RestaurantService
                 ,
                 [$latitude, $longitude, $latitude, $radius],
             )
-            ->orderBy('distance')
+            ->when($sortBy === 'nearest', function ($query) {
+                $query->orderBy('distance');
+            })
+            ->when($sortBy === 'a-z', function ($query) {
+                $query->orderBy('name');
+            })
+            ->when($sortBy === 'z-a', function ($query) {
+                $query->orderByDesc('name');
+            })
             ->paginate($perPage)
             ->withQueryString();
 
