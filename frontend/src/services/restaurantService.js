@@ -3,6 +3,9 @@ import api from '@/lib/api/api';
 export default async function getNearbyRestaurants({
    addressId,
    query = '',
+   latitude = null,
+   longitude = null,
+   menuId = null,
    sortBy = '',
    openNow = false,
    page = 1,
@@ -14,8 +17,17 @@ export default async function getNearbyRestaurants({
       page,
    };
 
+   if (latitude != null && longitude != null) {
+      params.latitude = latitude;
+      params.longitude = longitude;
+   }
+
    if (query.trim()) {
       params.q = query.trim();
+   }
+
+   if (menuId) {
+      params.menu_id = Number(menuId);
    }
 
    if (sortBy) {
@@ -25,6 +37,15 @@ export default async function getNearbyRestaurants({
    if (openNow) {
       params.open_now = 1;
    }
+
+   /* await new Promise((resolve, reject) => {
+      const timeout = setTimeout(resolve, 2000);
+
+      signal?.addEventListener('abort', () => {
+         clearTimeout(timeout);
+         reject(new DOMException('Aborted', 'AbortError'));
+      });
+   }); */
 
    const response = await api.get('/restaurants/nearby', {
       params,

@@ -6,7 +6,7 @@ import Header from './Header';
 export default function ConditionalHeader() {
    const pathname = usePathname();
 
-   const hideOn = ['/login', '/register'];
+   const hideOn = ['/login', '/register', '/addresses', '/addresses/add'];
 
    if (hideOn.includes(pathname)) {
       return null;

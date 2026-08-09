@@ -18,6 +18,12 @@ export default function useSelectedLocation() {
          setLoading(true);
          setError('');
 
+         if (!location?.addressId) {
+            if (location?.latitude == null || location?.longitude == null) {
+               throw new Error('Location coordinates are required.');
+            }
+         }
+
          await getNearbyRestaurants(location);
 
          localStorage.setItem(STORAGE_KEY, JSON.stringify(location));

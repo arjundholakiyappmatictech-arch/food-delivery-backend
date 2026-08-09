@@ -1,165 +1,144 @@
 'use client';
+import { useEffect, useState } from 'react';
 
-import { useState } from 'react';
-
-import { Button } from 'flowbite-react';
+import { useRouter } from 'next/navigation';
 
 import Search from '@/components/common/Search';
 import RestaurantContainer from '@/components/restaurants/RestaurantContainer';
-import { LocationDialog } from '@/components/location/LocationDialog';
 
 import useAuthGuard from '@/lib/hooks/useAuth';
-import useAddresses from '@/lib/hooks/useAddresses';
 import useRestaurants from '@/lib/hooks/useRestaurants';
 import useSelectedLocation from '@/lib/hooks/useSelectedLocation';
 
-import { formatSavedAddress } from '@/lib/location';
-import Header from '@/components/layout/Header';
 import FilterButton from '@/components/restaurants/FilterButton';
+import ExploreMenu from '@/components/restaurants/ExploreMenu';
+import HomePageSkeleton from '@/components/skeletons/HomePageSkeleton';
 
 export default function HomePage() {
    useAuthGuard();
+   const router = useRouter();
 
-   const {
-      addresses,
-      hasSavedAddresses,
-      hasMore: hasMoreAddresses,
-
-      loading: addressesLoading,
-      searching: addressesSearching,
-      loadingMore: addressesLoadingMore,
-      error: addressesError,
-
-      fetchAddresses,
-      searchAddresses,
-      loadMoreAddresses,
-   } = useAddresses();
-
-   const {
-      selectedLocation,
-      loading: locationLoading,
-      initialized: locationInitialized,
-      error: locationError,
-      selectLocation,
-   } = useSelectedLocation();
+   const { selectedLocation, initialized: locationInitialized } = useSelectedLocation();
 
    const defaultFilters = {
       searchText: '',
       sortBy: '',
       openNow: false,
+      menuId: null,
    };
 
    const [restaurantFilters, setRestaurantFilters] = useState(defaultFilters);
 
-   const { restaurants, loading, loadingMore, searching, hasMore, error, retry, loadMore } = useRestaurants(
+   const { restaurants, menus, loading, loadingMore, searching, hasMore, error, retry, loadMore } = useRestaurants(
       selectedLocation,
       restaurantFilters,
    );
 
-   const handleSelectAddress = async (address) => {
-      const location = formatSavedAddress(address);
-      await selectLocation(location);
-   };
+   useEffect(() => {
+      if (locationInitialized && selectedLocation === null) {
+         router.replace('/addresses');
+      }
+   }, [locationInitialized, selectedLocation, router]);
 
-   const showLocationDialog = locationInitialized && !addressesLoading && !addressesError && selectedLocation === null;
+   /*
+    * Initial page loading.
+    *
+    * Show the complete skeleton when:
+    *
+    * 1. Location has not been initialized yet
+    * 2. The user has no selected location and is being redirected
+    * 3. We have a selected location and the first restaurant
+    *    request is still loading
+    */
+   const initialLoading =
+      !locationInitialized || selectedLocation === null || (selectedLocation && loading && restaurants.length === 0);
 
-   if (!locationInitialized || addressesLoading) {
-      return (
-         <main className="flex min-h-screen items-center justify-center">
-            <p className="text-gray-500">Loading your saved addresses...</p>
-         </main>
-      );
-   }
-
-   if (addressesError && addresses.length === 0) {
-      return (
-         <main className="flex min-h-[60vh] items-center justify-center">
-            <div className="space-y-4 text-center">
-               <p className="text-red-600">{addressesError}</p>
-
-               <Button type="button" color="light" onClick={fetchAddresses}>
-                  Try Again
-               </Button>
-            </div>
-         </main>
-      );
+   if (initialLoading) {
+      return <HomePageSkeleton />;
    }
 
    return (
-      <>
-         {!showLocationDialog && selectedLocation && (
-            <>
-               <Header />
-               <div className="h-[75px] max-[610px]:h-[60px]" />
-            </>
-         )}
+      <main
+         className="
+               mx-auto
+               mt-2
+               w-full
+               max-w-[1800px]
+               px-[40px]
 
-         <main className="-mt-15 w-full px-[25px] max-[800px]:px-[15px] max-[560px]:px-[8px]">
-            <Search restaurantFilters={restaurantFilters} setRestaurantFilters={setRestaurantFilters} />
-
-            <div className="my-5 flex flex-wrap items-center justify-center gap-2">
-               <FilterButton
-                  filterId="sortBy"
-                  defaultFilters={defaultFilters}
-                  restaurantFilters={restaurantFilters}
-                  setRestaurantFilters={setRestaurantFilters}
-               />
-
-               <FilterButton
-                  filterId="nearest"
-                  defaultFilters={defaultFilters}
-                  restaurantFilters={restaurantFilters}
-                  setRestaurantFilters={setRestaurantFilters}
-               />
-
-               <FilterButton
-                  filterId="openNow"
-                  defaultFilters={defaultFilters}
-                  restaurantFilters={restaurantFilters}
-                  setRestaurantFilters={setRestaurantFilters}
-               />
-
-               <FilterButton
-                  filterId="aToZ"
-                  defaultFilters={defaultFilters}
-                  restaurantFilters={restaurantFilters}
-                  setRestaurantFilters={setRestaurantFilters}
-               />
-
-               <FilterButton
-                  filterId="zToA"
-                  defaultFilters={defaultFilters}
-                  restaurantFilters={restaurantFilters}
-                  setRestaurantFilters={setRestaurantFilters}
-               />
-            </div>
-
-            <RestaurantContainer
-               restaurantsList={restaurants}
-               loading={loading}
-               loadingMore={loadingMore}
-               hasMore={hasMore}
-               loadMore={loadMore}
-               searching={searching}
-               error={error}
-               onRetry={retry}
-            />
-         </main>
-
-         <LocationDialog
-            open={showLocationDialog}
-            addresses={addresses}
-            hasSavedAddresses={hasSavedAddresses}
-            addressesSearching={addressesSearching}
-            addressesLoadingMore={addressesLoadingMore}
-            hasMoreAddresses={hasMoreAddresses}
-            loading={locationLoading}
-            error={locationError || addressesError}
-            onSearch={searchAddresses}
-            onLoadMoreAddresses={loadMoreAddresses}
-            onSelectAddress={handleSelectAddress}
-            onLocationDetected={selectLocation}
+               max-[1200px]:px-[30px]
+               max-[800px]:px-[20px]
+               max-[560px]:px-[10px]
+            "
+      >
+         {/* Search */}
+         <Search
+            selectedLocation={selectedLocation}
+            restaurantFilters={restaurantFilters}
+            setRestaurantFilters={setRestaurantFilters}
          />
-      </>
+
+         {/* Explore Menu */}
+         <ExploreMenu
+            menus={menus}
+            selectedMenuId={restaurantFilters.menuId}
+            setSelectedMenuId={(menuId) => {
+               setRestaurantFilters((prev) => ({
+                  ...prev,
+                  menuId: prev.menuId === menuId ? null : menuId,
+               }));
+            }}
+         />
+
+         {/* Filters */}
+         <div className="my-5 flex flex-wrap items-center justify-center gap-2">
+            <FilterButton
+               filterId="sortBy"
+               defaultFilters={defaultFilters}
+               restaurantFilters={restaurantFilters}
+               setRestaurantFilters={setRestaurantFilters}
+            />
+
+            <FilterButton
+               filterId="nearest"
+               defaultFilters={defaultFilters}
+               restaurantFilters={restaurantFilters}
+               setRestaurantFilters={setRestaurantFilters}
+            />
+
+            <FilterButton
+               filterId="openNow"
+               defaultFilters={defaultFilters}
+               restaurantFilters={restaurantFilters}
+               setRestaurantFilters={setRestaurantFilters}
+            />
+
+            <FilterButton
+               filterId="aToZ"
+               defaultFilters={defaultFilters}
+               restaurantFilters={restaurantFilters}
+               setRestaurantFilters={setRestaurantFilters}
+            />
+
+            <FilterButton
+               filterId="zToA"
+               defaultFilters={defaultFilters}
+               restaurantFilters={restaurantFilters}
+               setRestaurantFilters={setRestaurantFilters}
+            />
+         </div>
+
+         {/* Restaurants */}
+         <RestaurantContainer
+            restaurantsList={restaurants}
+            loading={loading}
+            loadingMore={loadingMore}
+            hasMore={hasMore}
+            loadMore={loadMore}
+            searching={searching}
+            error={error}
+            onRetry={retry}
+         />
+      </main>
    );
 }

@@ -16,6 +16,12 @@ export default function Header() {
    const fetchCart = useCartStore((state) => state.fetchCart);
 
    useEffect(() => {
+      const token = localStorage.getItem('access_token');
+
+      if (!token) {
+         return;
+      }
+
       fetchCart();
    }, [fetchCart]);
 

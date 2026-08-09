@@ -1,16 +1,20 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export default function useInfiniteScroll({ onLoadMore, hasMore, loading, rootRef }) {
    const loaderRef = useRef(null);
+   const [loaderReady, setLoaderReady] = useState(false);
+
+   const setLoaderRef = useCallback((element) => {
+      loaderRef.current = element;
+      setLoaderReady(Boolean(element));
+   }, []);
 
    useEffect(() => {
       const loaderElement = loaderRef.current;
-      const scrollContainer = rootRef?.current ?? null;
 
-      // stop when observation is unnecessary
-      if (!loaderElement || !scrollContainer || !hasMore || loading) {
+      if (!loaderElement || !hasMore || loading) {
          return;
       }
 
@@ -21,13 +25,14 @@ export default function useInfiniteScroll({ onLoadMore, hasMore, loading, rootRe
             if (!entry.isIntersecting) {
                return;
             }
+
             observer.unobserve(loaderElement);
 
             onLoadMore();
          },
          {
-            root: scrollContainer,
-            rootMargin: '40px',
+            root: rootRef?.current ?? null,
+            rootMargin: '600px',
             threshold: 0,
          },
       );
@@ -37,7 +42,7 @@ export default function useInfiniteScroll({ onLoadMore, hasMore, loading, rootRe
       return () => {
          observer.disconnect();
       };
-   }, [onLoadMore, hasMore, loading, rootRef]);
+   }, [onLoadMore, hasMore, loading, rootRef, loaderReady]);
 
-   return loaderRef;
+   return setLoaderRef;
 }

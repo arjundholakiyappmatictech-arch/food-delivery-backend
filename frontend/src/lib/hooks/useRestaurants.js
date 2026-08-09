@@ -10,6 +10,7 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
    const [restaurants, setRestaurants] = useState([]);
 
    const [page, setPage] = useState(1);
+   const [menus, setMenus] = useState([]);
 
    const [loading, setLoading] = useState(false);
    const [loadingMore, setLoadingMore] = useState(false);
@@ -24,7 +25,10 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
 
    const fetchRestaurants = useCallback(
       async (signal, currentPage = 1) => {
-         if (!selectedLocation?.addressId) {
+         const hasAddressId = Boolean(selectedLocation?.addressId);
+         const hasCoordinates = selectedLocation?.latitude != null && selectedLocation?.longitude != null;
+
+         if (!hasAddressId && !hasCoordinates) {
             setRestaurants([]);
             return;
          }
@@ -44,7 +48,10 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
 
             const response = await getNearbyRestaurants({
                addressId: selectedLocation.addressId,
+               latitude: selectedLocation.latitude,
+               longitude: selectedLocation.longitude,
                query: debouncedSearch,
+               menuId: restaurantFilters.menuId,
                sortBy: restaurantFilters.sortBy,
                openNow: restaurantFilters.openNow,
                page: currentPage,
@@ -53,13 +60,28 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
 
             const items = response.data ?? [];
 
+            // logic for independent circle
+            if (currentPage === 1 && !restaurantFilters.menuId && !restaurantFilters.searchText.trim()) {
+               const uniqueMenus = items
+                  .flatMap((restaurant) => restaurant.menus ?? [])
+                  .filter((menu, index, self) => index === self.findIndex((item) => item.id === menu.id));
+
+               setMenus(uniqueMenus);
+            }
+
             if (currentPage === 1) {
                setRestaurants(items);
             } else {
-               setRestaurants((prev) => [...prev, ...items]);
+               setRestaurants((prev) => {
+                  const existingIds = new Set(prev.map((restaurant) => restaurant.id));
+
+                  const newItems = items.filter((restaurant) => !existingIds.has(restaurant.id));
+
+                  return [...prev, ...newItems];
+               });
             }
 
-            setHasMore(response.current_page < response.last_page);
+            setHasMore(response.pagination?.has_more_pages ?? false);
          } catch (error) {
             if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
                return;
@@ -76,7 +98,15 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
             setLoadingMore(false);
          }
       },
-      [selectedLocation?.addressId, debouncedSearch, restaurantFilters.sortBy, restaurantFilters.openNow],
+      [
+         selectedLocation?.addressId,
+         selectedLocation?.latitude,
+         selectedLocation?.longitude,
+         debouncedSearch,
+         restaurantFilters.menuId,
+         restaurantFilters.sortBy,
+         restaurantFilters.openNow,
+      ],
    );
 
    useEffect(() => {
@@ -93,16 +123,14 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
       if (page === 1) return;
 
       fetchRestaurants(undefined, page);
-   }, [page]);
+   }, [page, fetchRestaurants]);
 
    const loadMore = useCallback(() => {
-      console.log('load more');
-
       if (loadingMore || !hasMore) {
          return;
       }
 
-      setPage((prev) => prev + 1);
+      setPage((prevPage) => prevPage + 1);
    }, [loadingMore, hasMore]);
 
    const retry = useCallback(() => {
@@ -113,6 +141,7 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
 
    return {
       restaurants,
+      menus,
       loading,
       loadingMore,
       searching,

@@ -36,8 +36,7 @@ const LoginForm = () => {
 
          toast.success(response.message ?? 'Login successful.');
 
-         router.push('/');
-         router.refresh();
+         router.push('/addresses');
       } catch (error) {
          const apiError = parseApiError(error);
 

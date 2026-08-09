@@ -12,8 +12,11 @@ export default function useRestaurant(restaurantId) {
 
    const fetchMenus = useCallback(
       async (signal) => {
-         if (!restaurantId) {
-            setMenus([]);
+         const token = localStorage.getItem('access_token');
+
+         // Don't make authenticated request without token
+         if (!restaurantId || !token) {
+            setLoading(false);
             return;
          }
 
