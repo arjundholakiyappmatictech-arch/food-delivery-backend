@@ -15,6 +15,7 @@ class NearByRestaurantRequest extends FormRequest
     {
         return [
             'address_id' => ['nullable', 'integer', 'exists:addresses,id'],
+            'menu_id' => ['nullable', 'integer', 'exists:menus,id'],
             'latitude' => ['nullable', 'required_without:address_id', 'numeric', 'between:-90,90'],
 
             'longitude' => ['nullable', 'required_without:address_id', 'numeric', 'between:-180,180'],
