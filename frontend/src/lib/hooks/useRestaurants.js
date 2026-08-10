@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-hooks/preserve-manual-memoization */
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
@@ -120,9 +122,6 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
       ],
    );
 
-   /*
-    * Fetch first page whenever location or filters change.
-    */
    useEffect(() => {
       setPage(1);
 
@@ -133,9 +132,6 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
       return () => controller.abort();
    }, [fetchRestaurants]);
 
-   /*
-    * Fetch subsequent pages.
-    */
    useEffect(() => {
       if (page === 1) {
          return;
@@ -145,9 +141,6 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
       fetchRestaurants(undefined, page);
    }, [page, fetchRestaurants]);
 
-   /*
-    * Load next page.
-    */
    const loadMore = useCallback(() => {
       if (loadingMore || !hasMore) {
          return;
@@ -156,9 +149,6 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
       setPage((prevPage) => prevPage + 1);
    }, [loadingMore, hasMore]);
 
-   /*
-    * Retry first page.
-    */
    const retry = useCallback(() => {
       setPage(1);
 

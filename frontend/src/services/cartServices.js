@@ -23,3 +23,11 @@ export async function updateCart(cartId, data) {
 export async function removeFromCart(cartId) {
    await api.delete(`/carts/${cartId}/destroy`);
 }
+
+export const clearCart = async (signal) => {
+   const response = await api.delete('/cart', {
+      signal,
+   });
+
+   return response.data;
+};

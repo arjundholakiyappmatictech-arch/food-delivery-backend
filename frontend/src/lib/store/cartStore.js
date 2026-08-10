@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { getCart, addToCart, updateCart, removeFromCart } from '@/services/cartServices';
+import { getCart, addToCart, updateCart, removeFromCart, clearCart } from '@/services/cartServices';
 
 const useCartStore = create((set, get) => ({
    cartItems: [],
@@ -12,7 +12,6 @@ const useCartStore = create((set, get) => ({
          cartItems: response.data,
       });
    },
-
    addItem: async (menuItemId) => {
       const response = await addToCart({
          menu_item_id: menuItemId,

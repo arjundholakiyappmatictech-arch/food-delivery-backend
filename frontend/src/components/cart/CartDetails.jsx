@@ -121,7 +121,7 @@ export default function CartDetails() {
 
             {/* Total */}
             <div className="flex justify-between text-[18px] font-[700] text-[#02060C]">
-               <span>Total</span>
+               <span>To Pay</span>
 
                <span>₹{total.toFixed(2)}</span>
             </div>

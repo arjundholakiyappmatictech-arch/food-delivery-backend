@@ -1,5 +1,5 @@
-import React from 'react';
+import CheckoutDetails from '@/components/checkout/CheckoutDetails';
 
-export default function page() {
-   return <div>Checkout page</div>;
+export default function CheckoutPage() {
+   return <CheckoutDetails />;
 }
