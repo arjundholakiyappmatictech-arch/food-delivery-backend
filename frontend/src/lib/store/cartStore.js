@@ -64,6 +64,14 @@ const useCartStore = create((set, get) => ({
          cartItems: state.cartItems.map((item) => (item.id === response.data.id ? response.data : item)),
       }));
    },
+
+   clearCart: async () => {
+      await clearCart();
+
+      set({
+         cartItems: [],
+      });
+   },
 }));
 
 export default useCartStore;
