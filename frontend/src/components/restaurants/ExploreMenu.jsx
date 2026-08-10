@@ -1,10 +1,12 @@
-export default function ExploreMenu({ menus = [], selectedMenuId, setSelectedMenuId }) {
+export default function ExploreMenu({ menus = [], selectedMenuName, setSelectedMenuName }) {
+   const uniqueMenus = Array.from(new Map(menus.map((menu) => [menu.name.toLowerCase(), menu])).values());
+
    return (
-      <section className="w-full">
+      <section>
          {/* Carousel Area */}
-         <div className="w-full overflow-hidden">
+         <div>
             {/* Heading */}
-            <h2 className="mb-3 text-[22px] font-[600] text-[#02060C] max-[610px]:text-[18px]">Explore by category</h2>
+            <h2 className="text-[20px] font-[600]">Explore by category</h2>
 
             {/* Menu Carousel */}
             <div
@@ -14,16 +16,16 @@ export default function ExploreMenu({ menus = [], selectedMenuId, setSelectedMen
                   msOverflowStyle: 'none',
                }}
             >
-               {menus.map((menu) => (
+               {uniqueMenus.map((menu) => (
                   <div
                      key={menu.id}
-                     onClick={() => setSelectedMenuId(menu.id)}
+                     onClick={() => setSelectedMenuName(menu.name)}
                      className="group flex min-w-[95px] shrink-0 cursor-pointer flex-col items-center"
                   >
                      {/* Circle */}
                      <div
                         className={`h-[90px] w-[90px] rounded-full p-[4px] transition-all duration-200 group-hover:-translate-y-1 group-hover:scale-105 max-[610px]:h-[75px] max-[610px]:w-[75px] ${
-                           selectedMenuId === menu.id ? 'bg-[#E56A77]' : 'bg-transparent'
+                           selectedMenuName === menu.name ? 'bg-[#E56A77]' : 'bg-transparent'
                         }`}
                      >
                         <div className="h-full w-full rounded-full bg-white p-[3px]">
@@ -39,7 +41,7 @@ export default function ExploreMenu({ menus = [], selectedMenuId, setSelectedMen
                      {/* Menu Name */}
                      <p
                         className={`mt-2 whitespace-nowrap text-[15px] font-[500] transition-all duration-200 group-hover:-translate-y-1 max-[610px]:text-[13px] ${
-                           selectedMenuId === menu.id ? 'text-[#E56A77]' : 'text-[#747474]'
+                           selectedMenuName === menu.name ? 'text-[#E56A77]' : 'text-[#747474]'
                         }`}
                      >
                         {menu.name}

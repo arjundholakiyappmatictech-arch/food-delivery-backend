@@ -5,7 +5,7 @@ export default async function getNearbyRestaurants({
    query = '',
    latitude = null,
    longitude = null,
-   menuId = null,
+   menuName = null,
    sortBy = '',
    openNow = false,
    page = 1,
@@ -26,8 +26,8 @@ export default async function getNearbyRestaurants({
       params.q = query.trim();
    }
 
-   if (menuId) {
-      params.menu_id = Number(menuId);
+   if (menuName) {
+      params.menu_name = menuName;
    }
 
    if (sortBy) {
@@ -37,15 +37,6 @@ export default async function getNearbyRestaurants({
    if (openNow) {
       params.open_now = 1;
    }
-
-   /* await new Promise((resolve, reject) => {
-      const timeout = setTimeout(resolve, 2000);
-
-      signal?.addEventListener('abort', () => {
-         clearTimeout(timeout);
-         reject(new DOMException('Aborted', 'AbortError'));
-      });
-   }); */
 
    const response = await api.get('/restaurants/nearby', {
       params,

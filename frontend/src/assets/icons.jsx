@@ -152,6 +152,24 @@ export const DOWN_ARROW_SVG = (
 
 export const CHECKOUT_ICON_URL = 'https://img.icons8.com/ios/100/circled-right-2.png';
 
+export const CHECKOUT_ICON = (
+   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+
+      <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
+
+      <g id="SVGRepo_iconCarrier">
+         <path
+            d="M11 16L15 12M15 12L11 8M15 12H3M4.51555 17C6.13007 19.412 8.87958 21 12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C8.87958 3 6.13007 4.58803 4.51555 7"
+            stroke="#ffffff"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+         />
+      </g>
+   </svg>
+);
+
 export const FILTER_ICON = (
    <svg className="h-full w-full" viewBox="0 0 24 24" fill="none">
       <path

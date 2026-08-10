@@ -1,9 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
+
 'use client';
 
 import useCartStore from '@/lib/store/cartStore';
 
-export default function MenuItemCard({ item, isLast }) {
+export default function MenuItemCard({ item, isLast = false }) {
    const { cartItems, addItem, increaseQuantity, decreaseQuantity } = useCartStore();
 
    const cartItem = cartItems.find((cart) => cart.menu_item.id === item.id);
@@ -11,59 +12,77 @@ export default function MenuItemCard({ item, isLast }) {
    const quantity = cartItem?.quantity ?? 0;
 
    const addToCartBtnStyles =
-      'absolute bottom-[-10px] left-1/2 flex w-[110px] -translate-x-1/2 rounded-[0.2cm] bg-white text-[18px] font-[700] text-[#1BA672] shadow-[0px_4px_10px_#E9E9E9]';
+      'absolute left-[18px] bottom-[-3px] flex w-[120px] rounded-[0.2cm] bg-[#FFF] text-[20px] font-[700] tracking-[-0.5px] text-[#1BA672] shadow-[0px_5px_10px_#E9E9E9] max-[600px]:left-[2vw] max-[600px]:bottom-[-2.5vw] max-[600px]:w-[24vw] max-[600px]:text-[15px] max-[500px]:bottom-[-3.5vw]';
 
    return (
-      <div className="menu-item-card py-4 px-5">
-         <div className="flex items-center justify-between">
-            {/* Left */}
+      <div className="menu-item-card">
+         <div className="flex h-[150px] justify-between max-[600px]:h-[105px]">
+            {/* Left - Item Information */}
+            <div className="ml-[20px] flex w-[550px] flex-col justify-center max-[760px]:ml-[5px] max-[760px]:w-[70vw] max-[600px]:w-[65vw]">
+               <h3 className="text-[20px] font-[700] leading-[1.3] text-[#02060CBF] max-[600px]:text-[17px]">
+                  {item.name}
+               </h3>
 
-            <div className="flex-1 pr-4">
-               <h3 className="text-[17px] font-[700] text-[#02060CBF]">{item.name}</h3>
-
-               <h4 className="mt-1 text-[15px] font-[600]">₹{item.price}</h4>
+               <h4 className="mt-[8px] text-[17px] font-[600] text-[#02060CEB] max-[600px]:mt-[7px] max-[600px]:text-[15px]">
+                  ₹{item.price}
+               </h4>
 
                <span
-                  className={`mt-2 inline-block rounded-full px-2 py-1 text-[11px] font-semibold ${
-                     item.availability ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                  className={`mt-[10px] inline-block text-[14px] font-[500] max-[600px]:mt-[8px] max-[600px]:text-[12px] ${
+                     item.availability ? 'text-[#1BA672]' : 'text-red-500'
                   }`}
                >
                   {item.availability ? 'Available' : 'Not Available'}
                </span>
             </div>
 
-            {/* Right */}
+            {/* Right - Image + Quantity */}
+            <div className="relative mr-[20px] flex flex-col max-[760px]:mr-[5px] max-[600px]:my-auto">
+               <div className="h-[135px] w-[156px] max-[600px]:h-[100px] max-[600px]:w-[28vw]">
+                  <img
+                     src={item.image_url || '/assets/pizza.jpg'}
+                     alt={item.name}
+                     className="h-full w-full overflow-hidden rounded-[0.3cm] object-cover"
+                     draggable={false}
+                  />
+               </div>
 
-            <div className="relative">
-               <img
-                  src={item.image_url || '/assets/pizza.jpg'}
-                  alt={item.name}
-                  className="h-[110px] w-[120px] rounded-[0.3cm] object-cover"
-                  draggable={false}
-               />
-
+               {/* Unavailable */}
                {!item.availability ? (
                   <div
-                     className={`${addToCartBtnStyles} cursor-not-allowed justify-center bg-gray-200 py-2 text-[14px] text-gray-500 shadow-none`}
+                     className={`${addToCartBtnStyles} cursor-not-allowed justify-center bg-[#F2F2F2] py-[7px] text-[14px] text-[#999] shadow-none max-[600px]:text-[12px]`}
                   >
                      Unavailable
                   </div>
                ) : quantity === 0 ? (
+                  /* ADD */
                   <button
+                     type="button"
                      onClick={() => addItem(item.id)}
-                     className={`${addToCartBtnStyles} justify-center py-2 transition hover:bg-[#D9DADB]`}
+                     className={`${addToCartBtnStyles} cursor-pointer justify-center py-[7px] transition hover:bg-[#D9DADB]`}
                   >
                      ADD
                   </button>
                ) : (
+                  /* Quantity */
                   <div className={`${addToCartBtnStyles} justify-between`}>
-                     <button onClick={() => decreaseQuantity(cartItem)} className="px-4 py-2 hover:bg-[#D9DADB]">
+                     <button
+                        type="button"
+                        onClick={() => decreaseQuantity(cartItem)}
+                        className="cursor-pointer rounded-l-[0.2cm] px-[15px] py-[7px] hover:bg-[#D9DADB] max-[600px]:px-[3vw]"
+                     >
                         −
                      </button>
 
-                     <span className="py-2">{quantity}</span>
+                     <div className="py-[7px]">
+                        <span>{quantity}</span>
+                     </div>
 
-                     <button onClick={() => increaseQuantity(cartItem)} className="px-4 py-2 hover:bg-[#D9DADB]">
+                     <button
+                        type="button"
+                        onClick={() => increaseQuantity(cartItem)}
+                        className="cursor-pointer rounded-r-[0.2cm] px-[15px] py-[7px] hover:bg-[#D9DADB] max-[600px]:px-[3vw]"
+                     >
                         +
                      </button>
                   </div>
@@ -71,7 +90,7 @@ export default function MenuItemCard({ item, isLast }) {
             </div>
          </div>
 
-         {!isLast ? <hr className="mx-auto mt-5 w-[97%] border-[#E9E9E9]" /> : <div className="h-4" />}
+         {!isLast && <hr className="border-1 border-[#E9E9E9] w-[97%] mx-[auto] mt-[30px] mb-[20px]" />}
       </div>
    );
 }

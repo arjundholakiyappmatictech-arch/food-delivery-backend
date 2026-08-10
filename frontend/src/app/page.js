@@ -24,7 +24,7 @@ export default function HomePage() {
       searchText: '',
       sortBy: '',
       openNow: false,
-      menuId: null,
+      menuName: null,
    };
 
    const [restaurantFilters, setRestaurantFilters] = useState(defaultFilters);
@@ -81,11 +81,11 @@ export default function HomePage() {
          {/* Explore Menu */}
          <ExploreMenu
             menus={menus}
-            selectedMenuId={restaurantFilters.menuId}
-            setSelectedMenuId={(menuId) => {
+            selectedMenuName={restaurantFilters.menuName}
+            setSelectedMenuName={(menuName) => {
                setRestaurantFilters((prev) => ({
                   ...prev,
-                  menuId: prev.menuId === menuId ? null : menuId,
+                  menuName: prev.menuName === menuName ? null : menuName,
                }));
             }}
          />

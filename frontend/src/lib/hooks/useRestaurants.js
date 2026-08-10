@@ -1,24 +1,20 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable react-hooks/preserve-manual-memoization */
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useDebounce } from './useDebounce';
+
 import getNearbyRestaurants from '@/services/restaurantService';
+import { useDebounce } from './useDebounce';
 
 export default function useRestaurants(selectedLocation, restaurantFilters) {
    const [restaurants, setRestaurants] = useState([]);
-
    const [page, setPage] = useState(1);
    const [menus, setMenus] = useState([]);
 
    const [loading, setLoading] = useState(false);
    const [loadingMore, setLoadingMore] = useState(false);
-
    const [searching, setSearching] = useState(false);
 
    const [hasMore, setHasMore] = useState(true);
-
    const [error, setError] = useState('');
 
    const debouncedSearch = useDebounce(restaurantFilters.searchText, 500);
@@ -26,6 +22,7 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
    const fetchRestaurants = useCallback(
       async (signal, currentPage = 1) => {
          const hasAddressId = Boolean(selectedLocation?.addressId);
+
          const hasCoordinates = selectedLocation?.latitude != null && selectedLocation?.longitude != null;
 
          if (!hasAddressId && !hasCoordinates) {
@@ -47,11 +44,11 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
             }
 
             const response = await getNearbyRestaurants({
-               addressId: selectedLocation.addressId,
-               latitude: selectedLocation.latitude,
-               longitude: selectedLocation.longitude,
+               addressId: selectedLocation?.addressId,
+               latitude: selectedLocation?.latitude,
+               longitude: selectedLocation?.longitude,
                query: debouncedSearch,
-               menuId: restaurantFilters.menuId,
+               menuName: restaurantFilters.menuName,
                sortBy: restaurantFilters.sortBy,
                openNow: restaurantFilters.openNow,
                page: currentPage,
@@ -60,18 +57,32 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
 
             const items = response.data ?? [];
 
-            // logic for independent circle
-            if (currentPage === 1 && !restaurantFilters.menuId && !restaurantFilters.searchText.trim()) {
-               const uniqueMenus = items
-                  .flatMap((restaurant) => restaurant.menus ?? [])
-                  .filter((menu, index, self) => index === self.findIndex((item) => item.id === menu.id));
+            /*
+             * Build Explore categories only from an
+             * unfiltered first-page request.
+             */
+            if (currentPage === 1 && !restaurantFilters.menuName && !debouncedSearch.trim()) {
+               const uniqueMenus = Array.from(
+                  new Map(
+                     items
+                        .flatMap((restaurant) => restaurant.menus ?? [])
+                        .map((menu) => [menu.name.toLowerCase(), menu]),
+                  ).values(),
+               );
 
                setMenus(uniqueMenus);
             }
 
+            /*
+             * Replace restaurants on first page.
+             */
             if (currentPage === 1) {
                setRestaurants(items);
             } else {
+               /*
+                * Append only restaurants that aren't
+                * already loaded.
+                */
                setRestaurants((prev) => {
                   const existingIds = new Set(prev.map((restaurant) => restaurant.id));
 
@@ -103,12 +114,15 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
          selectedLocation?.latitude,
          selectedLocation?.longitude,
          debouncedSearch,
-         restaurantFilters.menuId,
+         restaurantFilters.menuName,
          restaurantFilters.sortBy,
          restaurantFilters.openNow,
       ],
    );
 
+   /*
+    * Fetch first page whenever location or filters change.
+    */
    useEffect(() => {
       setPage(1);
 
@@ -119,12 +133,21 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
       return () => controller.abort();
    }, [fetchRestaurants]);
 
+   /*
+    * Fetch subsequent pages.
+    */
    useEffect(() => {
-      if (page === 1) return;
+      if (page === 1) {
+         return;
+      }
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchRestaurants(undefined, page);
    }, [page, fetchRestaurants]);
 
+   /*
+    * Load next page.
+    */
    const loadMore = useCallback(() => {
       if (loadingMore || !hasMore) {
          return;
@@ -133,6 +156,9 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
       setPage((prevPage) => prevPage + 1);
    }, [loadingMore, hasMore]);
 
+   /*
+    * Retry first page.
+    */
    const retry = useCallback(() => {
       setPage(1);
 
