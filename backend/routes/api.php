@@ -49,6 +49,7 @@ Route::middleware('auth:sanctum')
         Route::post('carts/store', 'store');
         Route::put('carts/{cart}/update', 'update');
         Route::delete('carts/{cart}/destroy', 'destroy');
+        Route::delete('cart', 'clear');
     });
 
 // order routes

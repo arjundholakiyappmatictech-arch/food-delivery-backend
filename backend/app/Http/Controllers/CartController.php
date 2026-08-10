@@ -50,4 +50,11 @@ class CartController extends Controller
 
         return $this->successResponse('Cart item removed successfully');
     }
+
+    public function clear(): JsonResponse
+    {
+        $this->cartService->clearCart();
+
+        return $this->successResponse('Cart cleared successfully');
+    }
 }

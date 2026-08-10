@@ -69,6 +69,13 @@ class CartService
         $cart->delete();
     }
 
+    public function clearCart(): void
+    {
+        $user = $this->authorizeCustomer();
+
+        Cart::query()->where('user_id', $user->id)->delete();
+    }
+
     private function authorizeCustomer(): User
     {
         $user = Auth::user();
