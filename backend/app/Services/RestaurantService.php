@@ -89,7 +89,7 @@ class RestaurantService
 
         $include = $data['include'] ?? null;
         $search = $data['q'] ?? null;
-        $menuId = $data['menu_id'] ?? null;
+        $menuName = $data['menu_name'] ?? null;
         $sortBy = $data['sort_by'] ?? null;
         $openNow = filter_var($data['open_now'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $perPage = $data['per_page'] ?? 5;
@@ -120,19 +120,19 @@ class RestaurantService
         $restaurants = Restaurant::query()
             ->select(['id', 'name', 'address', 'status', 'latitude', 'longitude', 'image_path'])
             ->selectRaw($distanceSql, [$latitude, $longitude, $latitude])
-            ->when($menuId, function ($query) use ($menuId) {
-                $query->whereHas('menus', function ($menuQuery) use ($menuId) {
-                    $menuQuery->where('id', $menuId);
+            ->when($menuName, function ($query) use ($menuName, $operator) {
+                $query->whereHas('menus', function ($menuQuery) use ($menuName, $operator) {
+                    $menuQuery->where('name', $operator, $menuName);
                 });
             })
             ->when($include === 'menus', function ($query) {
                 $query->with('menus');
             })
-            ->when($include === 'menus.menuItems', function ($query) use ($menuId, $search, $operator) {
+            ->when($include === 'menus.menuItems', function ($query) use ($menuName, $search, $operator) {
                 $query->with([
-                    'menus' => function ($menuQuery) use ($menuId, $search, $operator) {
-                        $menuQuery->when($menuId, function ($menuQuery) use ($menuId) {
-                            $menuQuery->where('id', $menuId);
+                    'menus' => function ($menuQuery) use ($menuName, $search, $operator) {
+                        $menuQuery->when($menuName, function ($menuQuery) use ($menuName, $operator) {
+                            $menuQuery->where('name', $operator, $menuName);
                         });
                         $menuQuery
                             ->when($search, function ($menuQuery) use ($search, $operator) {
