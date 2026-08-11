@@ -10,9 +10,11 @@ import { loginSchema } from '@/lib/schemas/loginSchema';
 import { login } from '@/services/authService';
 import { parseApiError } from '@/utils/apiError';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useAuthStore } from '@/lib/store/useAuthStore';
 
 const LoginForm = () => {
    const router = useRouter();
+   const setUser = useAuthStore((state) => state.setUser);
 
    const {
       register,
@@ -31,8 +33,11 @@ const LoginForm = () => {
       try {
          const response = await login(data);
 
-         localStorage.setItem('access_token', response.data.access_token);
-         localStorage.setItem('user', JSON.stringify(response.data.user));
+         const { access_token, user } = response.data;
+
+         localStorage.setItem('access_token', access_token);
+
+         setUser(user);
 
          toast.success(response.message ?? 'Login successful.');
 

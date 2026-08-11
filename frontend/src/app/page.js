@@ -40,16 +40,6 @@ export default function HomePage() {
       }
    }, [locationInitialized, selectedLocation, router]);
 
-   /*
-    * Initial page loading.
-    *
-    * Show the complete skeleton when:
-    *
-    * 1. Location has not been initialized yet
-    * 2. The user has no selected location and is being redirected
-    * 3. We have a selected location and the first restaurant
-    *    request is still loading
-    */
    const initialLoading =
       !locationInitialized || selectedLocation === null || (selectedLocation && loading && restaurants.length === 0);
 
@@ -58,19 +48,7 @@ export default function HomePage() {
    }
 
    return (
-      <main
-         className="
-               mx-auto
-               mt-2
-               w-full
-               max-w-[1800px]
-               px-[40px]
-
-               max-[1200px]:px-[30px]
-               max-[800px]:px-[20px]
-               max-[560px]:px-[10px]
-            "
-      >
+      <main className="mx-auto mt-2 w-full max-w-[1800px] px-[60px] max-[1200px]:px-[40px] max-[800px]:px-[25px] max-[560px]:px-[15px]">
          {/* Search */}
          <Search
             selectedLocation={selectedLocation}

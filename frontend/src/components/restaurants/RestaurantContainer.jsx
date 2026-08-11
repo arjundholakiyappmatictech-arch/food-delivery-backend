@@ -103,7 +103,7 @@ export default function RestaurantContainer({
                >
                   <RestaurantCard restaurant={restaurant} />
                </div>
-            ))}
+         ))}
 
             {/* Only show these during pagination */}
             {loadingMore &&

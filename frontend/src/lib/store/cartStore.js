@@ -4,13 +4,22 @@ import { getCart, addToCart, updateCart, removeFromCart, clearCart } from '@/ser
 
 const useCartStore = create((set, get) => ({
    cartItems: [],
+   loading: false,
 
    fetchCart: async () => {
-      const response = await getCart();
+      set({ loading: true });
 
-      set({
-         cartItems: response.data,
-      });
+      try {
+         const response = await getCart();
+
+         set({
+            cartItems: response.data,
+            loading: false,
+         });
+      } catch (error) {
+         set({ loading: false });
+         throw error;
+      }
    },
    addItem: async (menuItemId) => {
       const response = await addToCart({

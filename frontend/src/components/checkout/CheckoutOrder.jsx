@@ -1,12 +1,15 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
-import useCartStore from '@/lib/store/cartStore';
+
 import { useRouter } from 'next/navigation';
+
+import useCartStore from '@/lib/store/cartStore';
 
 export default function CheckoutOrder({ cartItems }) {
    const router = useRouter();
 
-   const { increaseQuantity, decreaseQuantity } = useCartStore();
+   const increaseQuantity = useCartStore((state) => state.increaseQuantity);
+
+   const decreaseQuantity = useCartStore((state) => state.decreaseQuantity);
 
    return (
       <section className="min-w-0">
@@ -15,10 +18,11 @@ export default function CheckoutOrder({ cartItems }) {
          <div className="w-full min-w-0 overflow-hidden rounded-[0.1cm] border-2 border-[#E9E9E9] px-[20px]">
             {cartItems.map((cartItem, index) => {
                const item = cartItem.menu_item;
+
                const itemTotal = Number(item.price) * cartItem.quantity;
 
                return (
-                  <div key={cartItem.id} className="min-w-0">
+                  <div key={cartItem.id}>
                      <div className="flex min-w-0 items-center justify-between gap-[15px] py-[15px]">
                         {/* Item */}
                         <div className="flex min-w-0 flex-1 items-center gap-[15px]">
@@ -39,11 +43,11 @@ export default function CheckoutOrder({ cartItems }) {
                         </div>
 
                         {/* Quantity */}
-                        <div className="flex shrink-0 items-center overflow-hidden rounded-[0.15cm] border border-[#E9E9E9] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+                        <div className="flex shrink-0 items-center overflow-hidden rounded-[0.15cm] border border-[#E9E9E9] bg-white">
                            <button
                               type="button"
                               onClick={() => decreaseQuantity(cartItem)}
-                              className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center text-[18px] font-[500] text-[#1BA672] transition-colors hover:bg-[#F8F8F8] active:bg-[#F1F1F1]"
+                              className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center text-[18px] text-[#1BA672] hover:bg-[#F8F8F8]"
                            >
                               −
                            </button>
@@ -55,7 +59,7 @@ export default function CheckoutOrder({ cartItems }) {
                            <button
                               type="button"
                               onClick={() => increaseQuantity(cartItem)}
-                              className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center text-[18px] font-[500] text-[#1BA672] transition-colors hover:bg-[#F8F8F8] active:bg-[#F1F1F1]"
+                              className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center text-[18px] text-[#1BA672] hover:bg-[#F8F8F8]"
                            >
                               +
                            </button>
@@ -70,7 +74,7 @@ export default function CheckoutOrder({ cartItems }) {
             <button
                type="button"
                onClick={() => router.push('/')}
-               className="my-[15px] cursor-pointer text-[15px] font-[600] text-[#E56A77] transition hover:text-[#D95765]"
+               className="my-[15px] cursor-pointer text-[15px] font-[600] text-[#E56A77] hover:text-[#D95765]"
             >
                + Add More Items
             </button>

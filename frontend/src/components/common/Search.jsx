@@ -4,7 +4,7 @@ import { SEARCH_ICON_URL, LOCATION_SVG } from '@/assets/icons';
 
 export default function Search({ restaurantFilters, setRestaurantFilters, selectedLocation }) {
    return (
-      <div className="w-140 flex justify-between mx-auto my-[30px] border-1 border-[#BEBFC5] rounded-[0.1cm] max-[610px]:my-[15px] max-[410px]:w-[99%]">
+   <div className="w-150 flex justify-between mx-auto my-[30px] border-1 border-[#BEBFC5] rounded-[0.1cm] max-[610px]:my-[15px] max-[410px]:w-[99%]">
          {/* Selected Location */}
          <div className="flex shrink-0 items-center gap-2 px-[10px]">
             {/* Location Icon */}

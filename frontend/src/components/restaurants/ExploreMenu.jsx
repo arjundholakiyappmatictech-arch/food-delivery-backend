@@ -2,15 +2,15 @@ export default function ExploreMenu({ menus = [], selectedMenuName, setSelectedM
    const uniqueMenus = Array.from(new Map(menus.map((menu) => [menu.name.toLowerCase(), menu])).values());
 
    return (
-      <section>
+      <section className="w-full min-w-0">
          {/* Carousel Area */}
-         <div>
+         <div className="w-full min-w-0">
             {/* Heading */}
-            <h2 className="text-[20px] font-[600]">Explore by category</h2>
+            <h2 className="text-[20px] font-[600] text-[#02060C]">Explore by category</h2>
 
             {/* Menu Carousel */}
             <div
-               className="flex items-start gap-[35px] overflow-x-auto scroll-smooth px-[10px] py-3 scrollbar-hide max-[900px]:gap-[25px] max-[610px]:gap-[20px]"
+               className="flex w-full min-w-0 items-start gap-[35px] overflow-x-auto scroll-smooth px-[10px] py-3 scrollbar-hide max-[900px]:gap-[25px] max-[610px]:gap-[20px]"
                style={{
                   scrollbarWidth: 'none',
                   msOverflowStyle: 'none',
