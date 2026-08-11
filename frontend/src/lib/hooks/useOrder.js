@@ -28,8 +28,28 @@ export default function useOrder() {
       }
    }, []);
 
+   const makePayment = async (orderId, paymentMethod) => {
+      try {
+         setLoading(true);
+         setError(null);
+
+         const response = await makePaymentApi(orderId, paymentMethod);
+
+         return response;
+      } catch (error) {
+         const apiError = parseApiError(error);
+
+         setError(apiError.message ?? 'Payment failed.');
+
+         return null;
+      } finally {
+         setLoading(false);
+      }
+   };
+
    return {
       placeOrder,
+      makePayment,
       loading,
       error,
    };

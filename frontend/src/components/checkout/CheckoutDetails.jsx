@@ -60,7 +60,7 @@ export default function CheckoutDetails() {
 
    const totalPrice = itemTotal + deliveryFee;
 
-   const handlePlaceOrder = async () => {
+   const handlePlaceOrder = async (paymentMethod) => {
       if (!selectedLocation?.addressId) {
          return;
       }
@@ -68,6 +68,7 @@ export default function CheckoutDetails() {
       const orderData = {
          address_id: selectedLocation.addressId,
          delivery_instructions: deliveryInstructions.trim() || null,
+         payment_method: paymentMethod,
       };
 
       try {
