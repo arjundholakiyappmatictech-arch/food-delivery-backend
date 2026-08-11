@@ -99,16 +99,26 @@ class OrderDeliveryService
         }
 
         return DB::transaction(function () use ($delivery) {
-            $delivery->update([
-                'status' => 'delivered',
-            ]);
+        $delivery->update([
+            'status' => 'delivered',
+        ]);
 
-            $delivery->order->update([
-                'status' => 'delivered',
-                'delivered_at' => now(),
-            ]);
+        $order = $delivery->order;
 
-            return $delivery->refresh()->load(['order.address', 'order.user', 'deliveryAgent']);
+        $order->update([
+            'status' => 'delivered',
+            'delivered_at' => now(),
+        ]);
+
+        // Mark COD payment as paid after delivery.
+        if ($order->payment?->payment_method === 'cod') {
+            $order->payment->update([
+                'payment_status' => 'paid',
+                'paid_at' => now(),
+            ]);
+        }
+
+            return $delivery->refresh()->load(['order.address', 'order.user', 'order.payment', 'deliveryAgent']);
         });
     }
 

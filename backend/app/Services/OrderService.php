@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\OrderPlaced;
 use App\Exceptions\Carts\CartMenuItemMissingException;
 use App\Exceptions\Carts\MenuItemUnavailableException;
 use App\Exceptions\Order\EmptyCartException;
@@ -69,7 +70,7 @@ class OrderService
 
         $deliveryFee = 40;
 
-        return DB::transaction(function () use ($data, $user, $address, $cartItems, $subtotal, $deliveryFee) {
+        $order =  DB::transaction(function () use ($data, $user, $address, $cartItems, $subtotal, $deliveryFee) {
             $order = Order::create([
                 'user_id' => $user->id,
                 'address_id' => $address->id,
@@ -93,6 +94,10 @@ class OrderService
 
             return $order->load(['items.menuItem', 'address', 'user']);
         });
+
+        event(new OrderPlaced($order));
+
+        return $order;
     }
 
     public function show(Order $order): Order
