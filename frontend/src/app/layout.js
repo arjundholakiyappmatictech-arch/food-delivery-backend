@@ -1,6 +1,7 @@
 import ConditionalHeader from '@/components/layout/ConditionalHeader';
 import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
+import FloatingCart from '@/components/cart/FloatingCart';
 
 export const metadata = {
    title: 'Food Delivery App',
@@ -13,6 +14,7 @@ export default function RootLayout({ children }) {
          <body className="min-h-full flex flex-col">
             <ConditionalHeader />
             {children}
+            <FloatingCart />
             <Toaster />
          </body>
       </html>

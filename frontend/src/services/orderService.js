@@ -7,3 +7,19 @@ export async function createOrder(data, signal) {
 
    return response.data;
 }
+
+export async function getOrder(orderId, signal) {
+   const response = await api.get(`/orders/${orderId}`, {
+      signal,
+   });
+
+   return response.data;
+}
+
+export async function generateInvoice(orderId, signal) {
+   const response = await api.get(`/orders/${orderId}/invoice`, {
+      signal,
+   });
+
+   return response.data;
+}

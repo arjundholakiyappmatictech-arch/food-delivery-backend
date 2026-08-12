@@ -1,6 +1,8 @@
 'use client';
 
-import { createOrder } from '@/services/orderService';
+import { createOrder, getOrder, generateInvoice } from '@/services/orderService';
+import { makePayment } from '@/services/paymentService';
+import { parseApiError } from '@/utils/apiError';
 import { useCallback, useState } from 'react';
 
 export default function useOrder() {
@@ -28,12 +30,12 @@ export default function useOrder() {
       }
    }, []);
 
-   const makePayment = async (orderId, paymentMethod) => {
+   const makePaymentt = async (orderId, paymentMethod) => {
       try {
          setLoading(true);
          setError(null);
 
-         const response = await makePaymentApi(orderId, paymentMethod);
+         const response = await makePayment(orderId, paymentMethod);
 
          return response;
       } catch (error) {
@@ -47,9 +49,53 @@ export default function useOrder() {
       }
    };
 
+   const fetchOrder = useCallback(async (orderId, signal) => {
+      try {
+         setLoading(true);
+         setError('');
+
+         return await getOrder(orderId, signal);
+      } catch (error) {
+         if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
+            return null;
+         }
+
+         const apiError = parseApiError(error);
+
+         setError(apiError.message || 'Unable to fetch order details.');
+
+         return null;
+      } finally {
+         setLoading(false);
+      }
+   }, []);
+
+   const generateOrderInvoice = useCallback(async (orderId, signal) => {
+      try {
+         setLoading(true);
+         setError('');
+
+         return await generateInvoice(orderId, signal);
+      } catch (error) {
+         if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
+            return null;
+         }
+
+         const apiError = parseApiError(error);
+
+         setError(apiError.message || 'Unable to generate invoice.');
+
+         return null;
+      } finally {
+         setLoading(false);
+      }
+   }, []);
+
    return {
       placeOrder,
-      makePayment,
+      makePaymentt,
+      fetchOrder,
+      generateOrderInvoice,
       loading,
       error,
    };

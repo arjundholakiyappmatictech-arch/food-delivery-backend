@@ -10,6 +10,7 @@ import CheckoutBill from './CheckoutBill';
 import useOrder from '@/lib/hooks/useOrder';
 import useCartStore from '@/lib/store/cartStore';
 import useSelectedLocation from '@/lib/hooks/useSelectedLocation';
+import { toast } from 'sonner';
 
 export default function CheckoutDetails() {
    const router = useRouter();
@@ -21,7 +22,7 @@ export default function CheckoutDetails() {
 
    const { selectedLocation } = useSelectedLocation();
 
-   const { placeOrder, makePayment, loading, error } = useOrder();
+   const { placeOrder, makePaymentt, loading, error } = useOrder();
 
    const [deliveryInstructions, setDeliveryInstructions] = useState('');
 
@@ -71,30 +72,31 @@ export default function CheckoutDetails() {
       };
 
       try {
-         const response = await placeOrder(orderData);
+         const orderResponse = await placeOrder(orderData);
 
-         if (!response) {
+         if (!orderResponse) {
             return;
          }
 
-         const order = response.data;
+         const order = orderResponse.data;
 
-         router.push(`/payment/${order.id}`);
-      } catch {
-         // Error is already handled by useOrder.
-      }
-      try {
-         const paymentResponse = await makePayment(order.id, paymentMethod);
+         const paymentResponse = await makePaymentt(order.id, paymentMethod);
 
          if (!paymentResponse) {
             return;
          }
 
-         // 3. Go to order tracking
+         await fetchCart();
+
+         toast.success(paymentMethod === 'cod' ? 'Order placed successfully!' : 'Payment successful!', {
+            description:
+               paymentMethod === 'cod'
+                  ? `Order #${order.id} is confirmed. Pay when your order arrives.`
+                  : `Order #${order.id} is confirmed and payment was received.`,
+         });
+
          router.push(`/orders/${order.id}`);
-      } catch {
-         // Errors are handled by useOrder
-      }
+      } catch {}
    };
 
    // Don't render checkout while checking the backend cart.

@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { CART_SVG, HOME_SVG, SHOPPING_BAG_SVG } from '@/assets/icons';
+import { CART_SVG, HOME_SVG, SHOPPING_BAG_SVG, INFO_SVG } from '@/assets/icons';
 import useCartStore from '@/lib/store/cartStore';
 import { useEffect } from 'react';
 import UserProfile from './UserProfile';
@@ -63,6 +63,18 @@ export default function Header() {
                            </div>
                            &nbsp;
                            <h1>Home</h1>
+                        </div>
+                     </Link>
+                  </li>
+
+                  <li className={navItemStyles}>
+                     <Link href="/about" className={getActiveClass('/about')}>
+                        <div className="flex">
+                           <div className="w-[25px] h-[28px] max-[900px]:w-[20px] max-[900px]:h-[23px] max-[610px]:hidden">
+                              {INFO_SVG}
+                           </div>
+                           &nbsp;
+                           <h1>About Us</h1>
                         </div>
                      </Link>
                   </li>
