@@ -21,7 +21,7 @@ export default function CheckoutDetails() {
 
    const { selectedLocation } = useSelectedLocation();
 
-   const { placeOrder, loading, error } = useOrder();
+   const { placeOrder, makePayment, loading, error } = useOrder();
 
    const [deliveryInstructions, setDeliveryInstructions] = useState('');
 
@@ -68,7 +68,6 @@ export default function CheckoutDetails() {
       const orderData = {
          address_id: selectedLocation.addressId,
          delivery_instructions: deliveryInstructions.trim() || null,
-         payment_method: paymentMethod,
       };
 
       try {
@@ -83,6 +82,18 @@ export default function CheckoutDetails() {
          router.push(`/payment/${order.id}`);
       } catch {
          // Error is already handled by useOrder.
+      }
+      try {
+         const paymentResponse = await makePayment(order.id, paymentMethod);
+
+         if (!paymentResponse) {
+            return;
+         }
+
+         // 3. Go to order tracking
+         router.push(`/orders/${order.id}`);
+      } catch {
+         // Errors are handled by useOrder
       }
    };
 
