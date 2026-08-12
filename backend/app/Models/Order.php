@@ -26,6 +26,11 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function restaurant()
+    {
+        return $this->belongsTo(Restaurant::class);
+    }
+
     public function address()
     {
         return $this->belongsTo(Address::class);

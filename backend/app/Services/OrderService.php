@@ -20,14 +20,13 @@ use Illuminate\Support\Facades\DB;
 
 class OrderService
 {
-    private const COMMON_RELATIONS = ['address', 'items.menuItem', 'payment', 'user', 'invoice', 'orderReview'];
 
     public function index(): CursorPaginator
     {
         $user = $this->authorizeCustomer();
 
         return Order::query()
-            ->with(self::COMMON_RELATIONS)
+            ->with(['address', 'items.menuItem', 'payment', 'user', 'invoice', 'orderReview'])
             ->where('user_id', $user->id)
             ->orderByDesc('orders.created_at')
             ->orderByDesc('orders.id')
@@ -104,7 +103,7 @@ class OrderService
     {
         $this->authorizeOrderOwner($order);
 
-        return $order->load(self::COMMON_RELATIONS);
+        return $order->load(['address', 'items.menuItem','payment', 'user', 'orderReview']);
     }
 
     public function generateInvoice(Order $order): array

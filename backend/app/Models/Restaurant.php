@@ -26,4 +26,9 @@ class Restaurant extends Model
     {
         return $this->belongsToMany(Cart::class);
     }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }
