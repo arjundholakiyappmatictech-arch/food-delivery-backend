@@ -21,4 +21,9 @@ class Restaurant extends Model
     {
         return $this->belongsTo(User::class, 'restaurant_owner_id');
     }
+
+    public function carts()
+    {
+        return $this->belongsToMany(Cart::class);
+    }
 }

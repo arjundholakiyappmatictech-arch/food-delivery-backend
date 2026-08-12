@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use RuntimeException;
 
 class CartService
 {
@@ -31,24 +32,39 @@ class CartService
 
         $menuItem = MenuItem::query()->with('menu.restaurants')->findOrFail($data['menu_item_id']);
 
+        $restaurant = $menuItem->menu->restaurants->firstWhere('id', $data['restaurant_id']);
+
+        if (!$restaurant) {
+            throw new RuntimeException('This menu item does not belong to the selected restaurant.', 409);
+        }
+
         $this->ensureMenuItemIsAvailable($menuItem);
         $this->ensureRestaurantIsOpen($menuItem);
 
-        $cart = Cart::query()->where('user_id', $user->id)->where('menu_item_id', $data['menu_item_id'])->first();
+        $existingCart = Cart::query()->where('user_id', $user->id)->first();
+
+        if ($existingCart && $existingCart->restaurant_id !== $restaurant->id) {
+            throw new RuntimeException('Your cart contains items from another restaurant.', 409);
+        }
+
+        $cart = Cart::query()
+            ->where('user_id', $user->id)
+            ->where('restaurant_id', $restaurant->id)
+            ->where('menu_item_id', $data['menu_item_id'])
+            ->first();
 
         if ($cart) {
             $cart->increment('quantity', $data['quantity']);
         } else {
             $cart = Cart::create([
                 'user_id' => $user->id,
+                'restaurant_id' => $restaurant->id,
                 'menu_item_id' => $data['menu_item_id'],
                 'quantity' => $data['quantity'],
             ]);
         }
 
-        /* Auth::user()->notify(new CartItemAddedNotification($cart)); */
-
-        return $cart->load('menuItem');
+        return $cart->load('menuItem', 'restaurant');
     }
 
     public function update(Cart $cart, array $data): Cart

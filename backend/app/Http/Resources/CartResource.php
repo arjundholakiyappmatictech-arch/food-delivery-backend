@@ -12,10 +12,12 @@ class CartResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
+            'restaurant_id' => $this->restaurant_id,
             'quantity' => $this->quantity,
 
             'user' => new UserResource($this->whenLoaded('user')),
             'menu_item' => new MenuItemResource($this->whenLoaded('menuItem')),
+            'restaurant' => new RestaurantResource($this->whenLoaded('restaurant')),
         ];
     }
 }
