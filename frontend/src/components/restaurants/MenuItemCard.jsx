@@ -1,9 +1,14 @@
 'use client';
 
 import useCartStore from '@/lib/store/cartStore';
+import { useState } from 'react';
+import ReplaceCartDialog from '../cart/ReplaceCartDialog';
 
-export default function MenuItemCard({ item, isLast = false }) {
-   const { cartItems, addItem, increaseQuantity, decreaseQuantity } = useCartStore();
+export default function MenuItemCard({ item, restaurant, isLast = false }) {
+   const { cartItems, addItem, increaseQuantity, decreaseQuantity, clearCart } = useCartStore();
+
+   const [showReplaceDialog, setShowReplaceDialog] = useState(false);
+   const [pendingItem, setPendingItem] = useState(null);
 
    const cartItem = cartItems.find((cart) => cart.menu_item.id === item.id);
 
@@ -12,6 +17,45 @@ export default function MenuItemCard({ item, isLast = false }) {
    const addToCartBtnStyles =
       'absolute left-[18px] bottom-[-3px] flex w-[120px] rounded-[0.2cm] bg-[#FFF] text-[20px] font-[700] tracking-[-0.5px] text-[#1BA672] shadow-[0px_5px_10px_#E9E9E9] max-[600px]:left-[2vw] max-[600px]:bottom-[-2.5vw] max-[600px]:w-[24vw] max-[600px]:text-[15px] max-[500px]:bottom-[-3.5vw]';
 
+   const handleAddToCart = async () => {
+      try {
+         await addItem({
+            restaurantId: restaurant.id,
+            menuItemId: item.id,
+         });
+      } catch (error) {
+         if (error.response?.status === 409) {
+            setPendingItem({
+               restaurantId: restaurant.id,
+               menuItemId: item.id,
+            });
+            setShowReplaceDialog(true);
+            return;
+         }
+
+         console.error('Unable to add item to cart:', error);
+      }
+   };
+
+   const handleReplaceCart = async () => {
+      if (!pendingItem) {
+         return;
+      }
+
+      try {
+         await clearCart();
+
+         await addItem({
+            restaurantId: pendingItem.restaurantId,
+            menuItemId: pendingItem.menuItemId,
+         });
+
+         setShowReplaceDialog(false);
+         setPendingItem(null);
+      } catch (error) {
+         console.error('Unable to replace cart:', error);
+      }
+   };
    return (
       <div className="menu-item-card">
          <div className="flex h-[150px] justify-between max-[600px]:h-[105px]">
@@ -56,7 +100,7 @@ export default function MenuItemCard({ item, isLast = false }) {
                   /* ADD */
                   <button
                      type="button"
-                     onClick={() => addItem(item.id)}
+                     onClick={handleAddToCart}
                      className={`${addToCartBtnStyles} cursor-pointer justify-center py-[7px] transition hover:bg-[#D9DADB]`}
                   >
                      ADD
@@ -87,6 +131,15 @@ export default function MenuItemCard({ item, isLast = false }) {
                )}
             </div>
          </div>
+
+         <ReplaceCartDialog
+            open={showReplaceDialog}
+            onClose={() => {
+               setShowReplaceDialog(false);
+               setPendingItem(null);
+            }}
+            onReplace={handleReplaceCart}
+         />
 
          {!isLast && <hr className="border-1 border-[#E9E9E9] w-[97%] mx-[auto] mt-[30px] mb-[20px]" />}
       </div>

@@ -12,11 +12,11 @@ const Toaster = ({ ...props }) => {
          theme={theme}
          className="toaster group"
          icons={{
-            success: <CircleCheckIcon className="size-4" />,
-            info: <InfoIcon className="size-4" />,
-            warning: <TriangleAlertIcon className="size-4" />,
-            error: <OctagonXIcon className="size-4" />,
-            loading: <Loader2Icon className="size-4 animate-spin" />,
+            success: <CircleCheckIcon className="size-4 text-green-500" />,
+            info: <InfoIcon className="size-4 text-blue-500" />,
+            warning: <TriangleAlertIcon className="size-4 text-yellow-500" />,
+            error: <OctagonXIcon className="size-4 text-red-500" />,
+            loading: <Loader2Icon className="size-4 animate-spin text-gray-500" />,
          }}
          style={{
             '--normal-bg': 'var(--popover)',
@@ -27,8 +27,8 @@ const Toaster = ({ ...props }) => {
          toastOptions={{
             classNames: {
                toast: 'cn-toast',
-               success: '!text-green-500',
-               error: '!text-red-500',
+               title: 'text-[#02060C]',
+               description: '!text-[#02060C]',
             },
          }}
          {...props}

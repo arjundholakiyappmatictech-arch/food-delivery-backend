@@ -1,21 +1,23 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import useCartStore from '@/lib/store/cartStore';
 
 export default function FloatingCart() {
    const router = useRouter();
    const pathname = usePathname();
-   const isCheckoutPage = pathname === '/checkout';
 
    const cartItems = useCartStore((state) => state.cartItems);
+
+   const isCheckoutPage = pathname.startsWith('/checkout');
 
    const totalItems = useMemo(() => {
       return cartItems.reduce((total, item) => total + item.quantity, 0);
    }, [cartItems]);
 
-   if (cartItems.length === 0) {
+   // Don't show FloatingCart on checkout
+   if (isCheckoutPage || cartItems.length === 0) {
       return null;
    }
 
@@ -65,16 +67,11 @@ export default function FloatingCart() {
             {/* Continue */}
             <button
                type="button"
-               disabled={isCheckoutPage}
                onClick={handleContinue}
-               className={`flex shrink-0 items-center gap-1.5 rounded-xl px-5 py-2.5 text-[14px] font-semibold transition-colors ${
-                  isCheckoutPage
-                     ? 'cursor-not-allowed bg-[#F1F1F1] text-[#999999]'
-                     : 'cursor-pointer bg-[#E56A77] text-white hover:bg-[#D95765] active:scale-[0.98]'
-               }`}
+               className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl bg-[#E56A77] px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-[#D95765] active:scale-[0.98]"
             >
-               {isCheckoutPage ? 'Checkout' : 'Continue'}
-               {!isCheckoutPage && <span className="text-[17px]">→</span>}
+               Continue
+               <span className="text-[17px]">→</span>
             </button>
          </div>
       </div>

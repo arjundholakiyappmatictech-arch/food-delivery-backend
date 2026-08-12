@@ -8,8 +8,8 @@ export async function getCart(signal) {
    return response.data;
 }
 
-export async function addToCart(data) {
-   const response = await api.post('/carts/store', data);
+export async function addToCart(data, signal) {
+   const response = await api.post('/carts/store', data, { signal });
 
    return response.data;
 }

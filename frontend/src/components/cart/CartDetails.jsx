@@ -77,7 +77,12 @@ export default function CartDetails() {
             {/* Cart Items */}
             <div className="cart-items">
                {cartItems.map((cartItem, index) => (
-                  <MenuItemCard key={cartItem.id} item={cartItem.menu_item} isLast={index === cartItems.length - 1} />
+                  <MenuItemCard
+                     key={cartItem.id}
+                     item={cartItem.menu_item}
+                     restaurant={cartItem.restaurant}
+                     isLast={index === cartItems.length - 1}
+                  />
                ))}
             </div>
          </section>

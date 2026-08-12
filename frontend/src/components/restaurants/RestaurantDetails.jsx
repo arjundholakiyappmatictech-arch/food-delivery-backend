@@ -99,7 +99,7 @@ export default function RestaurantDetails({ restaurantId }) {
             <h1 className="text-[25px] font-[500] max-[600px]:text-[18px]">MENU</h1>
          </div>
          {menus.length > 0 ? (
-            <RestaurantMenu menus={menus} />
+            <RestaurantMenu restaurant={selectedRestaurant} menus={menus} />
          ) : (
             <div className="py-10 text-center">
                <h2 className="text-xl font-semibold">No menu available</h2>

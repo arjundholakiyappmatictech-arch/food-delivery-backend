@@ -4,7 +4,7 @@ import { DOWN_ARROW_SVG, UP_ARROW_SVG } from '@/assets/icons';
 
 import MenuItemCard from './MenuItemCard';
 
-export default function CategoryAccordion({ category, index, activeIndex, setActiveIndex }) {
+export default function CategoryAccordion({ category, restaurant, index, activeIndex, setActiveIndex }) {
    const isOpen = activeIndex === index;
 
    const handleClick = () => {
@@ -32,7 +32,12 @@ export default function CategoryAccordion({ category, index, activeIndex, setAct
             <div className="menu-items">
                {category.menu_items.length ? (
                   category.menu_items.map((item, index) => (
-                     <MenuItemCard key={item.id} item={item} isLast={index === category.menu_items.length - 1} />
+                     <MenuItemCard
+                        key={item.id}
+                        item={item}
+                        restaurant={restaurant}
+                        isLast={index === category.menu_items.length - 1}
+                     />
                   ))
                ) : (
                   <div className="px-5 pb-5 text-sm text-gray-500">No items available.</div>

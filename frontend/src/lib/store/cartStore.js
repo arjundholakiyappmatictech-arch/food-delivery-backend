@@ -21,8 +21,9 @@ const useCartStore = create((set, get) => ({
          throw error;
       }
    },
-   addItem: async (menuItemId) => {
+   addItem: async ({ menuItemId, restaurantId }) => {
       const response = await addToCart({
+         restaurant_id: restaurantId,
          menu_item_id: menuItemId,
          quantity: 1,
       });

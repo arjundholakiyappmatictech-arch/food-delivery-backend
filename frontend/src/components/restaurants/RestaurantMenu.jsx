@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import CategoryAccordion from './CategoryAccordion';
 
-export default function RestaurantMenu({ menus }) {
+export default function RestaurantMenu({ menus, restaurant }) {
    const [activeIndex, setActiveIndex] = useState(0);
 
    return (
@@ -13,6 +13,7 @@ export default function RestaurantMenu({ menus }) {
             <CategoryAccordion
                key={menu.id}
                category={menu}
+               restaurant={restaurant}
                index={index}
                activeIndex={activeIndex}
                setActiveIndex={setActiveIndex}
