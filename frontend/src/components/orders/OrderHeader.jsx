@@ -25,7 +25,7 @@ export default function OrderHeader({ order }) {
          {/* Back */}
          <button
             type="button"
-            onClick={() => router.back()}
+            onClick={() => router.push('/orders')}
             className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-[#02060C] transition hover:text-[#E56A77]"
          >
             <ArrowLeft size={18} />

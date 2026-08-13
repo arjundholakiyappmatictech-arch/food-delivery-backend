@@ -14,14 +14,14 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Pagination\CursorPaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 class OrderService
 {
-    public function index(): CursorPaginator
+    public function index(): LengthAwarePaginator
     {
         $user = $this->authorizeCustomer();
 
@@ -30,7 +30,7 @@ class OrderService
             ->where('user_id', $user->id)
             ->orderByDesc('orders.created_at')
             ->orderByDesc('orders.id')
-            ->cursorPaginate(4)
+            ->paginate(6)
             ->withQueryString();
     }
 

@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import useCartStore from '@/lib/store/cartStore';
 

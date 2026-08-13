@@ -18,6 +18,7 @@ class OrderResource extends JsonResource
             'total' => $this->total,
             'delivery_fee' => $this->delivery_fee,
             'delivery_instructions' => $this->delivery_instructions,
+            'created_at' => $this->created_at,
             'delivered_at' => $this->delivered_at,
             'cancelled_at' => $this->cancelled_at,
 

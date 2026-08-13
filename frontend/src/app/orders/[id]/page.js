@@ -49,7 +49,7 @@ export default function OrderDetailsPage() {
       // Initial request
       loadOrder();
 
-      // Poll every 2 seconds
+      // Poll every 5 seconds
       intervalId = setInterval(() => {
          loadOrder();
       }, 5000);

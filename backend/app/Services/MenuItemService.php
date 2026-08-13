@@ -43,7 +43,7 @@ class MenuItemService
                 $storedImagePath = $image->store("menu-items/{$menuItem->id}", 'public');
 
                 if ($storedImagePath === false) {
-                    throw new RuntimeException('The menu-item image could not be stored.');
+                    throw new RuntimeException('The menu-item image could not be stored.', 409);
                 }
 
                 $menuItem->update([

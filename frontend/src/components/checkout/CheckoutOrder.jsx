@@ -10,6 +10,7 @@ export default function CheckoutOrder({ cartItems }) {
    const increaseQuantity = useCartStore((state) => state.increaseQuantity);
 
    const decreaseQuantity = useCartStore((state) => state.decreaseQuantity);
+   const restaurantId = cartItems[0]?.restaurant_id;
 
    return (
       <section className="min-w-0">
@@ -73,7 +74,7 @@ export default function CheckoutOrder({ cartItems }) {
 
             <button
                type="button"
-               onClick={() => router.push('/')}
+               onClick={() => router.push(`/restaurants/${restaurantId}`)}
                className="my-[15px] cursor-pointer text-[15px] font-[600] text-[#E56A77] hover:text-[#D95765]"
             >
                + Add More Items

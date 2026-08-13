@@ -23,3 +23,9 @@ export async function generateInvoice(orderId, signal) {
 
    return response.data;
 }
+
+export const getOrders = async () => {
+   const response = await api.get('/orders');
+
+   return response.data;
+};
