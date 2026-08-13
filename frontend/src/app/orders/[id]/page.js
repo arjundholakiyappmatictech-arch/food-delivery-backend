@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 
 import OrderHeader from '@/components/orders/OrderHeader';
 import OrderTrackingTimeline from '@/components/orders/OrderTrackingTimeline';
-/* import RestaurantOrderCard from '@/components/orders/RestaurantOrderCard'; */
+import RestaurantOrderCard from '@/components/orders/RestaurantOrderCard';
 import BillSummaryCard from '@/components/orders/BillSummaryCard';
 
 import OrderedItemsCard from '@/components/orders/OrderItemsCard';
@@ -49,10 +49,10 @@ export default function OrderDetailsPage() {
       // Initial request
       loadOrder();
 
-      // Poll every 5 seconds
+      // Poll every 2 seconds
       intervalId = setInterval(() => {
          loadOrder();
-      }, 2000);
+      }, 5000);
 
       return () => {
          controller.abort();
@@ -88,13 +88,17 @@ export default function OrderDetailsPage() {
             <div className="mt-8 space-y-6">
                <OrderTrackingTimeline order={order} />
 
-               {/* <RestaurantOrderCard restaurant={order.restaurant} order={order} /> */}
+               <RestaurantOrderCard restaurant={order.restaurant} order={order} />
 
-               {/* <OrderedItemsCard items={order.items} /> */}
+               <OrderedItemsCard items={order.order_items} />
 
-               {/* <BillSummaryCard bill={order.bill} /> */}
+               <BillSummaryCard order={order} />
 
-               {/* <OrderUserInfoCard user={order.user} /> */}
+               <OrderUserInfoCard
+                  customer={order.customer}
+                  payment={order.order_payment}
+                  address={order.delivery_address}
+               />
             </div>
          </div>
       </main>

@@ -10,14 +10,11 @@ export default function FloatingCart() {
 
    const cartItems = useCartStore((state) => state.cartItems);
 
-   const isCheckoutPage = pathname.startsWith('/checkout');
+   const isAllowedPage = pathname === '/' || pathname === '/cart' || pathname.startsWith('/restaurants/');
 
-   const totalItems = useMemo(() => {
-      return cartItems.reduce((total, item) => total + item.quantity, 0);
-   }, [cartItems]);
+   const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
 
-   // Don't show FloatingCart on checkout
-   if (isCheckoutPage || cartItems.length === 0) {
+   if (!isAllowedPage || cartItems.length === 0) {
       return null;
    }
 

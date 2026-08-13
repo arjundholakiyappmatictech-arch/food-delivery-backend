@@ -1,15 +1,26 @@
 import jsPDF from 'jspdf';
 
-export function generateInvoicePdf(invoice, order) {
+export function generateInvoicePdf(invoice, order = null) {
    const doc = new jsPDF();
-
    const pageWidth = doc.internal.pageSize.getWidth();
 
    let y = 20;
 
-   // Header
+   const user = invoice?.user;
+   const address = invoice?.address;
+
+   // Invoice API uses `items`
+   // Normal order API uses `order_items`
+   const items = invoice?.items?.length ? invoice.items : order?.order_items || [];
+
+   const payment = invoice?.payment || order?.order_payment;
+
+   /*
+    * HEADER
+    */
    doc.setFont('helvetica', 'bold');
    doc.setFontSize(24);
+   doc.setTextColor(2, 6, 12);
    doc.text('TOMATO', 20, y);
 
    doc.setFontSize(18);
@@ -21,82 +32,84 @@ export function generateInvoicePdf(invoice, order) {
 
    doc.setFont('helvetica', 'normal');
    doc.setFontSize(10);
-
+   doc.setTextColor(90, 90, 90);
    doc.text('Food Delivery App', 20, y);
 
    y += 12;
 
-   doc.setDrawColor(220, 220, 220);
-   doc.line(20, y, pageWidth - 20, y);
+   drawDivider(doc, y);
 
-   // Invoice information
+   /*
+    * INVOICE INFORMATION
+    */
    y += 12;
 
    doc.setFontSize(10);
+   doc.setTextColor(60, 60, 60);
 
-   doc.text(`Invoice Number: ${invoice.invoice_number}`, 20, y);
+   doc.text(`Invoice Number: ${invoice?.invoice_number || 'N/A'}`, 20, y);
 
-   doc.text(`Order ID: #${invoice.order_id}`, pageWidth - 20, y, {
+   doc.text(`Order ID: #${invoice?.order_id || order?.id || 'N/A'}`, pageWidth - 20, y, {
       align: 'right',
    });
 
    y += 7;
 
-   doc.text(`Generated: ${formatDate(invoice.generated_at)}`, 20, y);
+   doc.text(`Generated: ${formatDate(invoice?.generated_at)}`, 20, y);
 
-   // Customer
+   /*
+    * CUSTOMER
+    */
    y += 15;
 
-   doc.setFont('helvetica', 'bold');
-   doc.setFontSize(12);
-   doc.text('Customer', 20, y);
+   drawHeading(doc, 'Customer', y);
 
    y += 7;
 
-   doc.setFont('helvetica', 'normal');
-   doc.setFontSize(10);
-
-   doc.text(invoice.user.full_name, 20, y);
+   drawNormalText(doc, user?.full_name || 'N/A', 20, y);
 
    y += 6;
 
-   doc.text(invoice.user.email, 20, y);
+   drawNormalText(doc, user?.email || 'N/A', 20, y);
 
-   y += 6;
+   if (user?.phone_number) {
+      y += 6;
+      drawNormalText(doc, `Phone: ${user.phone_number}`, 20, y);
+   }
 
-   doc.text(`Phone: ${invoice.user.phone_number}`, 20, y);
-
-   // Address
+   /*
+    * DELIVERY ADDRESS
+    */
    y += 15;
 
-   doc.setFont('helvetica', 'bold');
-   doc.setFontSize(12);
-
-   doc.text('Delivery Address', 20, y);
+   drawHeading(doc, 'Delivery Address', y);
 
    y += 7;
 
-   doc.setFont('helvetica', 'normal');
-   doc.setFontSize(10);
+   drawNormalText(doc, address?.address_line || 'N/A', 20, y);
 
-   doc.text(invoice.address.address_line, 20, y);
+   if (address?.city || address?.state || address?.pincode) {
+      y += 6;
 
-   y += 6;
+      const addressLine = [address?.city, address?.state].filter(Boolean).join(', ');
 
-   doc.text(`${invoice.address.city}, ${invoice.address.state} - ${invoice.address.pincode}`, 20, y);
+      const location = [addressLine, address?.pincode].filter(Boolean).join(' - ');
 
-   // Items
+      drawNormalText(doc, location, 20, y);
+   }
+
+   /*
+    * ORDER ITEMS
+    */
    y += 15;
 
-   doc.setFont('helvetica', 'bold');
-   doc.setFontSize(12);
-
-   doc.text('Order Items', 20, y);
+   drawHeading(doc, 'Order Items', y);
 
    y += 8;
 
    doc.setFont('helvetica', 'bold');
    doc.setFontSize(10);
+   doc.setTextColor(2, 6, 12);
 
    doc.text('Item', 20, y);
    doc.text('Qty', 120, y);
@@ -105,76 +118,122 @@ export function generateInvoicePdf(invoice, order) {
 
    y += 5;
 
-   doc.line(20, y, pageWidth - 20, y);
+   drawDivider(doc, y);
 
    y += 8;
 
-   doc.setFont('helvetica', 'normal');
+   /*
+    * THIS IS THE IMPORTANT PART
+    */
+   if (items.length === 0) {
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
 
-   order.order_items.forEach((item) => {
-      const quantity = item.quantity;
-      const price = Number(item.price_at_purchase);
-      const itemTotal = quantity * price;
+      doc.text('No order items found.', 20, y);
 
-      doc.text(item.menu_item.name, 20, y);
-      doc.text(String(quantity), 120, y);
-      doc.text(`Rs. ${price.toFixed(2)}`, 145, y);
-      doc.text(`Rs. ${itemTotal.toFixed(2)}`, 175, y);
+      y += 10;
+   } else {
+      items.forEach((item) => {
+         const quantity = Number(item?.quantity || 0);
+         const price = Number(item?.price_at_purchase || 0);
+         const total = quantity * price;
 
-      y += 7;
-   });
+         const itemName = item?.menu_item?.name || item?.name || 'Unknown Item';
 
-   // Bill
+         /*
+          * Item name
+          */
+         doc.setFont('helvetica', 'normal');
+         doc.setFontSize(10);
+         doc.setTextColor(60, 60, 60);
+
+         doc.text(itemName, 20, y);
+
+         /*
+          * Quantity
+          */
+         doc.text(String(quantity), 120, y);
+
+         /*
+          * Price
+          */
+         doc.text(`Rs. ${price.toFixed(2)}`, 145, y);
+
+         /*
+          * Item Total
+          */
+         doc.text(`Rs. ${total.toFixed(2)}`, 175, y);
+
+         y += 7;
+      });
+   }
+
+   /*
+    * BILL SUMMARY
+    */
    y += 8;
 
-   doc.line(20, y, pageWidth - 20, y);
+   drawDivider(doc, y);
 
    y += 10;
 
-   const itemTotal = order.order_items.reduce((sum, item) => sum + Number(item.price_at_purchase) * item.quantity, 0);
+   const itemSubtotal = items.reduce(
+      (sum, item) => sum + Number(item?.price_at_purchase || 0) * Number(item?.quantity || 0),
+      0,
+   );
 
-   addSummaryRow(doc, 'Item Total', itemTotal, y);
+   addSummaryRow(doc, 'Item Subtotal', itemSubtotal, y);
 
    y += 7;
 
-   addSummaryRow(doc, 'Delivery Fee', Number(invoice.delivery_fee), y);
+   addSummaryRow(doc, 'Delivery Fee', Number(invoice?.delivery_fee || 0), y);
 
    y += 10;
 
    doc.setFont('helvetica', 'bold');
    doc.setFontSize(13);
+   doc.setTextColor(2, 6, 12);
 
    doc.text('Total', 145, y);
 
-   doc.text(`Rs. ${Number(invoice.total).toFixed(2)}`, pageWidth - 20, y, {
+   doc.text(`Rs. ${Number(invoice?.total || 0).toFixed(2)}`, pageWidth - 20, y, {
       align: 'right',
    });
 
-   // Payment
-   y += 15;
+   /*
+    * PAYMENT
+    */
+   if (payment) {
+      y += 15;
 
-   doc.setFontSize(11);
-   doc.text('Payment', 20, y);
+      drawHeading(doc, 'Payment', y);
 
-   y += 7;
+      y += 7;
 
-   doc.setFont('helvetica', 'normal');
-   doc.setFontSize(10);
+      drawNormalText(doc, `Method: ${formatPaymentMethod(payment.method)}`, 20, y);
 
-   doc.text(`Method: ${formatPaymentMethod(invoice.payment.method)}`, 20, y);
+      y += 6;
 
-   y += 6;
+      drawNormalText(doc, `Status: ${formatPaymentStatus(payment.status)}`, 20, y);
 
-   doc.text(`Status: ${formatPaymentStatus(invoice.payment.status)}`, 20, y);
+      if (payment.paid_at) {
+         y += 6;
 
-   // Footer
+         drawNormalText(doc, `Paid At: ${formatDate(payment.paid_at)}`, 20, y);
+      }
+   }
+
+   /*
+    * FOOTER
+    */
    y += 18;
 
-   doc.setDrawColor(220, 220, 220);
-   doc.line(20, y, pageWidth - 20, y);
+   drawDivider(doc, y);
 
    y += 10;
 
+   doc.setFont('helvetica', 'normal');
    doc.setFontSize(9);
    doc.setTextColor(100, 100, 100);
 
@@ -182,24 +241,69 @@ export function generateInvoicePdf(invoice, order) {
       align: 'center',
    });
 
-   // Download
-   doc.save(`Tomato-Invoice-${invoice.invoice_number}.pdf`);
+   /*
+    * DOWNLOAD
+    */
+   doc.save(`Tomato-Invoice-${invoice?.invoice_number || invoice?.order_id}.pdf`);
 }
 
+/*
+ * SUMMARY ROW
+ */
 function addSummaryRow(doc, label, value, y) {
    const pageWidth = doc.internal.pageSize.getWidth();
 
    doc.setFont('helvetica', 'normal');
    doc.setFontSize(10);
+   doc.setTextColor(60, 60, 60);
 
    doc.text(label, 145, y);
 
-   doc.text(`Rs. ${value.toFixed(2)}`, pageWidth - 20, y, {
+   doc.text(`Rs. ${Number(value).toFixed(2)}`, pageWidth - 20, y, {
       align: 'right',
    });
 }
 
+/*
+ * HEADING
+ */
+function drawHeading(doc, text, y) {
+   doc.setFont('helvetica', 'bold');
+   doc.setFontSize(12);
+   doc.setTextColor(2, 6, 12);
+
+   doc.text(text, 20, y);
+}
+
+/*
+ * NORMAL TEXT
+ */
+function drawNormalText(doc, text, x, y) {
+   doc.setFont('helvetica', 'normal');
+   doc.setFontSize(10);
+   doc.setTextColor(60, 60, 60);
+
+   doc.text(text, x, y);
+}
+
+/*
+ * DIVIDER
+ */
+function drawDivider(doc, y) {
+   const pageWidth = doc.internal.pageSize.getWidth();
+
+   doc.setDrawColor(220, 220, 220);
+   doc.line(20, y, pageWidth - 20, y);
+}
+
+/*
+ * DATE
+ */
 function formatDate(date) {
+   if (!date) {
+      return 'N/A';
+   }
+
    return new Date(date).toLocaleString('en-IN', {
       day: '2-digit',
       month: 'short',
@@ -210,10 +314,24 @@ function formatDate(date) {
    });
 }
 
+/*
+ * PAYMENT METHOD
+ */
 function formatPaymentMethod(method) {
+   if (!method) {
+      return 'N/A';
+   }
+
    return method.replaceAll('_', ' ').toUpperCase();
 }
 
+/*
+ * PAYMENT STATUS
+ */
 function formatPaymentStatus(status) {
+   if (!status) {
+      return 'N/A';
+   }
+
    return status.replaceAll('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 }

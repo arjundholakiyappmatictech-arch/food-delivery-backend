@@ -66,7 +66,7 @@ export default function RestaurantContainer({
    }
 
    if (!restaurantsList?.length) {
-      return <div className="flex justify-center py-10 text-[#595959]">No restaurants found nearby.</div>;
+      return <div className="flex justify-center  py-10 text-[#595959]">No restaurants found nearby.</div>;
    }
 
    return (
@@ -103,7 +103,7 @@ export default function RestaurantContainer({
                >
                   <RestaurantCard restaurant={restaurant} />
                </div>
-         ))}
+            ))}
 
             {/* Only show these during pagination */}
             {loadingMore &&

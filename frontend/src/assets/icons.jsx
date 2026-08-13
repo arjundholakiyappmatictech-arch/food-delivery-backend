@@ -208,3 +208,42 @@ export const INFO_SVG = (
       />
    </svg>
 );
+
+export const CARD_SVG = (
+   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="h-full w-full" aria-hidden="true">
+      <path
+         d="M22 12C22 8.22876 22 6.34315 20.8284 5.17157C19.6569 4 17.7712 4 14 4H10C6.22876 4 4.34315 4 3.17157 5.17157C2 6.34315 2 8.22876 2 12C2 15.7712 2 17.6569 3.17157 18.8284C4.34315 20 6.22876 20 10 20H14C17.7712 20 19.6569 19.6562 20.8284 18.8284C21.4816 18.1752 21.7706 17.3001 21.8985 16"
+         stroke="currentColor"
+         strokeWidth="1.5"
+         strokeLinecap="round"
+      />
+      <path d="M10 16H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M14 16H12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M2 10H7M22 10H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+   </svg>
+);
+
+export const CALENDER_SVG = (
+   <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="-3 0 19 19"
+      fill="currentColor"
+      className="h-full w-full"
+      aria-hidden="true"
+   >
+      <path d="M11.882 3.187a.476.476 0 0 1 .475.475v11.063a.476.476 0 0 1-.475.475H1.118a.476.476 0 0 1-.475-.475V3.662a.476.476 0 0 1 .475-.475h1.328v.721a1.425 1.425 0 0 0 2.85 0v-.72H7.71v.72a1.425 1.425 0 0 0 2.85 0v-.72zm-.634 3.37H1.752v7.535h9.496zm-7.384.821H2.621V8.67h1.243zm0 2.292H2.621v1.292h1.243zm0 2.292H2.621v1.291h1.243zm.561-8.054V2.475a.554.554 0 1 0-1.108 0v1.433a.554.554 0 1 0 1.108 0zm1.613 3.47H4.794V8.67h1.244zm0 2.292H4.794v1.292h1.244zm0 2.292H4.794v1.291h1.244zm2.174-4.584H6.968V8.67h1.244zm0 2.292H6.968v1.292h1.244zm0 2.292H6.968v1.291h1.244zm1.477-8.054V2.475a.554.554 0 0 0-1.108 0v1.433a.554.554 0 1 0 1.108 0zm.696 3.47H9.142V8.67h1.243zm0 2.292H9.142v1.292h1.243zm0 2.292H9.142v1.291h1.243z" />
+   </svg>
+);
+
+export const USER_SVG = (
+   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" className="h-full w-full" aria-hidden="true">
+      <circle cx="12" cy="6" r="4" stroke="currentColor" strokeWidth="1.5" />
+
+      <path
+         d="M15 20.6151C14.0907 20.8619 13.0736 21 12 21C8.13401 21 5 19.2091 5 17C5 14.7909 8.13401 13 12 13C15.866 13 19 14.7909 19 17C19 17.3453 18.9234 17.6804 18.7795 18"
+         stroke="currentColor"
+         strokeWidth="1.5"
+         strokeLinecap="round"
+      />
+   </svg>
+);
