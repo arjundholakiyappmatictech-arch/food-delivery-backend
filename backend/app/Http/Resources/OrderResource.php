@@ -13,6 +13,7 @@ class OrderResource extends JsonResource
             'id' => $this->id,
             'user_id' => $this->user_id,
             'address_id' => $this->address_id,
+            'restaurant_id' => $this->restaurant_id,
             'status' => $this?->status,
             'total' => $this->total,
             'delivery_fee' => $this->delivery_fee,
@@ -21,6 +22,7 @@ class OrderResource extends JsonResource
             'cancelled_at' => $this->cancelled_at,
 
             'customer' => new UserResource($this->whenLoaded('user')),
+            'restaurant' => new RestaurantResource($this->whenLoaded('restaurant')),
             'delivery_address' => new AddressResource($this->whenLoaded('address')),
             'order_items' => OrderItemResource::collection($this->whenLoaded('items')),
             'order_payment' => new PaymentResource($this->whenLoaded('payment')),

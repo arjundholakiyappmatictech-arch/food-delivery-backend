@@ -17,16 +17,16 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class OrderService
 {
-
     public function index(): CursorPaginator
     {
         $user = $this->authorizeCustomer();
 
         return Order::query()
-            ->with(['address', 'items.menuItem', 'payment', 'user', 'invoice', 'orderReview'])
+            ->with(['address', 'items.menuItem', 'payment', 'user', 'invoice', 'orderReview', 'restaurant'])
             ->where('user_id', $user->id)
             ->orderByDesc('orders.created_at')
             ->orderByDesc('orders.id')
@@ -44,10 +44,19 @@ class OrderService
             throw new AuthorizationException('This address does not belong to you', 403);
         }
 
-        $cartItems = Cart::query()->with('menuItem')->where('user_id', $user->id)->get();
+        $cartItems = Cart::query()
+            ->with(['menuItem', 'restaurant'])
+            ->where('user_id', $user->id)
+            ->get();
 
         if ($cartItems->isEmpty()) {
             throw new EmptyCartException();
+        }
+
+        $restaurant = $cartItems->first()->restaurant;
+
+        if ($restaurant === null) {
+            throw new RuntimeException('Cart restaurant not found.', 409);
         }
 
         $subtotal = 0;
@@ -69,9 +78,18 @@ class OrderService
 
         $deliveryFee = 40;
 
-        $order =  DB::transaction(function () use ($data, $user, $address, $cartItems, $subtotal, $deliveryFee) {
+        $order = DB::transaction(function () use (
+            $data,
+            $user,
+            $address,
+            $cartItems,
+            $subtotal,
+            $deliveryFee,
+            $restaurant,
+        ) {
             $order = Order::create([
                 'user_id' => $user->id,
+                'restaurant_id' => $restaurant->id,
                 'address_id' => $address->id,
                 'status' => 'placed',
                 'total' => $subtotal + $deliveryFee,
@@ -103,13 +121,22 @@ class OrderService
     {
         $this->authorizeOrderOwner($order);
 
-        return $order->load(['address', 'items.menuItem','payment', 'user', 'orderReview']);
+        return $order->load([
+            'address',
+            'restaurant',
+            'items.menuItem',
+            'payment',
+            'user',
+            'orderReview',
+            'invoice',
+            'delivery',
+        ]);
     }
 
     public function generateInvoice(Order $order): array
     {
         $this->authorizeOrderOwner($order);
- 
+
         $order->load(['address', 'items.menuItem', 'payment', 'user', 'invoice']);
 
         return [
