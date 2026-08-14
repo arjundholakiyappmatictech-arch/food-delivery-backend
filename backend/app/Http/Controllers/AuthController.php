@@ -8,6 +8,7 @@ use App\Http\Resources\AuthResource;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -25,5 +26,12 @@ class AuthController extends Controller
         $result = $this->authService->login($request->validated());
 
         return $this->successResponse('user loggedIn successfully', new AuthResource($result));
+    }
+
+    public function logout(Request $request)
+    {
+        $this->authService->logout($request->user());
+
+        return $this->successResponse('user logged-out successfully', null);
     }
 }

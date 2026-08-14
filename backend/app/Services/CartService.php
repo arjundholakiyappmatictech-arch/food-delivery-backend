@@ -15,7 +15,7 @@ use RuntimeException;
 
 class CartService
 {
-    public function index(): LengthAwarePaginator
+    public function index()
     {
         $user = $this->authorizeCustomer();
 
@@ -23,7 +23,7 @@ class CartService
             ->with(['menuItem', 'user'])
             ->where('user_id', $user->id)
             ->latest()
-            ->paginate(2);
+            ->get();
     }
 
     public function store(array $data): Cart

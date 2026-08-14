@@ -18,12 +18,7 @@ class CartController extends Controller
     {
         $carts = $this->cartService->index();
 
-        return $this->successResponse(
-            'Carts Fetched Successfully',
-            CartResource::collection($carts),
-            200,
-            $this->pagination($carts),
-        );
+        return $this->successResponse('Carts Fetched Successfully', CartResource::collection($carts), 200);
     }
 
     public function store(StoreCartRequest $request): JsonResponse

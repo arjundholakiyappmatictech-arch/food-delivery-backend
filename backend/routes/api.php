@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 // auth routes
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
+Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 // address routes
 Route::middleware('auth:sanctum')
