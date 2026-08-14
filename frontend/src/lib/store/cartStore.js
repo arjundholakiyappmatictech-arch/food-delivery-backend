@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 
 import { getCart, addToCart, updateCart, removeFromCart, clearCart } from '@/services/cartServices';
+import { parseApiError } from '@/utils/apiError';
+import { toast } from 'sonner';
 
 const useCartStore = create((set, get) => ({
    cartItems: [],
@@ -46,13 +48,25 @@ const useCartStore = create((set, get) => ({
    },
 
    increaseQuantity: async (cartItem) => {
-      const response = await updateCart(cartItem.id, {
-         quantity: cartItem.quantity + 1,
-      });
+      try {
+         const response = await updateCart(cartItem.id, {
+            quantity: cartItem.quantity + 1,
+         });
 
-      set((state) => ({
-         cartItems: state.cartItems.map((item) => (item.id === response.data.id ? response.data : item)),
-      }));
+         set((state) => ({
+            cartItems: state.cartItems.map((item) => (item.id === response.data.id ? response.data : item)),
+         }));
+      } catch (error) {
+         const apiError = parseApiError(error);
+
+         if (apiError.status === 422) {
+            toast.error(apiError.message ?? 'Unable to update cart quantity.');
+
+            return;
+         }
+
+         throw error;
+      }
    },
 
    decreaseQuantity: async (cartItem) => {

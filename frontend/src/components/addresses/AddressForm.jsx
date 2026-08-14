@@ -320,7 +320,7 @@ export function AddressForm() {
          </div>
 
          {/* Set as default checkbox */}
-         <div className="flex items-center gap-2 pt-1">
+         {/* <div className="flex items-center gap-2 pt-1">
             <input
                id="is_default"
                type="checkbox"
@@ -331,7 +331,7 @@ export function AddressForm() {
             <label htmlFor="is_default" className="cursor-pointer text-xs font-medium text-[#595959]">
                Make this my default delivery address
             </label>
-         </div>
+         </div> */}
 
          {/* Submit Button */}
          <div className="pt-2">
@@ -349,14 +349,7 @@ export function AddressForm() {
                         viewBox="0 0 24 24"
                         aria-hidden="true"
                      >
-                        <circle
-                           className="opacity-25"
-                           cx="12"
-                           cy="12"
-                           r="10"
-                           stroke="currentColor"
-                           strokeWidth="4"
-                        />
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path
                            className="opacity-75"
                            fill="currentColor"
