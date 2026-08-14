@@ -7,12 +7,13 @@ import { ChevronRight } from 'lucide-react';
 import { SHOPPING_BAG_SVG2, LOCATION_SVG, REVIEW_SVG, LOGOUT_SVG } from '@/assets/icons';
 
 import { useAuthStore } from '@/lib/store/useAuthStore';
+import useAuthGuard from '@/lib/hooks/useAuth';
 
 export default function UserProfile() {
    const router = useRouter();
+   const { logoutUser, logoutLoading } = useAuthGuard();
 
    const user = useAuthStore((state) => state.user);
-   const clearUser = useAuthStore((state) => state.clearUser);
 
    const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -69,13 +70,10 @@ export default function UserProfile() {
       router.push(href);
    };
 
-   const handleLogout = () => {
+   const handleLogout = async () => {
       setIsProfileOpen(false);
 
-      localStorage.removeItem('access_token');
-      clearUser();
-
-      router.replace('/login');
+      await logoutUser();
    };
 
    if (!user) {
@@ -154,13 +152,14 @@ export default function UserProfile() {
                   <button
                      type="button"
                      onClick={handleLogout}
-                     className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-[#E53935] transition-colors duration-150 hover:bg-[#FFF4F4]"
+                     disabled={logoutLoading}
+                     className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-[#E53935] transition-colors duration-150 hover:bg-[#FFF4F4] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#FFF4F4]">
                         <div className="h-5 w-5">{LOGOUT_SVG}</div>
                      </div>
 
-                     <span className="text-[14px] font-medium">Logout</span>
+                     <span className="text-[14px] font-medium">{logoutLoading ? 'Logging out...' : 'Logout'}</span>
                   </button>
                </div>
             </div>

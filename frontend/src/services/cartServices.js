@@ -1,9 +1,7 @@
 import api from '@/lib/api/api';
 
-export async function getCart(signal) {
-   const response = await api.get('/cart', {
-      signal,
-   });
+export async function getCart() {
+   const response = await api.get('/cart');
 
    return response.data;
 }
