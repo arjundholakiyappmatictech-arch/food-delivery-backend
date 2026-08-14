@@ -46,7 +46,7 @@ class AddressService
                 }
             })
             ->latest()
-            ->paginate(2)
+            ->paginate(10)
             ->withQueryString();
     }
 
