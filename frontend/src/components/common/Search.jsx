@@ -1,10 +1,47 @@
 'use client';
 
 import { SEARCH_ICON_URL, LOCATION_SVG } from '@/assets/icons';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 export default function Search({ restaurantFilters, setRestaurantFilters, selectedLocation }) {
+   const router = useRouter();
+   const pathname = usePathname();
+   const searchParams = useSearchParams();
+
+   // search logic
+   const handleSearchSubmit = () => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      const search = restaurantFilters.searchText.trim();
+
+      if (search) {
+         params.set('search', search);
+      } else {
+         params.delete('search');
+      }
+
+      const query = params.toString();
+
+      router.push(query ? `${pathname}?${query}` : pathname);
+   };
+
+   const clearSearch = () => {
+      setRestaurantFilters((prev) => ({
+         ...prev,
+         searchText: '',
+      }));
+
+      const params = new URLSearchParams(searchParams.toString());
+
+      params.delete('search');
+
+      const query = params.toString();
+
+      router.push(query ? `${pathname}?${query}` : pathname);
+   };
+
    return (
-   <div className="w-150 flex justify-between mx-auto my-[30px] border-1 border-[#BEBFC5] rounded-[0.1cm] max-[610px]:my-[15px] max-[410px]:w-[99%]">
+      <div className="w-150 flex justify-between mx-auto my-[30px] border-1 border-[#BEBFC5] rounded-[0.1cm] max-[610px]:my-[15px] max-[410px]:w-[99%]">
          {/* Selected Location */}
          <div className="flex shrink-0 items-center gap-2 px-[10px]">
             {/* Location Icon */}
@@ -33,6 +70,11 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
                      searchText: e.target.value,
                   }))
                }
+               onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                     handleSearchSubmit();
+                  }
+               }}
                placeholder="Search for restaurants"
             />
 
@@ -44,16 +86,7 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
                   draggable={false}
                />
             ) : (
-               <button
-                  type="button"
-                  className="my-auto mx-[10px] cursor-pointer text-[20px]"
-                  onClick={() =>
-                     setRestaurantFilters((prev) => ({
-                        ...prev,
-                        searchText: '',
-                     }))
-                  }
-               >
+               <button type="button" className="my-auto mx-[10px] cursor-pointer text-[20px]" onClick={clearSearch}>
                   ✖
                </button>
             )}

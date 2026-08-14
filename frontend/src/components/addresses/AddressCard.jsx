@@ -1,4 +1,6 @@
-import { BriefcaseBusiness, Home, MapPin } from 'lucide-react';
+'use client';
+
+import { BriefcaseBusiness, Home, MapPin, ChevronRight } from 'lucide-react';
 
 function getAddressIcon(label) {
    const normalizedLabel = label?.toLowerCase();
@@ -25,27 +27,27 @@ export default function AddressCard({ address, disabled = false, onSelect }) {
          type="button"
          disabled={disabled}
          onClick={() => onSelect(address)}
-         className="flex w-full items-start gap-4 rounded-2xl border border-[#e4e7ec] bg-white p-4 text-left shadow-[0_6px_18px_rgba(16,24,40,0.04)] transition hover:border-[#ffcfbd] hover:bg-[#fff8f4] focus:outline-none focus:ring-4 focus:ring-[#ef3b0a]/10 disabled:cursor-not-allowed disabled:opacity-70"
+         className="group flex w-full cursor-pointer items-start gap-3 rounded-xl border border-[#E9E9E9] bg-white p-3.5 text-left transition-all duration-150 hover:border-[#E56A77] hover:bg-[#FFF4F5]/40 focus:outline-none focus:ring-2 focus:ring-[#E56A77]/20 disabled:cursor-not-allowed disabled:opacity-50"
       >
-         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#fff1e8] text-[#ef3b0a]">
-            <AddressIcon className="h-6 w-6" />
-         </span>
+         <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#FFF4F5] text-[#E56A77] transition-colors duration-150 group-hover:bg-[#E56A77] group-hover:text-white">
+            <AddressIcon className="size-4.5" />
+         </div>
 
-         <span className="min-w-0 flex-1">
-            <span className="flex items-center gap-2">
-               <span className="text-base font-bold capitalize text-[#121826]">{address.label}</span>
+         <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+               <span className="text-sm font-bold capitalize text-[#02060C]">{address.label}</span>
 
                {address.is_default && (
-                  <span className="rounded-full bg-[#fff1e8] px-2.5 py-1 text-xs font-bold text-[#ef3b0a]">
+                  <span className="rounded bg-[#FFF4F5] px-1.5 py-0.5 text-[10px] font-semibold text-[#E56A77]">
                      Default
                   </span>
                )}
-            </span>
+            </div>
 
-            <span className="mt-1 block break-words text-sm font-medium leading-6 text-[#667085]">
-               {completeAddress}
-            </span>
-         </span>
+            <p className="mt-0.5 break-words text-xs leading-relaxed text-[#595959]">{completeAddress}</p>
+         </div>
+
+         <ChevronRight className="size-4 shrink-0 self-center text-[#A6A6A6] transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-[#E56A77]" />
       </button>
    );
 }

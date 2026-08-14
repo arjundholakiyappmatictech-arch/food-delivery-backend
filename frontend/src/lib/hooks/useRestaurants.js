@@ -1,13 +1,14 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react-hooks/preserve-manual-memoization */
-'use client';
-
+import getNearbyRestaurants from '@/services/restaurantService';
 import { useCallback, useEffect, useState } from 'react';
 
-import getNearbyRestaurants from '@/services/restaurantService';
-import { useDebounce } from './useDebounce';
-
-export default function useRestaurants(selectedLocation, restaurantFilters) {
+export default function useRestaurants(
+   selectedLocation,
+   restaurantFilters,
+   submittedSearch = '',
+   submittedCategory = '',
+) {
    const [restaurants, setRestaurants] = useState([]);
    const [page, setPage] = useState(1);
    const [menus, setMenus] = useState([]);
@@ -19,7 +20,19 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
    const [hasMore, setHasMore] = useState(true);
    const [error, setError] = useState('');
 
-   const debouncedSearch = useDebounce(restaurantFilters.searchText, 500);
+   const searchQuery = submittedSearch.trim();
+   const categoryQuery = submittedCategory.trim();
+
+   /*
+    * Extract unique menus/categories from restaurants.
+    */
+   const extractMenus = useCallback((items) => {
+      return Array.from(
+         new Map(
+            items.flatMap((restaurant) => restaurant.menus ?? []).map((menu) => [menu.name.toLowerCase(), menu]),
+         ).values(),
+      );
+   }, []);
 
    const fetchRestaurants = useCallback(
       async (signal, currentPage = 1) => {
@@ -36,7 +49,7 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
             setError('');
 
             if (currentPage === 1) {
-               if (debouncedSearch.trim()) {
+               if (searchQuery) {
                   setSearching(true);
                } else {
                   setLoading(true);
@@ -49,10 +62,16 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
                addressId: selectedLocation?.addressId,
                latitude: selectedLocation?.latitude,
                longitude: selectedLocation?.longitude,
-               query: debouncedSearch,
-               menuName: restaurantFilters.menuName,
+
+               // Submitted search from URL
+               query: searchQuery,
+
+               // Submitted category from URL
+               menuName: categoryQuery,
+
                sortBy: restaurantFilters.sortBy,
                openNow: restaurantFilters.openNow,
+
                page: currentPage,
                signal,
             });
@@ -60,30 +79,22 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
             const items = response.data ?? [];
 
             /*
-             * Build Explore categories only from an
-             * unfiltered first-page request.
+             * When there is no search/category filter,
+             * this response already contains the restaurants
+             * and their menus, so use it to build Explore Menu.
              */
-            if (currentPage === 1 && !restaurantFilters.menuName && !debouncedSearch.trim()) {
-               const uniqueMenus = Array.from(
-                  new Map(
-                     items
-                        .flatMap((restaurant) => restaurant.menus ?? [])
-                        .map((menu) => [menu.name.toLowerCase(), menu]),
-                  ).values(),
-               );
-
-               setMenus(uniqueMenus);
+            if (currentPage === 1 && !searchQuery && !categoryQuery) {
+               setMenus(extractMenus(items));
             }
 
             /*
-             * Replace restaurants on first page.
+             * First page replaces the current restaurants.
              */
             if (currentPage === 1) {
                setRestaurants(items);
             } else {
                /*
-                * Append only restaurants that aren't
-                * already loaded.
+                * Additional pages are appended.
                 */
                setRestaurants((prev) => {
                   const existingIds = new Set(prev.map((restaurant) => restaurant.id));
@@ -96,9 +107,14 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
 
             setHasMore(response.pagination?.has_more_pages ?? false);
          } catch (error) {
+            /*
+             * Ignore intentionally cancelled requests.
+             */
             if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
                return;
             }
+
+            console.error('FETCH RESTAURANTS ERROR:', error);
 
             setError(error.response?.data?.message ?? 'Unable to fetch restaurants.');
 
@@ -115,32 +131,91 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
          selectedLocation?.addressId,
          selectedLocation?.latitude,
          selectedLocation?.longitude,
-         debouncedSearch,
-         restaurantFilters.menuName,
+         searchQuery,
+         categoryQuery,
          restaurantFilters.sortBy,
          restaurantFilters.openNow,
+         extractMenus,
       ],
    );
 
+   const fetchMenus = useCallback(
+      async (signal) => {
+         const hasAddressId = Boolean(selectedLocation?.addressId);
+
+         const hasCoordinates = selectedLocation?.latitude != null && selectedLocation?.longitude != null;
+
+         if (!hasAddressId && !hasCoordinates) {
+            setMenus([]);
+            return;
+         }
+
+         try {
+            const response = await getNearbyRestaurants({
+               addressId: selectedLocation?.addressId,
+               latitude: selectedLocation?.latitude,
+               longitude: selectedLocation?.longitude,
+
+               // Intentionally unfiltered
+               query: '',
+               menuName: '',
+
+               sortBy: '',
+               openNow: false,
+
+               page: 1,
+               signal,
+            });
+
+            const items = response.data ?? [];
+
+            setMenus(extractMenus(items));
+         } catch (error) {
+            /*
+             * Ignore cancelled requests.
+             */
+            if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
+               return;
+            }
+
+            console.error('FETCH MENUS ERROR:', error);
+         }
+      },
+      [selectedLocation?.addressId, selectedLocation?.latitude, selectedLocation?.longitude, extractMenus],
+   );
+
+   
    useEffect(() => {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPage(1);
 
       const controller = new AbortController();
 
       fetchRestaurants(controller.signal, 1);
 
-      return () => controller.abort();
-   }, [fetchRestaurants]);
+      if (searchQuery || categoryQuery) {
+         fetchMenus(controller.signal);
+      }
 
+      return () => {
+         controller.abort();
+      };
+   }, [fetchRestaurants, fetchMenus, searchQuery, categoryQuery]);
+
+   /*
+    * Fetch additional pages.
+    */
    useEffect(() => {
       if (page === 1) {
          return;
       }
 
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchRestaurants(undefined, page);
    }, [page, fetchRestaurants]);
 
+   /*
+    * Load next page.
+    */
    const loadMore = useCallback(() => {
       if (loadingMore || !hasMore) {
          return;
@@ -149,20 +224,30 @@ export default function useRestaurants(selectedLocation, restaurantFilters) {
       setPage((prevPage) => prevPage + 1);
    }, [loadingMore, hasMore]);
 
+   /*
+    * Retry first-page request.
+    */
    const retry = useCallback(() => {
       setPage(1);
 
       fetchRestaurants(undefined, 1);
-   }, [fetchRestaurants]);
+
+      if (searchQuery || categoryQuery) {
+         fetchMenus(undefined);
+      }
+   }, [fetchRestaurants, fetchMenus, searchQuery, categoryQuery]);
 
    return {
       restaurants,
       menus,
+
       loading,
       loadingMore,
       searching,
+
       hasMore,
       error,
+
       retry,
       loadMore,
    };

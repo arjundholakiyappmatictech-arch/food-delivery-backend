@@ -1,6 +1,6 @@
-/* eslint-disable react-hooks/static-components */
+'use client';
 
-import { BriefcaseBusiness, Home, MapPin } from 'lucide-react';
+import { BriefcaseBusiness, Home, MapPin, ChevronRight } from 'lucide-react';
 
 function getAddressIcon(label) {
    const normalizedLabel = label?.toLowerCase();
@@ -28,17 +28,27 @@ export function SavedAddressItem({ address, onSelect, disabled = false }) {
          type="button"
          disabled={disabled}
          onClick={() => onSelect(address)}
-         className="flex min-h-24 w-full items-start gap-3 rounded-xl border border-gray-200 bg-white p-4 text-left transition-colors hover:border-orange-200 hover:bg-orange-50/50 focus:outline-none focus:ring-2 focus:ring-orange-200 disabled:cursor-not-allowed disabled:opacity-50"
+         className="group flex w-full cursor-pointer items-start gap-3 rounded-xl border border-[#E9E9E9] bg-white p-3.5 text-left transition-all duration-150 hover:border-[#E56A77] hover:bg-[#FFF4F5]/40 focus:outline-none focus:ring-2 focus:ring-[#E56A77]/20 disabled:cursor-not-allowed disabled:opacity-50"
       >
-         <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-orange-50">
-            <AddressIcon className="size-5 text-orange-600" />
+         <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#FFF4F5] text-[#E56A77] transition-colors duration-150 group-hover:bg-[#E56A77] group-hover:text-white">
+            <AddressIcon className="size-4.5" />
          </div>
 
          <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold capitalize leading-5 text-gray-900">{address.label}</p>
+            <div className="flex items-center gap-2">
+               <span className="text-sm font-bold capitalize text-[#02060C]">{address.label}</span>
 
-            <p className="mt-1 break-words text-sm leading-5 text-gray-500">{completeAddress}</p>
+               {address.is_default && (
+                  <span className="rounded bg-[#FFF4F5] px-1.5 py-0.5 text-[10px] font-semibold text-[#E56A77]">
+                     Default
+                  </span>
+               )}
+            </div>
+
+            <p className="mt-0.5 break-words text-xs leading-relaxed text-[#595959]">{completeAddress}</p>
          </div>
+
+         <ChevronRight className="size-4 shrink-0 self-center text-[#A6A6A6] transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-[#E56A77]" />
       </button>
    );
 }

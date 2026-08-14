@@ -4,12 +4,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
-import { Button, Card, Label, Spinner, TextInput } from 'flowbite-react';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import { loginSchema } from '@/lib/schemas/loginSchema';
 import { login } from '@/services/authService';
 import { parseApiError } from '@/utils/apiError';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuthStore } from '@/lib/store/useAuthStore';
 
 const LoginForm = () => {
@@ -90,89 +89,118 @@ const LoginForm = () => {
    };
 
    return (
-      <section className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50">
-         <div className="mx-auto flex min-h-screen w-full max-w-lg items-center px-4 py-10 sm:px-6">
-            <Card className="w-full border-0 shadow-xl">
-               <div className="space-y-6 p-2 sm:p-4">
-                  <header className="space-y-1 text-center">
-                     <h1 className="text-2xl font-semibold">
-                        Welcome to <span className="text-orange-600">Tomato</span>
-                     </h1>
+      <main className="flex min-h-[calc(100vh-75px)] w-full items-center justify-center bg-[#FAFAFA] px-4 py-8 sm:px-6 sm:py-12 md:px-8">
+         <div className="w-full max-w-lg rounded-2xl border border-[#E9E9E9] bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:p-8 md:p-10">
+            <header className="mb-6 text-center">
+               <h1 className="text-2xl font-bold tracking-tight text-[#02060C] sm:text-3xl">
+                  Welcome to <span className="text-[#E56A77]">Tomato</span>
+               </h1>
 
-                     <p className="text-sm text-gray-500">Log in to your account to continue.</p>
-                  </header>
+               <p className="mt-2 text-sm text-[#595959]">Log in to your account to continue.</p>
+            </header>
 
-                  <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
-                     <div className="space-y-4">
-                        <div className="space-y-1.5">
-                           <Label htmlFor="email" className="font-normal text-gray-600">
-                              Email <span className="text-red-500">*</span>
-                           </Label>
+            <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+               <div className="space-y-4">
+                  <div>
+                     <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-[#02060C]">
+                        Email <span className="text-[#E56A77]">*</span>
+                     </label>
 
-                           <TextInput
-                              id="email"
-                              type="email"
-                              placeholder="Enter your email"
-                              autoComplete="email"
-                              disabled={isSubmitting}
-                              color={errors.email ? 'failure' : 'gray'}
-                              aria-invalid={Boolean(errors.email)}
-                              {...register('email')}
-                              className="[&_input]:h-10"
-                           />
+                     <input
+                        id="email"
+                        type="email"
+                        placeholder="Enter your email"
+                        autoComplete="email"
+                        disabled={isSubmitting}
+                        aria-invalid={Boolean(errors.email)}
+                        {...register('email')}
+                        className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
+                           errors.email
+                              ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                              : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
+                        }`}
+                     />
 
-                           {errors.email?.message && <p className="text-sm text-red-600">{errors.email.message}</p>}
-                        </div>
+                     {errors.email?.message && (
+                        <p className="mt-1.5 text-xs font-medium text-red-600">{errors.email.message}</p>
+                     )}
+                  </div>
 
-                        <div className="space-y-1.5">
-                           <Label htmlFor="password" className="font-normal text-gray-600">
-                              Password <span className="text-red-500">*</span>
-                           </Label>
+                  <div>
+                     <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-[#02060C]">
+                        Password <span className="text-[#E56A77]">*</span>
+                     </label>
 
-                           <TextInput
-                              id="password"
-                              type="password"
-                              placeholder="Enter your password"
-                              autoComplete="current-password"
-                              disabled={isSubmitting}
-                              color={errors.password ? 'failure' : 'gray'}
-                              aria-invalid={Boolean(errors.password)}
-                              {...register('password')}
-                              className="[&_input]:h-10"
-                           />
+                     <input
+                        id="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        autoComplete="current-password"
+                        disabled={isSubmitting}
+                        aria-invalid={Boolean(errors.password)}
+                        {...register('password')}
+                        className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
+                           errors.password
+                              ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                              : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
+                        }`}
+                     />
 
-                           {errors.password?.message && (
-                              <p className="text-sm text-red-600">{errors.password.message}</p>
-                           )}
-                        </div>
-                     </div>
-
-                     <div className="space-y-4">
-                        <Button
-                           type="submit"
-                           disabled={isSubmitting}
-                           className="w-full bg-orange-600 enabled:hover:bg-orange-700 focus:ring-orange-300"
-                        >
-                           {isSubmitting && <Spinner size="sm" className="mr-2" aria-label="Signing in" />}
-
-                           {isSubmitting ? 'Signing in...' : 'Sign in'}
-                        </Button>
-
-                        <p className="text-center text-sm text-gray-500">
-                           Don't have an account?{' '}
-                           <Link
-                              href="/register"
-                              className="font-medium text-orange-600 hover:text-orange-700 hover:underline"
-                           >
-                              Create an account
-                           </Link>
-                        </p>
-                     </div>
-                  </form>
+                     {errors.password?.message && (
+                        <p className="mt-1.5 text-xs font-medium text-red-600">{errors.password.message}</p>
+                     )}
+                  </div>
                </div>
-            </Card>
+
+               <div className="space-y-4 pt-2">
+                  <button
+                     type="submit"
+                     disabled={isSubmitting}
+                     className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#E56A77] py-3 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-[#D95765] active:bg-[#C84E5B] focus:outline-none focus:ring-2 focus:ring-[#E56A77]/40 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                     {isSubmitting ? (
+                        <>
+                           <svg
+                              className="size-5 animate-spin text-white"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              aria-hidden="true"
+                           >
+                              <circle
+                                 className="opacity-25"
+                                 cx="12"
+                                 cy="12"
+                                 r="10"
+                                 stroke="currentColor"
+                                 strokeWidth="4"
+                              />
+                              <path
+                                 className="opacity-75"
+                                 fill="currentColor"
+                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                           </svg>
+                           <span>Signing in...</span>
+                        </>
+                     ) : (
+                        'Sign in'
+                     )}
+                  </button>
+
+                  <p className="text-center text-sm text-[#595959]">
+                     Don&apos;t have an account?{' '}
+                     <Link
+                        href="/register"
+                        className="font-semibold text-[#E56A77] transition-colors hover:text-[#D95765] hover:underline"
+                     >
+                        Create an account
+                     </Link>
+                  </p>
+               </div>
+            </form>
          </div>
-      </section>
+      </main>
    );
 };
 

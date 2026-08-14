@@ -1,9 +1,14 @@
 'use client';
 
 import { FILTER_ICON } from '@/assets/icons';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 export default function FilterButton({ filterId, restaurantFilters, setRestaurantFilters }) {
    const isAnyFilterActive = restaurantFilters.sortBy !== '' || restaurantFilters.openNow === true;
+
+   const router = useRouter();
+   const pathname = usePathname();
+   const searchParams = useSearchParams();
 
    const isCurrentFilterActive =
       filterId === 'sortBy'
@@ -34,35 +39,79 @@ export default function FilterButton({ filterId, restaurantFilters, setRestauran
       max-[610px]:text-[12px]
    `;
 
+   const updateUrl = (sortBy, openNow) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      if (sortBy) {
+         params.set('sort', sortBy);
+      } else {
+         params.delete('sort');
+      }
+
+      if (openNow) {
+         params.set('openNow', 'true');
+      } else {
+         params.delete('openNow');
+      }
+
+      const query = params.toString();
+
+      router.push(query ? `${pathname}?${query}` : pathname);
+   };
+
    const handleClick = () => {
       switch (filterId) {
-         case 'nearest':
-            setRestaurantFilters((prev) => ({
-               ...prev,
-               sortBy: prev.sortBy === 'nearest' ? '' : 'nearest',
-            }));
-            break;
+         case 'nearest': {
+            const newSortBy = restaurantFilters.sortBy === 'nearest' ? '' : 'nearest';
 
-         case 'openNow':
             setRestaurantFilters((prev) => ({
                ...prev,
-               openNow: !prev.openNow,
+               sortBy: newSortBy,
             }));
-            break;
 
-         case 'aToZ':
-            setRestaurantFilters((prev) => ({
-               ...prev,
-               sortBy: prev.sortBy === 'a-z' ? '' : 'a-z',
-            }));
-            break;
+            updateUrl(newSortBy, restaurantFilters.openNow);
 
-         case 'zToA':
+            break;
+         }
+
+         case 'openNow': {
+            const newOpenNow = !restaurantFilters.openNow;
+
             setRestaurantFilters((prev) => ({
                ...prev,
-               sortBy: prev.sortBy === 'z-a' ? '' : 'z-a',
+               openNow: newOpenNow,
             }));
+
+            updateUrl(restaurantFilters.sortBy, newOpenNow);
+
             break;
+         }
+
+         case 'aToZ': {
+            const newSortBy = restaurantFilters.sortBy === 'a-z' ? '' : 'a-z';
+
+            setRestaurantFilters((prev) => ({
+               ...prev,
+               sortBy: newSortBy,
+            }));
+
+            updateUrl(newSortBy, restaurantFilters.openNow);
+
+            break;
+         }
+
+         case 'zToA': {
+            const newSortBy = restaurantFilters.sortBy === 'z-a' ? '' : 'z-a';
+
+            setRestaurantFilters((prev) => ({
+               ...prev,
+               sortBy: newSortBy,
+            }));
+
+            updateUrl(newSortBy, restaurantFilters.openNow);
+
+            break;
+         }
       }
    };
 
@@ -73,6 +122,15 @@ export default function FilterButton({ filterId, restaurantFilters, setRestauran
          openNow: false,
          menuId: null,
       }));
+
+      const params = new URLSearchParams(searchParams.toString());
+
+      params.delete('sort');
+      params.delete('openNow');
+
+      const query = params.toString();
+
+      router.push(query ? `${pathname}?${query}` : pathname);
    };
 
    /*
@@ -107,12 +165,16 @@ export default function FilterButton({ filterId, restaurantFilters, setRestauran
             <select
                className={`${buttonClass} outline-none`}
                value={restaurantFilters.sortBy}
-               onChange={(e) =>
+               onChange={(e) => {
+                  const newSortBy = e.target.value;
+
                   setRestaurantFilters((prev) => ({
                      ...prev,
-                     sortBy: e.target.value,
-                  }))
-               }
+                     sortBy: newSortBy,
+                  }));
+
+                  updateUrl(newSortBy, restaurantFilters.openNow);
+               }}
             >
                <option value="">Sort By</option>
                <option value="nearest">Nearest</option>

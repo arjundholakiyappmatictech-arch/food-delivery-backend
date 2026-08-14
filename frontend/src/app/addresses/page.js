@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { MapPin, MapPinned } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 import useAuthGuard from '@/lib/hooks/useAuth';
 import useAddresses from '@/lib/hooks/useAddresses';
@@ -42,40 +42,36 @@ export default function AddressesPage() {
    };
 
    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-10">
-         <div className="w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-xl">
-            {/* Header banner — same as LocationDialog */}
-            <div className="bg-orange-50 px-6 py-7">
-               <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-white ring-8 ring-orange-100">
-                  <MapPin className="size-9 text-orange-600" />
-               </div>
-            </div>
+      <main className="flex min-h-[calc(100vh-75px)] w-full items-center justify-center bg-[#FAFAFA] px-4 py-8 sm:px-6 sm:py-12 md:px-8">
+         <div className="w-full max-w-lg rounded-2xl border border-[#E9E9E9] bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:p-8 md:p-10">
+            {/* Header */}
+            <header className="mb-6 text-center">
+               <h1 className="text-2xl font-bold tracking-tight text-[#02060C] sm:text-3xl">
+                  {hasSavedAddresses ? 'Choose delivery location' : 'Set delivery location'}
+               </h1>
 
-            <div className="space-y-6 px-6 pt-6 pb-7 sm:px-8">
-               <header className="space-y-2 text-center">
-                  <h2 className="text-xl font-semibold text-gray-900">
-                     {hasSavedAddresses ? 'Choose delivery location' : 'Enable location access'}
-                  </h2>
+               <p className="mt-2 text-sm text-[#595959]">
+                  {hasSavedAddresses
+                     ? 'Select a saved address or use your current location.'
+                     : 'Detect your location or add an address to explore restaurants.'}
+               </p>
+            </header>
 
-                  <p className="text-sm leading-6 text-gray-500">
-                     {hasSavedAddresses
-                        ? 'Select a saved address or use your current location.'
-                        : 'Allow location access to find restaurants delivering near you.'}
-                  </p>
-               </header>
-
+            <div className="space-y-5">
+               {/* Current Location Button */}
                <CurrentLocationButton disabled={loading} onLocationDetected={handleLocationDetected} />
 
+               {/* Divider */}
+               <div className="relative flex items-center justify-center">
+                  <div className="w-full border-t border-[#E9E9E9]" />
+                  <span className="absolute bg-white px-3 text-xs font-semibold uppercase tracking-wider text-[#A6A6A6]">
+                     {hasSavedAddresses ? 'Or choose from saved' : 'Or add manually'}
+                  </span>
+               </div>
+
+               {/* Saved Addresses Section */}
                {hasSavedAddresses && (
                   <div className="space-y-3">
-                     <div className="flex items-center gap-3">
-                        <div className="h-px flex-1 bg-gray-200" />
-
-                        <p className="text-xs font-medium tracking-wide text-gray-500 uppercase">Saved addresses</p>
-
-                        <div className="h-px flex-1 bg-gray-200" />
-                     </div>
-
                      <AddressSearch onSearch={searchAddresses} />
 
                      <SavedAddressList
@@ -90,6 +86,7 @@ export default function AddressesPage() {
                   </div>
                )}
 
+               {/* Add Address Button */}
                <Link
                   href={loading ? '#' : '/addresses/add'}
                   aria-disabled={loading}
@@ -98,29 +95,26 @@ export default function AddressesPage() {
                         event.preventDefault();
                      }
                   }}
-                  className={[
-                     'flex h-11 w-full items-center justify-center gap-2 rounded-xl',
-                     'border border-gray-300 bg-white px-5 text-sm font-medium text-gray-900',
-                     'transition-colors hover:bg-orange-50 focus:ring-4 focus:ring-orange-100 focus:outline-none',
-                     loading ? 'pointer-events-none cursor-not-allowed opacity-50' : '',
-                  ].join(' ')}
+                  className={`flex w-full items-center justify-center gap-2 rounded-xl border border-[#E56A77] bg-white py-3 px-4 text-sm font-semibold text-[#E56A77] transition-colors duration-150 hover:bg-[#FFF4F5] focus:outline-none focus:ring-2 focus:ring-[#E56A77]/30 ${
+                     loading ? 'pointer-events-none cursor-not-allowed opacity-50' : 'cursor-pointer'
+                  }`}
                >
-                  <MapPinned className="size-4" />
-
-                  {hasSavedAddresses ? 'Add another address' : 'Add address manually'}
+                  <Plus className="size-4" />
+                  <span>{hasSavedAddresses ? 'Add another address' : 'Add new address'}</span>
                </Link>
 
+               {/* Error message */}
                {error && (
                   <div
                      role="alert"
                      aria-live="polite"
-                     className="rounded-xl border border-red-200 bg-red-50 px-4 py-3"
+                     className="rounded-xl border border-red-200 bg-red-50 p-3 text-center text-xs font-medium text-red-600"
                   >
-                     <p className="text-center text-sm text-red-600">{error}</p>
+                     {error}
                   </div>
                )}
             </div>
          </div>
-      </div>
+      </main>
    );
 }

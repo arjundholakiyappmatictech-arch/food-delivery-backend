@@ -1,5 +1,31 @@
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+
 export default function ExploreMenu({ menus = [], selectedMenuName, setSelectedMenuName }) {
+   const router = useRouter();
+   const pathname = usePathname();
+   const searchParams = useSearchParams();
+
    const uniqueMenus = Array.from(new Map(menus.map((menu) => [menu.name.toLowerCase(), menu])).values());
+
+   const handleCategoryClick = (menuName) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      const isSameCategory = selectedMenuName === menuName;
+
+      if (isSameCategory) {
+         params.delete('category');
+      } else {
+         params.set('category', menuName);
+      }
+
+      // Update React state
+      setSelectedMenuName(isSameCategory ? null : menuName);
+
+      // Update URL
+      const query = params.toString();
+
+      router.push(query ? `${pathname}?${query}` : pathname);
+   };
 
    return (
       <section className="w-full min-w-0">
@@ -19,7 +45,7 @@ export default function ExploreMenu({ menus = [], selectedMenuName, setSelectedM
                {uniqueMenus.map((menu) => (
                   <div
                      key={menu.id}
-                     onClick={() => setSelectedMenuName(menu.name)}
+                     onClick={() => handleCategoryClick(menu.name)}
                      className="group flex min-w-[95px] shrink-0 cursor-pointer flex-col items-center"
                   >
                      {/* Circle */}

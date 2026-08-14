@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import Search from '@/components/common/Search';
 import RestaurantContainer from '@/components/restaurants/RestaurantContainer';
@@ -17,14 +17,20 @@ import HomePageSkeleton from '@/components/skeletons/HomePageSkeleton';
 export default function HomePage() {
    useAuthGuard();
    const router = useRouter();
+   const searchParams = useSearchParams();
+
+   const submittedSearch = searchParams.get('search') || '';
+   const submittedCategory = searchParams.get('category') || '';
+   const submittedSort = searchParams.get('sort') || '';
+   const submittedOpenNow = searchParams.get('openNow') === 'true';
 
    const { selectedLocation, initialized: locationInitialized } = useSelectedLocation();
 
    const defaultFilters = {
-      searchText: '',
-      sortBy: '',
-      openNow: false,
-      menuName: null,
+      searchText: submittedSearch,
+      sortBy: submittedSort,
+      openNow: submittedOpenNow,
+      menuName: submittedCategory || null,
    };
 
    const [restaurantFilters, setRestaurantFilters] = useState(defaultFilters);
@@ -32,6 +38,8 @@ export default function HomePage() {
    const { restaurants, menus, loading, loadingMore, searching, hasMore, error, retry, loadMore } = useRestaurants(
       selectedLocation,
       restaurantFilters,
+      submittedSearch,
+      submittedCategory,
    );
 
    useEffect(() => {
@@ -72,35 +80,30 @@ export default function HomePage() {
          <div className="my-5 flex flex-wrap items-center justify-center gap-2">
             <FilterButton
                filterId="sortBy"
-               defaultFilters={defaultFilters}
                restaurantFilters={restaurantFilters}
                setRestaurantFilters={setRestaurantFilters}
             />
 
             <FilterButton
                filterId="nearest"
-               defaultFilters={defaultFilters}
                restaurantFilters={restaurantFilters}
                setRestaurantFilters={setRestaurantFilters}
             />
 
             <FilterButton
                filterId="openNow"
-               defaultFilters={defaultFilters}
                restaurantFilters={restaurantFilters}
                setRestaurantFilters={setRestaurantFilters}
             />
 
             <FilterButton
                filterId="aToZ"
-               defaultFilters={defaultFilters}
                restaurantFilters={restaurantFilters}
                setRestaurantFilters={setRestaurantFilters}
             />
 
             <FilterButton
                filterId="zToA"
-               defaultFilters={defaultFilters}
                restaurantFilters={restaurantFilters}
                setRestaurantFilters={setRestaurantFilters}
             />
