@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Home, BriefcaseBusiness, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
@@ -10,8 +10,10 @@ import { createAddress } from '@/services/addressService';
 import { addressSchema } from '@/lib/schemas/addressSchema';
 import { parseApiError } from '@/utils/apiError';
 
-export function AddressForm() {
+export function AddAddressForm() {
    const router = useRouter();
+   const searchParams = useSearchParams();
+   const from = searchParams.get('from');
 
    const {
       register,
@@ -42,7 +44,11 @@ export function AddressForm() {
 
          toast.success('Address added successfully.');
 
-         router.replace('/addresses');
+         if (from === 'select') {
+            router.replace('/addresses/select');
+         } else {
+            router.replace('/addresses');
+         }
       } catch (error) {
          const apiError = parseApiError(error);
 
@@ -59,25 +65,21 @@ export function AddressForm() {
             });
 
             toast.error(apiError.message ?? 'Please check the address details.');
-
             return;
          }
 
          if (apiError.status === 409) {
             toast.error(apiError.message ?? 'This address already exists.');
-
             return;
          }
 
          if (apiError.status === 403) {
             toast.error(apiError.message ?? 'You are not allowed to add an address.');
-
             return;
          }
 
          if (apiError.isNetworkError) {
             toast.error('Unable to connect to the server. Please check your connection.');
-
             return;
          }
 
@@ -86,18 +88,18 @@ export function AddressForm() {
    };
 
    return (
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-2.5">
          {/* Save As Pills */}
          <div>
-            <label className="mb-1.5 block text-sm font-medium text-[#02060C]">
+            <label className="mb-1 block text-xs font-semibold text-[#02060C]">
                Save address as <span className="text-[#E56A77]">*</span>
             </label>
 
-            <div className="grid grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-3 gap-2">
                <button
                   type="button"
                   onClick={() => setValue('label', 'home', { shouldValidate: true })}
-                  className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border py-2.5 text-xs font-semibold transition-all duration-150 ${
+                  className={`flex h-8.5 cursor-pointer items-center justify-center gap-1.5 rounded-xl border text-xs font-semibold transition-all duration-150 ${
                      currentLabel === 'home'
                         ? 'border-[#E56A77] bg-[#FFF4F5] text-[#E56A77]'
                         : 'border-[#E9E9E9] bg-white text-[#595959] hover:border-gray-300'
@@ -110,7 +112,7 @@ export function AddressForm() {
                <button
                   type="button"
                   onClick={() => setValue('label', 'work', { shouldValidate: true })}
-                  className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border py-2.5 text-xs font-semibold transition-all duration-150 ${
+                  className={`flex h-8.5 cursor-pointer items-center justify-center gap-1.5 rounded-xl border text-xs font-semibold transition-all duration-150 ${
                      currentLabel === 'work'
                         ? 'border-[#E56A77] bg-[#FFF4F5] text-[#E56A77]'
                         : 'border-[#E9E9E9] bg-white text-[#595959] hover:border-gray-300'
@@ -123,7 +125,7 @@ export function AddressForm() {
                <button
                   type="button"
                   onClick={() => setValue('label', 'other', { shouldValidate: true })}
-                  className={`flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border py-2.5 text-xs font-semibold transition-all duration-150 ${
+                  className={`flex h-8.5 cursor-pointer items-center justify-center gap-1.5 rounded-xl border text-xs font-semibold transition-all duration-150 ${
                      currentLabel === 'other'
                         ? 'border-[#E56A77] bg-[#FFF4F5] text-[#E56A77]'
                         : 'border-[#E9E9E9] bg-white text-[#595959] hover:border-gray-300'
@@ -134,7 +136,6 @@ export function AddressForm() {
                </button>
             </div>
 
-            {/* Hidden registered select for form resolver */}
             <select className="hidden" {...register('label')}>
                <option value="home">Home</option>
                <option value="work">Work</option>
@@ -142,7 +143,7 @@ export function AddressForm() {
             </select>
 
             {errors.label?.message && (
-               <p role="alert" className="mt-1 text-xs font-medium text-red-600">
+               <p role="alert" className="mt-0.5 text-[11px] font-medium text-red-600">
                   {errors.label.message}
                </p>
             )}
@@ -150,7 +151,7 @@ export function AddressForm() {
 
          {/* Address Line */}
          <div>
-            <label htmlFor="address_line" className="mb-1.5 block text-sm font-medium text-[#02060C]">
+            <label htmlFor="address_line" className="mb-1 block text-xs font-semibold text-[#02060C]">
                Address details <span className="text-[#E56A77]">*</span>
             </label>
 
@@ -162,7 +163,7 @@ export function AddressForm() {
                autoComplete="street-address"
                aria-invalid={Boolean(errors.address_line)}
                {...register('address_line')}
-               className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
+               className={`h-9.5 w-full rounded-xl border bg-white px-3 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
                   errors.address_line
                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                      : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
@@ -170,16 +171,16 @@ export function AddressForm() {
             />
 
             {errors.address_line?.message && (
-               <p role="alert" className="mt-1 text-xs font-medium text-red-600">
+               <p role="alert" className="mt-0.5 text-[11px] font-medium text-red-600">
                   {errors.address_line.message}
                </p>
             )}
          </div>
 
-         {/* City & State */}
-         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+         {/* City, State & Pincode in 3-column row */}
+         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <div>
-               <label htmlFor="city" className="mb-1.5 block text-sm font-medium text-[#02060C]">
+               <label htmlFor="city" className="mb-1 block text-xs font-semibold text-[#02060C]">
                   City <span className="text-[#E56A77]">*</span>
                </label>
 
@@ -191,7 +192,7 @@ export function AddressForm() {
                   autoComplete="address-level2"
                   aria-invalid={Boolean(errors.city)}
                   {...register('city')}
-                  className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
+                  className={`h-9.5 w-full rounded-xl border bg-white px-3 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
                      errors.city
                         ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                         : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
@@ -199,14 +200,14 @@ export function AddressForm() {
                />
 
                {errors.city?.message && (
-                  <p role="alert" className="mt-1 text-xs font-medium text-red-600">
+                  <p role="alert" className="mt-0.5 text-[11px] font-medium text-red-600">
                      {errors.city.message}
                   </p>
                )}
             </div>
 
             <div>
-               <label htmlFor="state" className="mb-1.5 block text-sm font-medium text-[#02060C]">
+               <label htmlFor="state" className="mb-1 block text-xs font-semibold text-[#02060C]">
                   State <span className="text-[#E56A77]">*</span>
                </label>
 
@@ -218,7 +219,7 @@ export function AddressForm() {
                   autoComplete="address-level1"
                   aria-invalid={Boolean(errors.state)}
                   {...register('state')}
-                  className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
+                  className={`h-9.5 w-full rounded-xl border bg-white px-3 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
                      errors.state
                         ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                         : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
@@ -226,51 +227,50 @@ export function AddressForm() {
                />
 
                {errors.state?.message && (
-                  <p role="alert" className="mt-1 text-xs font-medium text-red-600">
+                  <p role="alert" className="mt-0.5 text-[11px] font-medium text-red-600">
                      {errors.state.message}
+                  </p>
+               )}
+            </div>
+
+            <div>
+               <label htmlFor="pincode" className="mb-1 block text-xs font-semibold text-[#02060C]">
+                  Pincode <span className="text-[#E56A77]">*</span>
+               </label>
+
+               <input
+                  id="pincode"
+                  type="text"
+                  disabled={isSubmitting}
+                  placeholder="e.g. 395002"
+                  inputMode="numeric"
+                  maxLength={6}
+                  autoComplete="postal-code"
+                  aria-invalid={Boolean(errors.pincode)}
+                  {...register('pincode')}
+                  className={`h-9.5 w-full rounded-xl border bg-white px-3 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
+                     errors.pincode
+                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
+                        : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
+                  }`}
+               />
+
+               {errors.pincode?.message && (
+                  <p role="alert" className="mt-0.5 text-[11px] font-medium text-red-600">
+                     {errors.pincode.message}
                   </p>
                )}
             </div>
          </div>
 
-         {/* Pincode */}
-         <div>
-            <label htmlFor="pincode" className="mb-1.5 block text-sm font-medium text-[#02060C]">
-               Pincode <span className="text-[#E56A77]">*</span>
-            </label>
-
-            <input
-               id="pincode"
-               type="text"
-               disabled={isSubmitting}
-               placeholder="e.g. 395002"
-               inputMode="numeric"
-               maxLength={6}
-               autoComplete="postal-code"
-               aria-invalid={Boolean(errors.pincode)}
-               {...register('pincode')}
-               className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
-                  errors.pincode
-                     ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-                     : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
-               }`}
-            />
-
-            {errors.pincode?.message && (
-               <p role="alert" className="mt-1 text-xs font-medium text-red-600">
-                  {errors.pincode.message}
-               </p>
-            )}
-         </div>
-
          {/* Coordinates Box */}
-         <div className="rounded-xl border border-[#E9E9E9] bg-[#FAFAFA] p-3.5">
-            <div className="mb-2.5 flex items-center justify-between">
-               <span className="text-xs font-semibold text-[#02060C]">Coordinates</span>
-               <span className="text-[11px] text-[#595959]">Required for delivery check</span>
+         <div className="rounded-xl border border-[#E9E9E9] bg-[#FAFAFA] p-2.5">
+            <div className="mb-1 flex items-center justify-between">
+               <span className="text-[11px] font-semibold text-[#02060C]">Coordinates</span>
+               <span className="text-[10px] text-[#595959]">Required for delivery check</span>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                <div>
                   <input
                      id="latitude"
@@ -280,7 +280,7 @@ export function AddressForm() {
                      placeholder="Latitude (e.g. 21.1702)"
                      aria-invalid={Boolean(errors.latitude)}
                      {...register('latitude')}
-                     className={`w-full rounded-lg border bg-white px-3 py-2.5 text-xs text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
+                     className={`h-8.5 w-full rounded-lg border bg-white px-2.5 text-xs text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
                         errors.latitude
                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                            : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
@@ -288,7 +288,7 @@ export function AddressForm() {
                   />
 
                   {errors.latitude?.message && (
-                     <p role="alert" className="mt-1 text-[11px] font-medium text-red-600">
+                     <p role="alert" className="mt-0.5 text-[10px] font-medium text-red-600">
                         {errors.latitude.message}
                      </p>
                   )}
@@ -303,7 +303,7 @@ export function AddressForm() {
                      placeholder="Longitude (e.g. 72.8311)"
                      aria-invalid={Boolean(errors.longitude)}
                      {...register('longitude')}
-                     className={`w-full rounded-lg border bg-white px-3 py-2.5 text-xs text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
+                     className={`h-8.5 w-full rounded-lg border bg-white px-2.5 text-xs text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
                         errors.longitude
                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                            : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
@@ -311,7 +311,7 @@ export function AddressForm() {
                   />
 
                   {errors.longitude?.message && (
-                     <p role="alert" className="mt-1 text-[11px] font-medium text-red-600">
+                     <p role="alert" className="mt-0.5 text-[10px] font-medium text-red-600">
                         {errors.longitude.message}
                      </p>
                   )}
@@ -319,26 +319,12 @@ export function AddressForm() {
             </div>
          </div>
 
-         {/* Set as default checkbox */}
-         {/* <div className="flex items-center gap-2 pt-1">
-            <input
-               id="is_default"
-               type="checkbox"
-               disabled={isSubmitting}
-               {...register('is_default')}
-               className="size-4 rounded border-[#E9E9E9] text-[#E56A77] accent-[#E56A77] focus:ring-[#E56A77]"
-            />
-            <label htmlFor="is_default" className="cursor-pointer text-xs font-medium text-[#595959]">
-               Make this my default delivery address
-            </label>
-         </div> */}
-
          {/* Submit Button */}
-         <div className="pt-2">
+         <div className="pt-0.5">
             <button
                type="submit"
                disabled={isSubmitting}
-               className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#E56A77] py-3 px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-[#D95765] active:bg-[#C84E5B] focus:outline-none focus:ring-2 focus:ring-[#E56A77]/40 disabled:cursor-not-allowed disabled:opacity-60"
+               className="flex h-9.5 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#E56A77] px-4 text-xs sm:text-sm font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-[#D95765] active:bg-[#C84E5B] focus:outline-none focus:ring-2 focus:ring-[#E56A77]/40 disabled:cursor-not-allowed disabled:opacity-60"
             >
                {isSubmitting ? (
                   <>

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -14,7 +14,7 @@ import FilterButton from '@/components/restaurants/FilterButton';
 import ExploreMenu from '@/components/restaurants/ExploreMenu';
 import HomePageSkeleton from '@/components/skeletons/HomePageSkeleton';
 
-export default function HomePage() {
+function HomePageContent() {
    useAuthGuard();
    const router = useRouter();
    const searchParams = useSearchParams();
@@ -44,7 +44,7 @@ export default function HomePage() {
 
    useEffect(() => {
       if (locationInitialized && selectedLocation === null) {
-         router.replace('/addresses');
+         router.replace('/addresses/select');
       }
    }, [locationInitialized, selectedLocation, router]);
 
@@ -123,3 +123,12 @@ export default function HomePage() {
       </main>
    );
 }
+
+export default function HomePage() {
+   return (
+      <Suspense fallback={<HomePageSkeleton />}>
+         <HomePageContent />
+      </Suspense>
+   );
+}
+

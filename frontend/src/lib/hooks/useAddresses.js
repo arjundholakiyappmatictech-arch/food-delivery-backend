@@ -108,6 +108,29 @@ export default function useAddresses() {
       fetchAddresses();
    }, [fetchAddresses]);
 
+   const removeAddress = useCallback((addressId) => {
+      setAddresses((currentAddresses) => {
+         const nextAddresses = currentAddresses.filter((item) => item.id !== addressId);
+         setHasSavedAddresses(nextAddresses.length > 0);
+         return nextAddresses;
+      });
+   }, []);
+
+   const updateAddressInList = useCallback((updatedAddress) => {
+      setAddresses((currentAddresses) => {
+         const nextAddresses = currentAddresses.map((item) => {
+            if (item.id === updatedAddress.id) {
+               return { ...item, ...updatedAddress };
+            }
+            if (updatedAddress.is_default) {
+               return { ...item, is_default: false };
+            }
+            return item;
+         });
+         return nextAddresses;
+      });
+   }, []);
+
    return {
       addresses,
       hasSavedAddresses,
@@ -121,5 +144,7 @@ export default function useAddresses() {
       fetchAddresses,
       searchAddresses,
       loadMoreAddresses,
+      removeAddress,
+      updateAddressInList,
    };
 }

@@ -29,3 +29,22 @@ export async function createAddress(data) {
 
    return response.data?.data;
 }
+
+export async function updateAddress(addressId, data) {
+   const payload = {
+      ...data,
+      latitude: Number(data.latitude),
+      longitude: Number(data.longitude),
+      is_default: Boolean(data.is_default),
+   };
+
+   const response = await api.put(`/addresses/${addressId}/update`, payload);
+
+   return response.data?.data;
+}
+
+export async function deleteAddress(addressId) {
+   const response = await api.delete(`/addresses/${addressId}/destroy`);
+
+   return response.data;
+}
