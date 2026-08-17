@@ -16,35 +16,52 @@ const useCartStore = create((set, get) => ({
 
          set({
             cartItems: response.data,
-            loading: false,
          });
       } catch (error) {
-         set({ loading: false });
-         throw error;
-      }
-   },
-   addItem: async ({ menuItemId, restaurantId }) => {
-      const response = await addToCart({
-         restaurant_id: restaurantId,
-         menu_item_id: menuItemId,
-         quantity: 1,
-      });
+         const apiError = parseApiError(error);
 
-      const cartItem = response.data;
-
-      set((state) => {
-         const exists = state.cartItems.find((item) => item.id === cartItem.id);
-
-         if (exists) {
-            return {
-               cartItems: state.cartItems.map((item) => (item.id === cartItem.id ? cartItem : item)),
-            };
+         if (apiError.isCancelled) {
+            return;
          }
 
-         return {
-            cartItems: [...state.cartItems, cartItem],
-         };
-      });
+         toast.error(apiError.message);
+      } finally {
+         set({ loading: false });
+      }
+   },
+
+   addItem: async ({ menuItemId, restaurantId }) => {
+      try {
+         const response = await addToCart({
+            restaurant_id: restaurantId,
+            menu_item_id: menuItemId,
+            quantity: 1,
+         });
+
+         const cartItem = response.data;
+
+         set((state) => {
+            const exists = state.cartItems.find((item) => item.id === cartItem.id);
+
+            if (exists) {
+               return {
+                  cartItems: state.cartItems.map((item) => (item.id === cartItem.id ? cartItem : item)),
+               };
+            }
+
+            return {
+               cartItems: [...state.cartItems, cartItem],
+            };
+         });
+      } catch (error) {
+         const apiError = parseApiError(error);
+
+         if (apiError.isCancelled) {
+            return;
+         }
+
+         toast.error(apiError.message);
+      }
    },
 
    increaseQuantity: async (cartItem) => {
@@ -59,42 +76,60 @@ const useCartStore = create((set, get) => ({
       } catch (error) {
          const apiError = parseApiError(error);
 
-         if (apiError.status === 422) {
-            toast.error(apiError.message ?? 'Unable to update cart quantity.');
-
+         if (apiError.isCancelled) {
             return;
          }
 
-         throw error;
+         toast.error(apiError.message);
       }
    },
 
    decreaseQuantity: async (cartItem) => {
-      if (cartItem.quantity === 1) {
-         await removeFromCart(cartItem.id);
+      try {
+         if (cartItem.quantity === 1) {
+            await removeFromCart(cartItem.id);
+
+            set((state) => ({
+               cartItems: state.cartItems.filter((item) => item.id !== cartItem.id),
+            }));
+
+            return;
+         }
+
+         const response = await updateCart(cartItem.id, {
+            quantity: cartItem.quantity - 1,
+         });
 
          set((state) => ({
-            cartItems: state.cartItems.filter((item) => item.id !== cartItem.id),
+            cartItems: state.cartItems.map((item) => (item.id === response.data.id ? response.data : item)),
          }));
+      } catch (error) {
+         const apiError = parseApiError(error);
 
-         return;
+         if (apiError.isCancelled) {
+            return;
+         }
+
+         toast.error(apiError.message);
       }
-
-      const response = await updateCart(cartItem.id, {
-         quantity: cartItem.quantity - 1,
-      });
-
-      set((state) => ({
-         cartItems: state.cartItems.map((item) => (item.id === response.data.id ? response.data : item)),
-      }));
    },
 
    clearCart: async () => {
-      await clearCart();
+      try {
+         await clearCart();
 
-      set({
-         cartItems: [],
-      });
+         set({
+            cartItems: [],
+         });
+      } catch (error) {
+         const apiError = parseApiError(error);
+
+         if (apiError.isCancelled) {
+            return;
+         }
+
+         toast.error(apiError.message);
+      }
    },
 }));
 

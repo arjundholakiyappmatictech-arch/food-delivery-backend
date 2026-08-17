@@ -2,6 +2,7 @@ import ConditionalHeader from '@/components/layout/ConditionalHeader';
 import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
 import FloatingCart from '@/components/cart/FloatingCart';
+import NetworkStatus from '@/components/common/NetworkStatus';
 
 export const metadata = {
    title: 'Food Delivery App',
@@ -16,6 +17,7 @@ export default function RootLayout({ children }) {
             {children}
             <FloatingCart />
             <Toaster />
+            <NetworkStatus />
          </body>
       </html>
    );
