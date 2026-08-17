@@ -51,7 +51,7 @@ export default function RestaurantDetails({ restaurantId }) {
                <img
                   src={selectedRestaurant?.image_url || '/assets/restaurant-placeholder.png'}
                   alt={selectedRestaurant.name}
-                  className="h-[175px] w-[175px] rounded-[0.3cm] object-cover max-[600px]:h-[125px] max-[600px]:w-[125px]"
+                  className={`h-[175px] w-[175px] rounded-[0.3cm] object-cover max-[600px]:h-[125px] max-[600px]:w-[125px] ${selectedRestaurant.status === 'closed' ? 'grayscale brightness-90' : ''}`}
                   draggable={false}
                />
             </div>
