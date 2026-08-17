@@ -11,7 +11,7 @@ const caveat = Caveat({
 });
 
 export const metadata = {
-   title: 'About Us | Tomato Food Delivery',
+   title: 'About Us',
    description:
       'Learn about Tomato - connecting hungry hearts with top local kitchens, craft culinary experiences, and fast, reliable delivery.',
 };

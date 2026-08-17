@@ -92,12 +92,6 @@ export default function Header() {
                            &nbsp;
                            <h1 className="my-auto">Cart</h1>
                         </div>
-
-                        <div className="relative h-[27px] w-[27px] min-[610px]:hidden">
-                           {SHOPPING_BAG_SVG}
-
-                           <h1 className="absolute text-[13px] left-[7px] top-[7px]">{cartCount}</h1>
-                        </div>
                      </Link>
                   </li>
                </ul>

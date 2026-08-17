@@ -1,23 +1,24 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-
-import { getAddresses } from '@/services/addressService';
+import { toast } from 'sonner';
+import { getAddresses, deleteAddress } from '@/services/addressService';
+import { parseApiError } from '@/utils/apiError';
 
 export default function useAddresses() {
    const [addresses, setAddresses] = useState([]);
    const [search, setSearch] = useState('');
    const [page, setPage] = useState(1);
-
    const [hasSavedAddresses, setHasSavedAddresses] = useState(false);
-
    const [hasMore, setHasMore] = useState(false);
-
    const [loading, setLoading] = useState(true);
    const [searching, setSearching] = useState(false);
    const [loadingMore, setLoadingMore] = useState(false);
-
    const [error, setError] = useState('');
+
+   // Deletion state
+   const [deletingAddress, setDeletingAddress] = useState(null);
+   const [isDeleting, setIsDeleting] = useState(false);
 
    const loadingMoreRef = useRef(false);
 
@@ -30,14 +31,11 @@ export default function useAddresses() {
 
          setAddresses(result.addresses);
          setHasSavedAddresses(result.addresses.length > 0);
-
          setSearch('');
          setPage(result.pagination?.current_page ?? 1);
-
          setHasMore(result.pagination?.has_more_pages ?? false);
       } catch (error) {
          const message = error.response?.data?.message || 'Unable to fetch your saved addresses.';
-
          setError(message);
       } finally {
          setLoading(false);
@@ -54,14 +52,11 @@ export default function useAddresses() {
          const result = await getAddresses(normalizedSearch, 1);
 
          setAddresses(result.addresses);
-
          setSearch(normalizedSearch);
          setPage(result.pagination?.current_page ?? 1);
-
          setHasMore(result.pagination?.has_more_pages ?? false);
       } catch (error) {
          const message = error.response?.data?.message || 'Unable to search your saved addresses.';
-
          setError(message);
       } finally {
          setSearching(false);
@@ -79,7 +74,6 @@ export default function useAddresses() {
 
       try {
          const nextPage = page + 1;
-
          const result = await getAddresses(search, nextPage);
 
          setAddresses((currentAddresses) => {
@@ -91,11 +85,9 @@ export default function useAddresses() {
          });
 
          setPage(result.pagination?.current_page ?? nextPage);
-
          setHasMore(result.pagination?.has_more_pages ?? false);
       } catch (error) {
          const message = error.response?.data?.message || 'Unable to load more addresses.';
-
          setError(message);
       } finally {
          loadingMoreRef.current = false;
@@ -104,7 +96,6 @@ export default function useAddresses() {
    }, [page, search, hasMore, searching]);
 
    useEffect(() => {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchAddresses();
    }, [fetchAddresses]);
 
@@ -131,16 +122,35 @@ export default function useAddresses() {
       });
    }, []);
 
+   const deleteAddressItem = useCallback(async () => {
+      if (!deletingAddress) return;
+
+      try {
+         setIsDeleting(true);
+         await deleteAddress(deletingAddress.id);
+         removeAddress(deletingAddress.id);
+         toast.success('Address deleted successfully.');
+         setDeletingAddress(null);
+      } catch (error) {
+         const apiError = parseApiError(error);
+         toast.error(apiError.message ?? 'Unable to delete address. Please try again.');
+      } finally {
+         setIsDeleting(false);
+      }
+   }, [deletingAddress, removeAddress]);
+
    return {
       addresses,
       hasSavedAddresses,
       hasMore,
-
       loading,
       searching,
       loadingMore,
       error,
-
+      deletingAddress,
+      setDeletingAddress,
+      isDeleting,
+      deleteAddressItem,
       fetchAddresses,
       searchAddresses,
       loadMoreAddresses,
