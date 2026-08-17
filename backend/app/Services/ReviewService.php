@@ -8,12 +8,13 @@ use App\Models\Order;
 use App\Models\OrderReview;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 
 class ReviewService
 {
-    public function index(): Paginator
+    public function index(): LengthAwarePaginator
     {
         $user = Auth::user();
 
@@ -22,7 +23,7 @@ class ReviewService
                 ->with(['user', 'order'])
                 ->where('user_id', $user->id)
                 ->latest()
-                ->simplePaginate(1);
+                ->paginate(2);
         }
 
         throw new AuthorizationException('You are not allowed to view reviews', 403);
