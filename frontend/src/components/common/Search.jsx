@@ -11,6 +11,8 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
    const pathname = usePathname();
    const searchParams = useSearchParams();
 
+   console.log(searchParams);
+
    const [suggestionIndex, setSuggestionIndex] = useState(0);
 
    const menuNames = Array.from(
@@ -21,8 +23,6 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
             .filter(Boolean),
       ),
    );
-
-   /* console.log(menuNames); */
 
    useEffect(() => {
       setSuggestionIndex(0);
@@ -46,6 +46,7 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
 
    const handleSearchSubmit = () => {
       const params = new URLSearchParams(searchParams.toString());
+
       const search = restaurantFilters.searchText.trim();
 
       if (search) {

@@ -20,17 +20,26 @@ function HomePageContent() {
    const searchParams = useSearchParams();
 
    const submittedSearch = searchParams.get('search') || '';
+   console.log(submittedSearch);
+
    const submittedCategory = searchParams.get('category') || '';
    const submittedSort = searchParams.get('sort') || '';
    const submittedOpenNow = searchParams.get('openNow') === 'true';
 
    const { selectedLocation, initialized: locationInitialized } = useSelectedLocation();
 
-   const defaultFilters = {
+   /* const defaultFilters = {
       searchText: submittedSearch,
       sortBy: submittedSort,
       openNow: submittedOpenNow,
       menuName: submittedCategory || null,
+   }; */
+
+   const defaultFilters = {
+      searchText: null,
+      sortBy: null,
+      openNow: null,
+      menuName: null,
    };
 
    const [restaurantFilters, setRestaurantFilters] = useState(defaultFilters);
