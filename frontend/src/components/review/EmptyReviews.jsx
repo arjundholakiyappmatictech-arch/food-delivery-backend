@@ -18,7 +18,7 @@ export default function EmptyReviews() {
 
          <Link
             href="/orders"
-            className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-[#E56A77] px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#D95765]"
+            className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-[#D95765] px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-[#C74655]"
          >
             <span>View Delivered Orders</span>
             <ArrowRight className="size-3.5" />

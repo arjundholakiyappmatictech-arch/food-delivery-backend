@@ -56,12 +56,13 @@ function HomePageContent() {
    }
 
    return (
-      <main className="mx-auto mt-2 w-full max-w-[1800px] px-[60px] max-[1200px]:px-[40px] max-[800px]:px-[25px] max-[560px]:px-[15px]">
+      <main className="mx-auto mt-2 w-full max-w-[1800px] px-[60px] max-[1200px]:px-[40px] max-[800px]:px-[25px] max-[560px]:px-[15px] max-[380px]:px-[10px]">
          {/* Search */}
          <Search
             selectedLocation={selectedLocation}
             restaurantFilters={restaurantFilters}
             setRestaurantFilters={setRestaurantFilters}
+            restaurants={restaurants}
          />
 
          {/* Explore Menu */}
@@ -131,4 +132,3 @@ export default function HomePage() {
       </Suspense>
    );
 }
-

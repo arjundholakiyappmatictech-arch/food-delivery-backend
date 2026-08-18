@@ -132,7 +132,7 @@ export default function AddressesPage() {
                      <div className="pt-1">
                         <Link
                            href="/addresses/add"
-                           className="flex h-9.5 w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-[#E56A77] px-4 text-xs font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-[#D95765] active:bg-[#C84E5B] focus:outline-none focus:ring-2 focus:ring-[#E56A77]/40 sm:text-sm"
+                           className="flex h-9.5 w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-[#D95765] px-4 text-xs font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-[#C74655] active:bg-[#C84E5B] focus:outline-none focus:ring-2 focus:ring-[#E56A77]/40 sm:text-sm"
                         >
                            <Plus className="size-3.5" />
                            <span>Add Address</span>

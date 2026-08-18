@@ -86,7 +86,7 @@ export default function OrdersPage() {
                <button
                   type="button"
                   onClick={() => window.location.reload()}
-                  className="mt-4 rounded-xl bg-[#E56A77] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#D95765]"
+                  className="mt-4 rounded-xl bg-[#D95765] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#C74655]"
                >
                   Try Again
                </button>

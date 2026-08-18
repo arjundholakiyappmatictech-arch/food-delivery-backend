@@ -26,7 +26,7 @@ export default function ReplaceCartDialog({ open, onClose, onReplace }) {
                <button
                   type="button"
                   onClick={onReplace}
-                  className="rounded-xl bg-[#E56A77] px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+                  className="rounded-xl bg-[#D95765] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#C74655]"
                >
                   Replace Cart
                </button>

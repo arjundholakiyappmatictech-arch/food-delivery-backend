@@ -14,12 +14,12 @@ export default function FilterButton({ filterId, restaurantFilters, setRestauran
       filterId === 'sortBy'
          ? restaurantFilters.sortBy !== ''
          : filterId === 'nearest'
-           ? restaurantFilters.sortBy === 'nearest'
-           : filterId === 'openNow'
-             ? restaurantFilters.openNow
-             : filterId === 'aToZ'
-               ? restaurantFilters.sortBy === 'a-z'
-               : restaurantFilters.sortBy === 'z-a';
+            ? restaurantFilters.sortBy === 'nearest'
+            : filterId === 'openNow'
+               ? restaurantFilters.openNow
+               : filterId === 'aToZ'
+                  ? restaurantFilters.sortBy === 'a-z'
+                  : restaurantFilters.sortBy === 'z-a';
 
    const buttonClass = `
       min-w-[100px]
@@ -190,10 +190,10 @@ export default function FilterButton({ filterId, restaurantFilters, setRestauran
          {filterId === 'nearest'
             ? 'Nearest ⚡'
             : filterId === 'openNow'
-              ? 'Open Now 🟢'
-              : filterId === 'aToZ'
-                ? 'A-Z'
-                : 'Z-A'}
+               ? 'Open Now 🟢'
+               : filterId === 'aToZ'
+                  ? 'A-Z'
+                  : 'Z-A'}
 
          {/* Keep the cross */}
          {isCurrentFilterActive && <span className="text-[#A6A6A6]">✖</span>}

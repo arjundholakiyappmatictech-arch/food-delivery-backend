@@ -38,8 +38,9 @@ export default function RestaurantContainer({
 
                max-[610px]:my-[5px]
 
-               max-[560px]:grid-cols-[repeat(auto-fill,minmax(47vw,1fr))]
-               max-[560px]:gap-[2vw]
+               max-[560px]:grid-cols-2
+               max-[560px]:gap-[10px]
+               max-[380px]:gap-[8px]
             "
          >
             {Array.from({ length: 8 }).map((_, index) => (
@@ -89,8 +90,9 @@ export default function RestaurantContainer({
 
                max-[610px]:my-[5px]
 
-               max-[560px]:grid-cols-[repeat(auto-fill,minmax(47vw,1fr))]
-               max-[560px]:gap-[2vw]
+               max-[560px]:grid-cols-2
+               max-[560px]:gap-[10px]
+               max-[380px]:gap-[8px]
             "
          >
             {restaurantsList.map((restaurant, index) => (

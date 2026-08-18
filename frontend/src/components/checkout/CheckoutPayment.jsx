@@ -45,7 +45,7 @@ export default function CheckoutPayment({ loading, error, onPlaceOrder }) {
             type="button"
             disabled={loading}
             onClick={handleSubmit}
-            className="mt-[20px] flex w-full cursor-pointer items-center justify-center rounded-[0.1cm] bg-[#E56A77] py-[11px] text-[17px] font-[500] text-white transition hover:bg-[#D95765] disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-[20px] flex w-full cursor-pointer items-center justify-center rounded-[0.1cm] bg-[#D95765] py-[11px] text-[17px] font-[500] text-white transition hover:bg-[#C74655] disabled:cursor-not-allowed disabled:opacity-60"
          >
             {loading ? 'PLACING ORDER...' : paymentMethod === 'cod' ? 'PLACE ORDER' : 'PAY NOW'}
          </button>

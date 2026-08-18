@@ -14,7 +14,7 @@ export default function HomePageSkeleton() {
             <FilterSkeleton />
          </div>
 
-         <div className="my-[20px] grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-[20px] max-[1000px]:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] max-[1000px]:gap-[15px] max-[800px]:grid-cols-[repeat(auto-fill,minmax(32vw,1fr))] max-[800px]:gap-[1vw] max-[610px]:my-[5px] max-[560px]:grid-cols-[repeat(auto-fill,minmax(47vw,1fr))] max-[560px]:gap-[2vw]">
+         <div className="my-[20px] grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-[20px] max-[1000px]:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] max-[1000px]:gap-[15px] max-[800px]:grid-cols-[repeat(auto-fill,minmax(32vw,1fr))] max-[800px]:gap-[1vw] max-[610px]:my-[5px] max-[560px]:grid-cols-2 max-[560px]:gap-[10px] max-[380px]:gap-[8px]">
             {Array.from({ length: 8 }).map((_, index) => (
                <RestaurantSkeleton key={index} />
             ))}

@@ -31,37 +31,27 @@ const useCartStore = create((set, get) => ({
    },
 
    addItem: async ({ menuItemId, restaurantId }) => {
-      try {
-         const response = await addToCart({
-            restaurant_id: restaurantId,
-            menu_item_id: menuItemId,
-            quantity: 1,
-         });
+      const response = await addToCart({
+         restaurant_id: restaurantId,
+         menu_item_id: menuItemId,
+         quantity: 1,
+      });
 
-         const cartItem = response.data;
+      const cartItem = response.data;
 
-         set((state) => {
-            const exists = state.cartItems.find((item) => item.id === cartItem.id);
+      set((state) => {
+         const exists = state.cartItems.find((item) => item.id === cartItem.id);
 
-            if (exists) {
-               return {
-                  cartItems: state.cartItems.map((item) => (item.id === cartItem.id ? cartItem : item)),
-               };
-            }
-
+         if (exists) {
             return {
-               cartItems: [...state.cartItems, cartItem],
+               cartItems: state.cartItems.map((item) => (item.id === cartItem.id ? cartItem : item)),
             };
-         });
-      } catch (error) {
-         const apiError = parseApiError(error);
-
-         if (apiError.isCancelled) {
-            return;
          }
 
-         toast.error(apiError.message);
-      }
+         return {
+            cartItems: [...state.cartItems, cartItem],
+         };
+      });
    },
 
    increaseQuantity: async (cartItem) => {
@@ -115,21 +105,11 @@ const useCartStore = create((set, get) => ({
    },
 
    clearCart: async () => {
-      try {
-         await clearCart();
+      await clearCart();
 
-         set({
-            cartItems: [],
-         });
-      } catch (error) {
-         const apiError = parseApiError(error);
-
-         if (apiError.isCancelled) {
-            return;
-         }
-
-         toast.error(apiError.message);
-      }
+      set({
+         cartItems: [],
+      });
    },
 }));
 

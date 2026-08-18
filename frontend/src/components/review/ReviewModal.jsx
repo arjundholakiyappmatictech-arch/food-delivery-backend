@@ -69,9 +69,8 @@ export default function ReviewModal({ isOpen, onClose, order, onReviewSubmitted 
                         type="button"
                         disabled={loading}
                         onClick={() => setRating(star)}
-                        className={`text-4xl leading-none transition-transform hover:scale-110 ${
-                           star <= rating ? 'text-[#E56A77]' : 'text-[#D9D9D9]'
-                        }`}
+                        className={`text-4xl leading-none transition-transform hover:scale-110 ${star <= rating ? 'text-[#E56A77]' : 'text-[#D9D9D9]'
+                           }`}
                      >
                         ★
                      </button>
@@ -117,11 +116,10 @@ export default function ReviewModal({ isOpen, onClose, order, onReviewSubmitted 
                   type="button"
                   onClick={handleSubmit}
                   disabled={!rating || loading}
-                  className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition ${
-                     rating && !loading
-                        ? 'bg-[#E56A77] text-white hover:bg-[#D95765]'
+                  className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition ${rating && !loading
+                        ? 'bg-[#D95765] text-white hover:bg-[#C74655]'
                         : 'cursor-not-allowed bg-[#F1F1F1] text-[#999999]'
-                  }`}
+                     }`}
                >
                   {loading ? 'Submitting...' : 'Submit Review'}
                </button>

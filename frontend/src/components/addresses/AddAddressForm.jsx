@@ -99,11 +99,10 @@ export function AddAddressForm() {
                <button
                   type="button"
                   onClick={() => setValue('label', 'home', { shouldValidate: true })}
-                  className={`flex h-8.5 cursor-pointer items-center justify-center gap-1.5 rounded-xl border text-xs font-semibold transition-all duration-150 ${
-                     currentLabel === 'home'
+                  className={`flex h-8.5 cursor-pointer items-center justify-center gap-1.5 rounded-xl border text-xs font-semibold transition-all duration-150 ${currentLabel === 'home'
                         ? 'border-[#E56A77] bg-[#FFF4F5] text-[#E56A77]'
                         : 'border-[#E9E9E9] bg-white text-[#595959] hover:border-gray-300'
-                  }`}
+                     }`}
                >
                   <Home className="size-3.5" />
                   <span>Home</span>
@@ -112,11 +111,10 @@ export function AddAddressForm() {
                <button
                   type="button"
                   onClick={() => setValue('label', 'work', { shouldValidate: true })}
-                  className={`flex h-8.5 cursor-pointer items-center justify-center gap-1.5 rounded-xl border text-xs font-semibold transition-all duration-150 ${
-                     currentLabel === 'work'
+                  className={`flex h-8.5 cursor-pointer items-center justify-center gap-1.5 rounded-xl border text-xs font-semibold transition-all duration-150 ${currentLabel === 'work'
                         ? 'border-[#E56A77] bg-[#FFF4F5] text-[#E56A77]'
                         : 'border-[#E9E9E9] bg-white text-[#595959] hover:border-gray-300'
-                  }`}
+                     }`}
                >
                   <BriefcaseBusiness className="size-3.5" />
                   <span>Work</span>
@@ -125,11 +123,10 @@ export function AddAddressForm() {
                <button
                   type="button"
                   onClick={() => setValue('label', 'other', { shouldValidate: true })}
-                  className={`flex h-8.5 cursor-pointer items-center justify-center gap-1.5 rounded-xl border text-xs font-semibold transition-all duration-150 ${
-                     currentLabel === 'other'
+                  className={`flex h-8.5 cursor-pointer items-center justify-center gap-1.5 rounded-xl border text-xs font-semibold transition-all duration-150 ${currentLabel === 'other'
                         ? 'border-[#E56A77] bg-[#FFF4F5] text-[#E56A77]'
                         : 'border-[#E9E9E9] bg-white text-[#595959] hover:border-gray-300'
-                  }`}
+                     }`}
                >
                   <MapPin className="size-3.5" />
                   <span>Other</span>
@@ -163,11 +160,10 @@ export function AddAddressForm() {
                autoComplete="street-address"
                aria-invalid={Boolean(errors.address_line)}
                {...register('address_line')}
-               className={`h-9.5 w-full rounded-xl border bg-white px-3 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
-                  errors.address_line
+               className={`h-9.5 w-full rounded-xl border bg-white px-3 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${errors.address_line
                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                      : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
-               }`}
+                  }`}
             />
 
             {errors.address_line?.message && (
@@ -192,11 +188,10 @@ export function AddAddressForm() {
                   autoComplete="address-level2"
                   aria-invalid={Boolean(errors.city)}
                   {...register('city')}
-                  className={`h-9.5 w-full rounded-xl border bg-white px-3 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
-                     errors.city
+                  className={`h-9.5 w-full rounded-xl border bg-white px-3 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${errors.city
                         ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                         : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
-                  }`}
+                     }`}
                />
 
                {errors.city?.message && (
@@ -219,11 +214,10 @@ export function AddAddressForm() {
                   autoComplete="address-level1"
                   aria-invalid={Boolean(errors.state)}
                   {...register('state')}
-                  className={`h-9.5 w-full rounded-xl border bg-white px-3 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
-                     errors.state
+                  className={`h-9.5 w-full rounded-xl border bg-white px-3 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${errors.state
                         ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                         : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
-                  }`}
+                     }`}
                />
 
                {errors.state?.message && (
@@ -248,11 +242,10 @@ export function AddAddressForm() {
                   autoComplete="postal-code"
                   aria-invalid={Boolean(errors.pincode)}
                   {...register('pincode')}
-                  className={`h-9.5 w-full rounded-xl border bg-white px-3 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
-                     errors.pincode
+                  className={`h-9.5 w-full rounded-xl border bg-white px-3 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${errors.pincode
                         ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                         : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
-                  }`}
+                     }`}
                />
 
                {errors.pincode?.message && (
@@ -280,11 +273,10 @@ export function AddAddressForm() {
                      placeholder="Latitude (e.g. 21.1702)"
                      aria-invalid={Boolean(errors.latitude)}
                      {...register('latitude')}
-                     className={`h-8.5 w-full rounded-lg border bg-white px-2.5 text-xs text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
-                        errors.latitude
+                     className={`h-8.5 w-full rounded-lg border bg-white px-2.5 text-xs text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${errors.latitude
                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                            : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
-                     }`}
+                        }`}
                   />
 
                   {errors.latitude?.message && (
@@ -303,11 +295,10 @@ export function AddAddressForm() {
                      placeholder="Longitude (e.g. 72.8311)"
                      aria-invalid={Boolean(errors.longitude)}
                      {...register('longitude')}
-                     className={`h-8.5 w-full rounded-lg border bg-white px-2.5 text-xs text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
-                        errors.longitude
+                     className={`h-8.5 w-full rounded-lg border bg-white px-2.5 text-xs text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${errors.longitude
                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                            : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
-                     }`}
+                        }`}
                   />
 
                   {errors.longitude?.message && (
@@ -324,7 +315,7 @@ export function AddAddressForm() {
             <button
                type="submit"
                disabled={isSubmitting}
-               className="flex h-9.5 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#E56A77] px-4 text-xs sm:text-sm font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-[#D95765] active:bg-[#C84E5B] focus:outline-none focus:ring-2 focus:ring-[#E56A77]/40 disabled:cursor-not-allowed disabled:opacity-60"
+               className="flex h-9.5 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#D95765] px-4 text-xs sm:text-sm font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-[#C74655] active:bg-[#C84E5B] focus:outline-none focus:ring-2 focus:ring-[#E56A77]/40 disabled:cursor-not-allowed disabled:opacity-60"
             >
                {isSubmitting ? (
                   <>

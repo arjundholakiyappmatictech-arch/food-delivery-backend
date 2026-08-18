@@ -110,7 +110,7 @@ export default function OrderCard({ order }) {
                   <button
                      type="button"
                      onClick={() => setReviewModalOpen(true)}
-                     className="rounded-xl bg-[#E56A77] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#D95765]"
+                     className="rounded-xl bg-[#D95765] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#C74655]"
                   >
                      Write a Review
                   </button>

@@ -28,7 +28,7 @@ export default function RestaurantCard({ restaurant, animationDelay = 0 }) {
          hover:scale-105
          max-[1000px]:w-[220px]
          max-[800px]:w-[32vw]
-         max-[560px]:w-[47vw]
+         max-[560px]:w-full
          ${status === 'closed' ? 'bg-[#F1F1F1]' : 'bg-white'}
       `}
          onContextMenu={(e) => e.preventDefault()}
@@ -71,9 +71,9 @@ export default function RestaurantCard({ restaurant, animationDelay = 0 }) {
                <h3 className="line-clamp-1 text-[14px] font-[600] text-[#6B7280] max-[700px]:text-[12px]">
                   {menus?.length
                      ? menus
-                          .slice(0, 3)
-                          .map((menu) => menu.name)
-                          .join(', ')
+                        .slice(0, 3)
+                        .map((menu) => menu.name)
+                        .join(', ')
                      : 'No menus'}
                </h3>
 

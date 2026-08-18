@@ -130,7 +130,7 @@ export default function CartDetails() {
                <span>₹{total.toFixed(2)}</span>
             </div>
             <button
-               className="my-[30px] flex w-full cursor-pointer items-center justify-center rounded-[0.1cm] bg-[#E56A77] py-[10px] text-white transition-colors duration-200 md:hover:bg-[#D95765]"
+               className="my-[30px] flex w-full cursor-pointer items-center justify-center rounded-[0.1cm] bg-[#D95765] py-[10px] text-white transition-colors duration-200 md:hover:bg-[#C74655]"
                onClick={handleCheckout}
             >
                <span className="text-[20px] font-[500] max-[600px]:text-[15px]">CHECKOUT</span>
