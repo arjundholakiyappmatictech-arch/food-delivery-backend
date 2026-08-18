@@ -17,6 +17,7 @@ frontend/.env.local
 backend/vendor/
 backend/node_modules/
 backend/.env
+backend/.env.*
 backend/storage/*.key
 backend/storage/logs/*.log
 backend/bootstrap/cache/*.php

@@ -31,8 +31,12 @@ export default function GenerateInvoiceButton({ order }) {
       <button
          type="button"
          onClick={handleGenerateInvoice}
-         disabled={generating}
-         className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#E9E9E9] bg-white px-5 py-3 text-sm font-semibold text-[#02060C] transition hover:border-[#E56A77] hover:text-[#E56A77] disabled:cursor-not-allowed disabled:opacity-60"
+         disabled={generating || order.status !== 'delivered'}
+         className={`inline-flex items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-semibold transition ${
+            order.status === 'delivered' && !generating
+               ? 'cursor-pointer border-[#E9E9E9] bg-white text-[#02060C] hover:border-[#E56A77] hover:text-[#E56A77]'
+               : 'cursor-not-allowed border-[#E9E9E9] bg-[#F5F5F5] text-[#A6A6A6]'
+         }`}
       >
          <Download size={17} />
 

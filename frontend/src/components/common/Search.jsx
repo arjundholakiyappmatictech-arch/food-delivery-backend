@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { SEARCH_ICON_URL, LOCATION_SVG } from '@/assets/icons';
@@ -12,7 +13,6 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
 
    const [suggestionIndex, setSuggestionIndex] = useState(0);
 
-   // Get menu-item names from all restaurants
    const menuNames = Array.from(
       new Set(
          restaurants
@@ -22,8 +22,9 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
       ),
    );
 
+   /* console.log(menuNames); */
+
    useEffect(() => {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSuggestionIndex(0);
    }, [menuNames.length]);
 
@@ -41,13 +42,10 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
 
    const animatedName = menuNames[suggestionIndex] || 'food';
 
-   // Keep long menu-item names from overflowing
    const displayName = animatedName.length > 22 ? `${animatedName.slice(0, 22)}...` : animatedName;
 
-   // Search logic
    const handleSearchSubmit = () => {
       const params = new URLSearchParams(searchParams.toString());
-
       const search = restaurantFilters.searchText.trim();
 
       if (search) {
@@ -61,7 +59,6 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
       router.push(query ? `${pathname}?${query}` : pathname);
    };
 
-   // Clear search
    const clearSearch = () => {
       setRestaurantFilters((prev) => ({
          ...prev,
@@ -69,7 +66,6 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
       }));
 
       const params = new URLSearchParams(searchParams.toString());
-
       params.delete('search');
 
       const query = params.toString();
@@ -84,12 +80,10 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
             className="flex min-w-0 shrink-0 cursor-pointer items-center gap-1.5 px-[10px] transition-opacity hover:opacity-85 max-[500px]:px-[6px]"
             onClick={() => router.push('/addresses/select')}
          >
-            {/* Location Icon */}
             <span className="flex size-5 shrink-0 items-center justify-center text-[#E56A77] max-[500px]:size-[18px]">
                {LOCATION_SVG}
             </span>
 
-            {/* Selected Location */}
             <span className="min-w-0 max-w-[260px] truncate text-[16px] font-[500] text-[#5F5F5F] max-[610px]:max-w-[150px] max-[610px]:text-[14px] max-[480px]:max-w-[115px] max-[380px]:max-w-[90px] max-[340px]:max-w-[75px]">
                <span className="capitalize font-[600] text-[#333]">{selectedLocation?.title}</span>
 
@@ -101,7 +95,6 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
                )}
             </span>
 
-            {/* Dropdown Indicator */}
             <ChevronDown className="size-4 shrink-0 text-[#595959] max-[500px]:size-3.5" />
          </div>
 
@@ -109,38 +102,28 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
          <div className="mx-[8px] mt-0.5 h-[30px] w-px shrink-0 bg-[#D9D9D9] max-[500px]:mx-[4px]" />
 
          {/* Search */}
-         <div className="relative flex min-w-0 flex-1 items-center overflow-hidden">
-            {/* Animated Placeholder */}
+         <div className="group relative flex min-w-0 flex-1 items-center overflow-hidden">
             {!restaurantFilters.searchText && (
-               <div className="pointer-events-none absolute inset-y-0 left-[10px] right-[40px] flex min-w-0 items-center overflow-hidden max-[500px]:left-[5px] max-[500px]:right-[35px]">
-                  {/* Static Text */}
-                  <span className="shrink-0 text-[18px] font-[400] text-[#A6A6A6] max-[610px]:text-[15px] max-[410px]:text-[13.5px] max-[360px]:text-[12.5px]">
-                     Search for&nbsp;
-                  </span>
+               <>
+                  {/* Animated Placeholder */}
+                  <div className="pointer-events-none absolute inset-0 flex items-center overflow-hidden group-focus-within:hidden">
+                     <span
+                        key={animatedName}
+                        className="animate-search-placeholder truncate text-[18px] font-[400] text-[#A6A6A6] max-[610px]:text-[15px] max-[410px]:text-[13.5px] max-[360px]:text-[12.5px]"
+                     >
+                        Search for&nbsp; &quot;{displayName}&quot;
+                     </span>
+                  </div>
 
-                  {/* Animated Menu Item */}
-                  <span
-                     key={animatedName}
-                     className="flex min-w-0 max-w-full shrink overflow-hidden whitespace-nowrap [perspective:500px] text-[18px] font-[400] text-[#A6A6A6] max-[610px]:text-[15px] max-[410px]:text-[13.5px] max-[360px]:text-[12.5px]"
-                  >
-                     {`"${displayName}"`.split('').map((letter, index) => (
-                        <span
-                           key={`${animatedName}-${index}`}
-                           className="animate-search-letter inline-block"
-                           style={{
-                              animationDelay: `${index * 0.08}s`,
-                           }}
-                        >
-                           {letter}
-                        </span>
-                     ))}
+                  {/* Static Placeholder */}
+                  <span className="pointer-events-none absolute left-[10px] hidden text-[18px] font-[400] text-[#A6A6A6] group-focus-within:block max-[610px]:text-[15px] max-[500px]:left-[5px] max-[410px]:text-[13.5px] max-[360px]:text-[12.5px]">
+                     Restaurant name or dish..
                   </span>
-               </div>
+               </>
             )}
 
-            {/* Input */}
             <input
-               className="w-full min-w-0 border-none py-[5px] pl-[10px] pr-[45px] text-[18px] font-[500] outline-none placeholder:text-transparent max-[610px]:text-[15px] max-[500px]:pl-[5px] max-[410px]:text-[13.5px] max-[360px]:text-[12.5px]"
+               className="relative z-10 w-full min-w-0 border-none bg-transparent py-[5px] pl-[10px] pr-[45px] text-[18px] font-[500] outline-none placeholder:text-transparent max-[610px]:text-[15px] max-[500px]:pl-[5px] max-[410px]:text-[13.5px] max-[360px]:text-[12.5px]"
                type="text"
                value={restaurantFilters.searchText}
                onChange={(e) =>
@@ -162,7 +145,7 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
                   type="button"
                   onClick={clearSearch}
                   aria-label="Clear search"
-                  className="absolute right-2 flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-[16px] text-[#777] transition-colors hover:bg-[#F5F5F5] hover:text-[#D95765] max-[500px]:right-1"
+                  className="absolute right-2 z-20 flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-[16px] text-[#777] transition-colors hover:bg-[#F5F5F5] hover:text-[#D95765] max-[500px]:right-1"
                >
                   ✕
                </button>
@@ -170,7 +153,7 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
                <img
                   src={SEARCH_ICON_URL}
                   alt="Search"
-                  className="absolute right-2 size-[18px] shrink-0 max-[500px]:right-1 max-[500px]:size-5"
+                  className="absolute right-2 z-20 size-[18px] shrink-0 max-[500px]:right-1 max-[500px]:size-5"
                   draggable={false}
                />
             )}

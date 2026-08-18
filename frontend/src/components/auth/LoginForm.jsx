@@ -40,7 +40,13 @@ const LoginForm = () => {
 
          toast.success(response.message ?? 'Login successful.');
 
-         router.replace('/addresses/select');
+         if (user.type === 'customer') {
+            router.push('/addresses/select');
+         } else if (user.type === 'restaurant_owner') {
+            router.push('/owner/dashboard');
+         } else if (user.type === 'delivery_agent') {
+            router.push('/delivery/dashboard');
+         }
       } catch (error) {
          const apiError = parseApiError(error);
 
@@ -113,10 +119,11 @@ const LoginForm = () => {
                      disabled={isSubmitting}
                      aria-invalid={Boolean(errors.email)}
                      {...register('email')}
-                     className={`h-10 w-full rounded-xl border bg-white px-3.5 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${errors.email
+                     className={`h-10 w-full rounded-xl border bg-white px-3.5 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
+                        errors.email
                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                            : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
-                        }`}
+                     }`}
                   />
 
                   {errors.email?.message && (
@@ -137,10 +144,11 @@ const LoginForm = () => {
                      disabled={isSubmitting}
                      aria-invalid={Boolean(errors.password)}
                      {...register('password')}
-                     className={`h-10 w-full rounded-xl border bg-white px-3.5 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${errors.password
+                     className={`h-10 w-full rounded-xl border bg-white px-3.5 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
+                        errors.password
                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                            : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
-                        }`}
+                     }`}
                   />
 
                   {errors.password?.message && (
