@@ -13,6 +13,8 @@ export default function useRestaurants(
    const [page, setPage] = useState(1);
    const [menus, setMenus] = useState([]);
 
+   console.log(restaurantFilters); //
+
    const [loading, setLoading] = useState(false);
    const [loadingMore, setLoadingMore] = useState(false);
    const [searching, setSearching] = useState(false);
@@ -22,6 +24,14 @@ export default function useRestaurants(
 
    const searchQuery = submittedSearch.trim();
    const categoryQuery = submittedCategory.trim();
+
+   /* const searchQuery = restaurantFilters.searchText.trim();
+   const categoryQuery = restaurantFilters.menuName; */
+
+   /* console.log(searchQuery); */
+
+   // reads from submitted search and category
+   console.log('step 4', searchQuery, categoryQuery);
 
    /*
     * Extract unique menus/categories from restaurants.
@@ -131,10 +141,10 @@ export default function useRestaurants(
          selectedLocation?.addressId,
          selectedLocation?.latitude,
          selectedLocation?.longitude,
-         searchQuery,
-         categoryQuery,
          restaurantFilters.sortBy,
          restaurantFilters.openNow,
+         searchQuery,
+         categoryQuery,
          extractMenus,
       ],
    );
@@ -184,7 +194,6 @@ export default function useRestaurants(
       [selectedLocation?.addressId, selectedLocation?.latitude, selectedLocation?.longitude, extractMenus],
    );
 
-   
    useEffect(() => {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setPage(1);

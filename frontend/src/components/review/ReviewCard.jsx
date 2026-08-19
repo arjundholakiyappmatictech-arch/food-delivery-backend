@@ -1,6 +1,5 @@
 'use client';
 
-import { LOCATION_SVG } from '@/assets/icons';
 import { Star, Trash2 } from 'lucide-react';
 
 export default function ReviewCard({ review, onDelete }) {
@@ -11,10 +10,7 @@ export default function ReviewCard({ review, onDelete }) {
 
    const orderId = order?.id;
 
-   const rawDate =
-      review.created_at ||
-      order?.delivered_at ||
-      order?.created_at;
+   const rawDate = review.created_at || order?.delivered_at || order?.created_at;
 
    const formatReviewDate = (dateString) => {
       if (!dateString) {
@@ -53,9 +49,7 @@ export default function ReviewCard({ review, onDelete }) {
          <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-[#02060C]">
-                     Order #{orderId}
-                  </span>
+                  <span className="text-sm font-semibold text-[#02060C]">Order #{orderId}</span>
 
                   {order?.status && (
                      <span
@@ -75,11 +69,7 @@ export default function ReviewCard({ review, onDelete }) {
                   )}
                </div>
 
-               {formattedDate && (
-                  <p className="mt-1 text-xs text-[#8C8C8C]">
-                     {formattedDate}
-                  </p>
-               )}
+               {formattedDate && <p className="mt-1 text-xs text-[#8C8C8C]">{formattedDate}</p>}
             </div>
 
             {/* Delete */}
@@ -114,29 +104,21 @@ export default function ReviewCard({ review, onDelete }) {
                      <Star
                         key={star}
                         className={
-                           filled
-                              ? 'h-4 w-4 fill-[#E56A77] text-[#E56A77]'
-                              : 'h-4 w-4 fill-[#E9E9E9] text-[#E9E9E9]'
+                           filled ? 'h-4 w-4 fill-[#E56A77] text-[#E56A77]' : 'h-4 w-4 fill-[#E9E9E9] text-[#E9E9E9]'
                         }
                      />
                   );
                })}
             </div>
 
-            <span className="text-sm font-semibold text-[#02060C]">
-               {rating.toFixed(1)}
-            </span>
+            <span className="text-sm font-semibold text-[#02060C]">{rating.toFixed(1)}</span>
          </div>
 
          {/* Comment */}
          {comment ? (
-            <p className="mt-3 break-words text-sm leading-relaxed text-[#595959]">
-               {comment}
-            </p>
+            <p className="mt-3 break-words text-sm leading-relaxed text-[#595959]">{comment}</p>
          ) : (
-            <p className="mt-3 text-xs italic text-[#A6A6A6]">
-               No written comment provided.
-            </p>
+            <p className="mt-3 text-xs italic text-[#A6A6A6]">No written comment provided.</p>
          )}
 
          {/* Order Summary */}
@@ -154,13 +136,9 @@ export default function ReviewCard({ review, onDelete }) {
                   py-2.5
                "
             >
-               <span className="text-xs font-medium text-[#595959]">
-                  Order total
-               </span>
+               <span className="text-xs font-medium text-[#595959]">Order total</span>
 
-               <span className="text-xs font-semibold text-[#02060C]">
-                  ₹{Number(order.total || 0).toFixed(2)}
-               </span>
+               <span className="text-xs font-semibold text-[#02060C]">₹{Number(order.total || 0).toFixed(2)}</span>
             </div>
          )}
       </article>

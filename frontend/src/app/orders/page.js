@@ -34,6 +34,7 @@ export default function OrdersPage() {
       loadOrders();
    }, []);
 
+   // searching logic
    const query = search.trim().toLowerCase();
 
    const filteredOrders = orders.filter((order) => {
@@ -41,20 +42,13 @@ export default function OrdersPage() {
          return true;
       }
 
-      const restaurantName =
-         order.restaurant?.name?.toLowerCase() ?? '';
+      const restaurantName = order.restaurant?.name?.toLowerCase() ?? '';
 
       const menuItemNames = (order.order_items ?? [])
-         .map(
-            (item) =>
-               item.menu_item?.name?.toLowerCase() ?? '',
-         )
+         .map((item) => item.menu_item?.name?.toLowerCase() ?? '')
          .join(' ');
 
-      return (
-         restaurantName.includes(query) ||
-         menuItemNames.includes(query)
-      );
+      return restaurantName.includes(query) || menuItemNames.includes(query);
    });
 
    if (loading) {
@@ -79,9 +73,7 @@ export default function OrdersPage() {
       return (
          <main className="mx-auto w-full max-w-[900px] px-4 py-8">
             <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center">
-               <p className="text-sm font-semibold text-red-600">
-                  {error}
-               </p>
+               <p className="text-sm font-semibold text-red-600">{error}</p>
 
                <button
                   type="button"
@@ -98,18 +90,12 @@ export default function OrdersPage() {
    if (orders.length === 0) {
       return (
          <main className="mx-auto w-full max-w-[900px] px-4 py-8">
-            <h1 className="text-3xl font-bold text-[#02060C]">
-               My Orders
-            </h1>
+            <h1 className="text-3xl font-bold text-[#02060C]">My Orders</h1>
 
             <div className="mt-10 text-center">
-               <p className="text-sm font-semibold text-[#02060C]">
-                  No orders yet.
-               </p>
+               <p className="text-sm font-semibold text-[#02060C]">No orders yet.</p>
 
-               <p className="mt-1 text-sm text-gray-500">
-                  Your orders will appear here once you place one.
-               </p>
+               <p className="mt-1 text-sm text-gray-500">Your orders will appear here once you place one.</p>
             </div>
          </main>
       );
@@ -119,35 +105,23 @@ export default function OrdersPage() {
       <main className="mx-auto w-full max-w-[900px] px-4 py-8">
          {/* Header */}
          <header>
-            <h1 className="text-3xl font-bold text-[#02060C]">
-               My Orders
-            </h1>
+            <h1 className="text-3xl font-bold text-[#02060C]">My Orders</h1>
 
             {/* Search */}
-            <OrderSearch
-               value={search}
-               onChange={setSearch}
-            />
+            <OrderSearch value={search} onChange={setSearch} />
          </header>
 
          {/* Search Result */}
          {filteredOrders.length === 0 ? (
             <div className="mt-10 text-center">
-               <p className="text-sm font-medium text-[#02060C]">
-                  No matching orders found.
-               </p>
+               <p className="text-sm font-medium text-[#02060C]">No matching orders found.</p>
 
-               <p className="mt-1 text-sm text-gray-500">
-                  Try searching for a restaurant or item name.
-               </p>
+               <p className="mt-1 text-sm text-gray-500">Try searching for a restaurant or item name.</p>
             </div>
          ) : (
             <div className="mt-6 space-y-5">
                {filteredOrders.map((order) => (
-                  <OrderCard
-                     key={order.id}
-                     order={order}
-                  />
+                  <OrderCard key={order.id} order={order} />
                ))}
             </div>
          )}

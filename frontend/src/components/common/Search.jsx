@@ -11,7 +11,7 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
    const pathname = usePathname();
    const searchParams = useSearchParams();
 
-   console.log(searchParams);
+   console.log('step 1', searchParams);
 
    const [suggestionIndex, setSuggestionIndex] = useState(0);
 
@@ -56,6 +56,7 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
       }
 
       const query = params.toString();
+      console.log('step 2', query);
 
       router.push(query ? `${pathname}?${query}` : pathname);
    };
@@ -123,10 +124,11 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
                </>
             )}
 
+            {/* set the value of search in setRestaurantFilters */}
             <input
                className="relative z-10 w-full min-w-0 border-none bg-transparent py-[5px] pl-[10px] pr-[45px] text-[18px] font-[500] outline-none placeholder:text-transparent max-[610px]:text-[15px] max-[500px]:pl-[5px] max-[410px]:text-[13.5px] max-[360px]:text-[12.5px]"
                type="text"
-               value={restaurantFilters.searchText}
+               value={restaurantFilters.searchText || ''}
                onChange={(e) =>
                   setRestaurantFilters((prev) => ({
                      ...prev,

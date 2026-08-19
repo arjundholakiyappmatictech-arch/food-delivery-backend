@@ -22,7 +22,7 @@ export default async function getNearbyRestaurants({
       params.longitude = longitude;
    }
 
-   if (query.trim()) {
+   if (query) {
       params.q = query.trim();
    }
 

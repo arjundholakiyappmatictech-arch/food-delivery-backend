@@ -5,12 +5,6 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 export default function DeleteReviewModal({ review, isDeleting, onConfirm, onCancel }) {
    if (!review) return null;
 
-   const restaurantName =
-      review.enrichedRestaurant?.name ||
-      review.order?.restaurant?.name ||
-      review.restaurant?.name ||
-      'this restaurant';
-
    return (
       <div
          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs"
@@ -29,7 +23,7 @@ export default function DeleteReviewModal({ review, isDeleting, onConfirm, onCan
 
             <p className="mt-1 text-xs leading-relaxed text-[#595959]">
                Are you sure you want to delete your review for{' '}
-               <span className="font-semibold text-[#02060C]">{restaurantName}</span>?
+               <span className="font-semibold text-[#02060C]">this restaurant</span>?
             </p>
 
             <div className="mt-4 flex items-center justify-center gap-2">

@@ -96,6 +96,7 @@ export default function useAddresses() {
    }, [page, search, hasMore, searching]);
 
    useEffect(() => {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchAddresses();
    }, [fetchAddresses]);
 
