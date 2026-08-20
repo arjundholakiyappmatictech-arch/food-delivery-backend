@@ -7,12 +7,14 @@ import { toast } from 'sonner';
 const useCartStore = create((set, get) => ({
    cartItems: [],
    loading: false,
+   restaurantId: null,
 
    fetchCart: async () => {
       set({ loading: true });
 
       try {
          const response = await getCart();
+         console.log(response);
 
          set({
             cartItems: response.data,
@@ -45,11 +47,13 @@ const useCartStore = create((set, get) => ({
          if (exists) {
             return {
                cartItems: state.cartItems.map((item) => (item.id === cartItem.id ? cartItem : item)),
+               restaurantId,
             };
          }
 
          return {
             cartItems: [...state.cartItems, cartItem],
+            restaurantId,
          };
       });
    },

@@ -11,7 +11,7 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
    const pathname = usePathname();
    const searchParams = useSearchParams();
 
-   console.log('step 1', searchParams);
+   console.log('step 1', pathname, searchParams.toString());
 
    const [suggestionIndex, setSuggestionIndex] = useState(0);
 

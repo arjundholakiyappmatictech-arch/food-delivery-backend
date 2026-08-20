@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import useCartStore from '@/lib/store/cartStore';
 import MenuItemCard from '../restaurants/MenuItemCard';
 import { CHECKOUT_ICON } from '@/assets/icons';
+import { useEffect } from 'react';
 
 export default function CartDetails() {
    const router = useRouter();
 
    const cartItems = useCartStore((state) => state.cartItems);
    const clearCart = useCartStore((state) => state.clearCart);
+   const restaurantId = useCartStore((state) => state.restaurantId);
 
    const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
 
@@ -24,20 +26,14 @@ export default function CartDetails() {
       router.push('/checkout');
    };
 
-   if (cartItems.length === 0) {
-      return (
-         <main className="flex h-[75vh] items-center justify-center">
-            <div className="flex flex-col items-center text-center">
-               <h1 className="pb-[10px] text-[30px] font-[600] text-[#02060CCC] max-[600px]:text-[20px]">
-                  Your cart is empty
-               </h1>
+   useEffect(() => {
+      if (cartItems.length === 0 && restaurantId) {
+         router.replace(`/restaurants/${restaurantId}`);
+      }
+   }, [cartItems.length, restaurantId, router]);
 
-               <h2 className="text-[20px] font-[500] text-[#02060C] max-[600px]:text-[15px]">
-                  Looks like you haven&apos;t made your choice yet...
-               </h2>
-            </div>
-         </main>
-      );
+   if (cartItems.length === 0) {
+      return null;
    }
 
    const billRowStyles = 'flex justify-between text-[18px] font-[500] text-[#02060CB3] max-[600px]:text-[15px]';
@@ -81,6 +77,7 @@ export default function CartDetails() {
                      key={cartItem.id}
                      item={cartItem.menu_item}
                      restaurant={cartItem.restaurant}
+                     restaurantClosed={cartItem.restaurant?.status === 'closed'}
                      isLast={index === cartItems.length - 1}
                   />
                ))}

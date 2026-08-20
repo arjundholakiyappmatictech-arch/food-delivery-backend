@@ -3,8 +3,10 @@
 import useCartStore from '@/lib/store/cartStore';
 import { useState } from 'react';
 import ReplaceCartDialog from '../cart/ReplaceCartDialog';
+import { toast } from 'sonner';
+import { parseApiError } from '@/utils/apiError';
 
-export default function MenuItemCard({ item, restaurant, isLast = false }) {
+export default function MenuItemCard({ item, restaurant, isLast = false, restaurantClosed = false }) {
    const { cartItems, addItem, increaseQuantity, decreaseQuantity, clearCart } = useCartStore();
 
    const [showReplaceDialog, setShowReplaceDialog] = useState(false);
@@ -24,16 +26,20 @@ export default function MenuItemCard({ item, restaurant, isLast = false }) {
             menuItemId: item.id,
          });
       } catch (error) {
-         if (error.response?.status === 409) {
+         const apiError = parseApiError(error);
+
+         if (apiError.status === 409 && apiError.message === 'Your cart contains items from another restaurant.') {
             setPendingItem({
                restaurantId: restaurant.id,
                menuItemId: item.id,
             });
+
             setShowReplaceDialog(true);
+
             return;
          }
 
-         console.error('Unable to add item to cart:', error);
+         toast.error(apiError.message ?? 'Unable to add item to cart.');
       }
    };
 
@@ -84,20 +90,25 @@ export default function MenuItemCard({ item, restaurant, isLast = false }) {
                   <img
                      src={item.image_url || '/assets/pizza.jpg'}
                      alt={item.name}
-                     className="h-full w-full overflow-hidden rounded-[0.3cm] object-cover"
+                     className={`h-full w-full overflow-hidden rounded-[0.3cm] object-cover ${restaurantClosed ? 'grayscale brightness-90' : ''}`}
                      draggable={false}
                   />
                </div>
 
                {/* Unavailable */}
-               {!item.availability ? (
+               {restaurantClosed ? (
+                  <div
+                     className={`${addToCartBtnStyles} !w-[135px] !text-[11px] cursor-not-allowed justify-center whitespace-nowrap bg-[#F2F2F2] py-[7px] font-[600] text-[#999] shadow-none max-[600px]:!w-[24vw] max-[600px]:!text-[9px]`}
+                  >
+                     Restaurant Closed
+                  </div>
+               ) : !item.availability ? (
                   <div
                      className={`${addToCartBtnStyles} cursor-not-allowed justify-center bg-[#F2F2F2] py-[7px] text-[14px] text-[#999] shadow-none max-[600px]:text-[12px]`}
                   >
                      Unavailable
                   </div>
                ) : quantity === 0 ? (
-                  /* ADD */
                   <button
                      type="button"
                      onClick={handleAddToCart}
@@ -106,7 +117,6 @@ export default function MenuItemCard({ item, restaurant, isLast = false }) {
                      ADD
                   </button>
                ) : (
-                  /* Quantity */
                   <div className={`${addToCartBtnStyles} justify-between`}>
                      <button
                         type="button"

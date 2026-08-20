@@ -17,6 +17,7 @@ export default function CheckoutDetails() {
 
    const cartItems = useCartStore((state) => state.cartItems);
    const fetchCart = useCartStore((state) => state.fetchCart);
+   const restaurantId = useCartStore((state) => state.restaurantId);
 
    const [cartLoading, setCartLoading] = useState(true);
 
@@ -45,10 +46,10 @@ export default function CheckoutDetails() {
          return;
       }
 
-      if (cartItems.length === 0) {
-         router.replace('/cart');
+      if (cartItems.length === 0 && restaurantId) {
+         router.replace(`/restaurants/${restaurantId}`);
       }
-   }, [cartLoading, cartItems.length, router]);
+   }, [cartLoading, cartItems.length, router, restaurantId]);
 
    const totalItems = cartItems.reduce((total, cartItem) => total + cartItem.quantity, 0);
 

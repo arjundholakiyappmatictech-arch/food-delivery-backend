@@ -36,6 +36,7 @@ export default function CategoryAccordion({ category, restaurant, index, activeI
                         key={item.id}
                         item={item}
                         restaurant={restaurant}
+                        restaurantClosed={restaurant?.status === 'closed'}
                         isLast={index === category.menu_items.length - 1}
                      />
                   ))
