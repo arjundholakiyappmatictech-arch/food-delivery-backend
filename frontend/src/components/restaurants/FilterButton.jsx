@@ -10,16 +10,18 @@ export default function FilterButton({ filterId, restaurantFilters, setRestauran
    const pathname = usePathname();
    const searchParams = useSearchParams();
 
-   const isCurrentFilterActive =
-      filterId === 'sortBy'
-         ? restaurantFilters.sortBy !== ''
-         : filterId === 'nearest'
-           ? restaurantFilters.sortBy === 'nearest'
-           : filterId === 'openNow'
-             ? restaurantFilters.openNow
-             : filterId === 'aToZ'
-               ? restaurantFilters.sortBy === 'a-z'
-               : restaurantFilters.sortBy === 'z-a';
+   /* simplified version */
+   const filterChecks = {
+      sortBy: restaurantFilters.sortBy !== '',
+      nearest: restaurantFilters.sortBy === 'nearest',
+      openNow: restaurantFilters.openNow,
+      aToZ: restaurantFilters.sortBy === 'a-z',
+      zToA: restaurantFilters.sortBy === 'z-a',
+   };
+
+   console.log(filterChecks);
+
+   const isCurrentFilterActive = filterChecks[filterId] ?? false;
 
    const buttonClass = `
       min-w-[100px]
@@ -120,7 +122,7 @@ export default function FilterButton({ filterId, restaurantFilters, setRestauran
          ...prev,
          sortBy: '',
          openNow: false,
-         menuId: null,
+         menuName: null,
       }));
 
       const params = new URLSearchParams(searchParams.toString());

@@ -77,7 +77,11 @@ export default function MenuItemCard({ item, restaurant, isLast = false, restaur
 
                <span
                   className={`mt-[10px] inline-block text-[14px] font-[500] max-[600px]:mt-[8px] max-[600px]:text-[12px] ${
-                     item.availability ? 'text-[#1BA672]' : 'text-red-500'
+                     restaurantClosed
+                        ? 'grayscale brightness-90'
+                        : item.availability
+                          ? 'text-[#1BA672]'
+                          : 'text-red-500'
                   }`}
                >
                   {item.availability ? 'Available' : 'Not Available'}
@@ -98,7 +102,7 @@ export default function MenuItemCard({ item, restaurant, isLast = false, restaur
                {/* Unavailable */}
                {restaurantClosed ? (
                   <div
-                     className={`${addToCartBtnStyles} !w-[135px] !text-[11px] cursor-not-allowed justify-center whitespace-nowrap bg-[#F2F2F2] py-[7px] font-[600] text-[#999] shadow-none max-[600px]:!w-[24vw] max-[600px]:!text-[9px]`}
+                     className={`${addToCartBtnStyles} !text-[14px] cursor-not-allowed justify-center whitespace-nowrap bg-[#F2F2F2] py-[7px] font-[600] text-[#999] shadow-none max-[600px]:!text-[9px]`}
                   >
                      Restaurant Closed
                   </div>

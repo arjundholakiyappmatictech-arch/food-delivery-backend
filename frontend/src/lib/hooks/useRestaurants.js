@@ -1,7 +1,9 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react-hooks/preserve-manual-memoization */
 import getNearbyRestaurants from '@/services/restaurantService';
+import { parseApiError } from '@/utils/apiError';
 import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 export default function useRestaurants(
    selectedLocation,
@@ -13,8 +15,6 @@ export default function useRestaurants(
    const [page, setPage] = useState(1);
    const [menus, setMenus] = useState([]);
 
-   console.log(restaurantFilters); //
-
    const [loading, setLoading] = useState(false);
    const [loadingMore, setLoadingMore] = useState(false);
    const [searching, setSearching] = useState(false);
@@ -25,13 +25,12 @@ export default function useRestaurants(
    const searchQuery = submittedSearch.trim();
    const categoryQuery = submittedCategory.trim();
 
-   /* const searchQuery = restaurantFilters.searchText.trim();
+   console.log('step 8', searchQuery); // read values from the sunmittedSearch
+
+   /* const searchQuery = restaurantFilters.searchText;
    const categoryQuery = restaurantFilters.menuName; */
 
-   /* console.log(searchQuery); */
-
    // reads from submitted search and category
-   console.log('step 4', searchQuery, categoryQuery);
 
    /*
     * Extract unique menus/categories from restaurants.
@@ -73,7 +72,7 @@ export default function useRestaurants(
                latitude: selectedLocation?.latitude,
                longitude: selectedLocation?.longitude,
 
-               // Submitted search from URL
+               // step 9 pass this value to the query params and call apis
                query: searchQuery,
 
                // Submitted category from URL
@@ -108,7 +107,6 @@ export default function useRestaurants(
                 */
                setRestaurants((prev) => {
                   const existingIds = new Set(prev.map((restaurant) => restaurant.id));
-
                   const newItems = items.filter((restaurant) => !existingIds.has(restaurant.id));
 
                   return [...prev, ...newItems];
@@ -121,16 +119,19 @@ export default function useRestaurants(
              * Ignore intentionally cancelled requests.
              */
             if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
+               console.log('REQUEST CANCELLED');
                return;
             }
-
-            console.error('FETCH RESTAURANTS ERROR:', error);
-
-            setError(error.response?.data?.message ?? 'Unable to fetch restaurants.');
 
             if (currentPage === 1) {
                setRestaurants([]);
             }
+
+            const apiError = parseApiError(error);
+
+            setError(apiError.message ?? 'Unable to fetch restaurants.');
+
+            toast.error(apiError.message ?? 'Unable to fetch restaurants.');
          } finally {
             setLoading(false);
             setSearching(false);

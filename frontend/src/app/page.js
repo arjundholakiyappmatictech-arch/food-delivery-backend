@@ -19,11 +19,12 @@ function HomePageContent() {
    const router = useRouter();
    const searchParams = useSearchParams();
 
-   const submittedSearch = searchParams.get('search') || '';
-   const submittedCategory = searchParams.get('category') || '';
+   console.log('step 1', searchParams); // read and get size of url params
 
-   // read from url
-   console.log('step 3', submittedSearch, submittedCategory);
+   const submittedSearch = searchParams.get('search') || '';
+   console.log('step 2', submittedSearch); // read values of individual
+
+   const submittedCategory = searchParams.get('category') || '';
 
    const submittedSort = searchParams.get('sort') || '';
    const submittedOpenNow = searchParams.get('openNow') === 'true';
@@ -37,6 +38,8 @@ function HomePageContent() {
       menuName: submittedCategory || null,
    };
 
+   console.log('step 3', defaultFilters); // build inital filter object
+
    /* const defaultFilters = {
       searchText: null,
       sortBy: null,
@@ -45,7 +48,9 @@ function HomePageContent() {
    }; */
 
    const [restaurantFilters, setRestaurantFilters] = useState(defaultFilters);
+   console.log('step 4', restaurantFilters); //pass that object to the react state
 
+   /* step 7 pass this submittedSearch values to the hook for api call */
    const { restaurants, menus, loading, loadingMore, searching, hasMore, error, retry, loadMore } = useRestaurants(
       selectedLocation,
       restaurantFilters,
@@ -68,6 +73,7 @@ function HomePageContent() {
 
    return (
       <main className="mx-auto mt-2 w-full max-w-[1800px] px-[60px] max-[1200px]:px-[40px] max-[800px]:px-[25px] max-[560px]:px-[15px] max-[380px]:px-[10px]">
+         {/* step 5 passed that state to component */}
          {/* Search */}
          <Search
             selectedLocation={selectedLocation}

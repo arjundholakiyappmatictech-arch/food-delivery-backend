@@ -5,6 +5,8 @@ export default function ExploreMenu({ menus = [], selectedMenuName, setSelectedM
    const pathname = usePathname();
    const searchParams = useSearchParams();
 
+   /* console.log('menuName', selectedMenuName); */
+
    const uniqueMenus = Array.from(new Map(menus.map((menu) => [menu.name.toLowerCase(), menu])).values());
 
    const handleCategoryClick = (menuName) => {

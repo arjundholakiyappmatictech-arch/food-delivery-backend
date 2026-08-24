@@ -14,8 +14,6 @@ const useCartStore = create((set, get) => ({
 
       try {
          const response = await getCart();
-         console.log(response);
-
          set({
             cartItems: response.data,
          });
