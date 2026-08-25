@@ -17,6 +17,13 @@ Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
+Route::get('/work', function () {
+    return response()->json([
+        'status' => true,
+        'message' => 'Laravel API is working!',
+    ]);
+});
+
 // address routes
 Route::middleware('auth:sanctum')
     ->controller(AddressController::class)
