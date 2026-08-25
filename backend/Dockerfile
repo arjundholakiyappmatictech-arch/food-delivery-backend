@@ -45,6 +45,11 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # Nginx config
 COPY docker/nginx.conf /etc/nginx/sites-available/default
 
+# Startup script
+COPY docker/start.sh /usr/local/bin/start.sh
+
+RUN chmod +x /usr/local/bin/start.sh
+
 EXPOSE 10000
 
-CMD ["sh", "-c", "php artisan migrate --force && php-fpm -D && nginx -g 'daemon off;'"]
+CMD ["/usr/local/bin/start.sh"]

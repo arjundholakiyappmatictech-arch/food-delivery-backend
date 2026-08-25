@@ -22,3 +22,6 @@ backend/!.env.example
 backend/storage/*.key
 backend/storage/logs/*.log
 backend/bootstrap/cache/*.php
+
+# db-backup
+db-backup/local-data.sql
