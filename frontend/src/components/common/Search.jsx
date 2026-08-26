@@ -132,8 +132,9 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
             <input
                className="relative z-10 w-full min-w-0 border-none bg-transparent py-[5px] pl-[10px] pr-[45px] text-[18px] font-[500] outline-none placeholder:text-transparent max-[610px]:text-[15px] max-[500px]:pl-[5px] max-[410px]:text-[13.5px] max-[360px]:text-[12.5px]"
                type="text"
+               enterKeyHint="search"
                value={restaurantFilters.searchText || ''}
-               /* step 11 also change this values when user type */
+               /* step 11 also change this value when user types */
                onChange={(e) =>
                   setRestaurantFilters((prev) => ({
                      ...prev,
