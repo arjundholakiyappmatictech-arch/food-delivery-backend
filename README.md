@@ -25,7 +25,6 @@ Tomato is a full-stack food delivery application that enables customers to brows
 
 - `frontend/` - Next.js frontend application containing pages, components, services, and Zustand state stores.
 - `backend/` - Laravel API backend containing controllers, models, services, migrations, and Docker configuration.
-- `db-backup/` - Database seed data and backup files.
 
 ## How It Works
 
