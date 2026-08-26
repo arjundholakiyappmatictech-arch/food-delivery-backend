@@ -1,58 +1,121 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Tomato
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Tomato is a full-stack food delivery application that enables customers to browse nearby restaurants, order food, manage delivery addresses, and leave reviews, while providing dashboards for restaurant owners and delivery agents.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- User authentication with role-based permissions (Customer, Restaurant Owner, Delivery Agent).
+- Distance-based restaurant discovery using geographic coordinates (Haversine formula), search queries, and category filtering.
+- Interactive restaurant menus and item management.
+- Cart management with item updates and persistent state.
+- Customer address management with location coordinates.
+- Multi-step checkout, order placement, cancellation, and invoice generation.
+- Automated background queue pipeline for delivery assignment, pickup, and delivery tracking.
+- Payment processing for Cash on Delivery and online/card payment simulation.
+- Customer ratings and reviews for completed orders.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tech Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Frontend:** Next.js 16 (App Router), React 19, Zustand, Axios, Tailwind CSS, React Hook Form, Zod.
+- **Backend:** PHP 8.3/8.4, Laravel 13, Laravel Sanctum.
+- **Database:** PostgreSQL (Supabase).
+- **Infrastructure:** Docker, Nginx, Vercel (Frontend), Render (Backend).
 
-## Learning Laravel
+## Project Structure
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- `frontend/` - Next.js frontend application containing pages, components, services, and Zustand state stores.
+- `backend/` - Laravel API backend containing controllers, models, services, migrations, and Docker configuration.
+- `db-backup/` - Database seed data and backup files.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## How It Works
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+1. The frontend (Next.js on Vercel) sends HTTP requests to the backend API.
+2. The backend (Laravel running in a Docker container on Render) handles request authentication via Sanctum tokens and executes business logic in service classes.
+3. Database queries and background jobs are executed against PostgreSQL (Supabase).
 
-## Agentic Development
+## Local Setup
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### Backend Setup
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+cd backend
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+To run the queue worker locally:
 
-## Contributing
+```bash
+php artisan queue:listen
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Frontend Setup
 
-## Code of Conduct
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Security Vulnerabilities
+## Environment Variables
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Backend (`backend/.env`)
+
+- `APP_NAME`
+- `APP_ENV`
+- `APP_KEY`
+- `APP_DEBUG`
+- `APP_URL`
+- `DB_CONNECTION`
+- `DB_HOST`
+- `DB_PORT`
+- `DB_DATABASE`
+- `DB_USERNAME`
+- `DB_PASSWORD`
+- `QUEUE_CONNECTION`
+- `SESSION_DRIVER`
+- `CACHE_STORE`
+- `MAIL_MAILER`
+- `MAIL_HOST`
+- `MAIL_PORT`
+- `MAIL_USERNAME`
+- `MAIL_PASSWORD`
+- `MAIL_FROM_ADDRESS`
+
+### Frontend (`frontend/.env.local`)
+
+- `NEXT_PUBLIC_API_URL`
+
+## Production
+
+- **Frontend:** Vercel
+- **Backend:** Render (Docker container)
+- **Database:** Supabase (PostgreSQL)
+
+Live Demo:
+https://tomato-rho-three.vercel.app/
+
+## Queue
+
+The application uses Laravel's database queue driver (`php artisan queue:work`) to process background delivery workflows (`AssignDeliveryJob`, `PickupJob`, `DeliverJob`), email notifications, and auth activity logs.
+
+## API
+
+The backend exposes a REST API protected by Laravel Sanctum Bearer tokens. Main API areas include:
+
+- **Authentication:** `/api/register`, `/api/login`, `/api/logout`
+- **Addresses:** `/api/addresses`
+- **Restaurants & Menus:** `/api/restaurants`, `/api/menus`, `/api/menu-items`
+- **Cart:** `/api/cart`, `/api/carts/store`
+- **Orders & Payments:** `/api/orders`, `/api/orders/{id}/payment`
+- **Deliveries:** `/api/deliveries`
+- **Reviews:** `/api/reviews`
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT (as defined in `backend/composer.json`).
