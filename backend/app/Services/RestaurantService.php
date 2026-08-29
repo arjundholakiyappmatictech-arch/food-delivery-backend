@@ -6,6 +6,7 @@ use App\Exceptions\Restaurant\DuplicateRestaurantException;
 use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -68,6 +69,45 @@ class RestaurantService
         /** @var User $user */
         $user = Auth::user();
 
+        [$latitude, $longitude] = $this->resolveCoordinates($data, $user);
+
+        $include = $data['include'] ?? null;
+        $search = $data['q'] ?? null;
+        $menuName = $data['menu_name'] ?? null;
+        $sortBy = $data['sort_by'] ?? null;
+        $openNow = filter_var($data['open_now'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $radius = (float) ($data['radius'] ?? 500);
+        $perPage = $data['per_page'] ?? 5;
+
+        $operator = config('database.default') === 'pgsql' ? 'ilike' : 'like';
+        $keywords = $search ? array_filter(preg_split('/\s+/', trim($search))) : [];
+
+        $query = Restaurant::query()
+            ->select(['id', 'name', 'address', 'status', 'latitude', 'longitude', 'image_path'])
+            ->selectRaw($this->getDistanceSql(), [$latitude, $longitude, $latitude])
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->whereRaw($this->getDistanceFilterSql(), [$latitude, $longitude, $latitude, $radius])
+            ->when($menuName, function ($query) use ($menuName, $operator) {
+                $query->whereHas('menus', function ($menuQuery) use ($menuName, $operator) {
+                    $menuQuery->where('name', $operator, $menuName);
+                });
+            })
+            ->when($openNow, function ($query) {
+                $query->where('status', 'open');
+            });
+
+        $this->applyIncludes($query, $include, $menuName, $search, $operator);
+        $this->applyKeywordSearch($query, $keywords, $operator);
+        $this->applySorting($query, $sortBy);
+
+        $restaurants = $query->paginate($perPage)->withQueryString();
+
+        return $this->formatDistances($restaurants);
+    }
+
+    private function resolveCoordinates(array $data, User $user): array
+    {
         if (isset($data['address_id'])) {
             $address = $user
                 ->addresses()
@@ -80,23 +120,15 @@ class RestaurantService
                 ]);
             }
 
-            $latitude = (float) $address->latitude;
-            $longitude = (float) $address->longitude;
-        } else {
-            $latitude = (float) $data['latitude'];
-            $longitude = (float) $data['longitude'];
+            return [(float) $address->latitude, (float) $address->longitude];
         }
 
-        $include = $data['include'] ?? null;
-        $search = $data['q'] ?? null;
-        $menuName = $data['menu_name'] ?? null;
-        $sortBy = $data['sort_by'] ?? null;
-        $openNow = filter_var($data['open_now'] ?? false, FILTER_VALIDATE_BOOLEAN);
-        $perPage = $data['per_page'] ?? 5;
+        return [(float) $data['latitude'], (float) $data['longitude']];
+    }
 
-        $operator = config('database.default') === 'pgsql' ? 'ilike' : 'like';
-
-        $distanceSql = <<<'SQL'
+    private function getDistanceSql(): string
+    {
+        return <<<'SQL'
             (
                 6371 * acos(
                     LEAST(
@@ -113,18 +145,32 @@ class RestaurantService
                 )
             ) AS distance
         SQL;
+    }
 
-        $keywords = $search ? array_filter(preg_split('/\s+/', trim($search))) : [];
-        $radius = (float) ($data['radius'] ?? 500);
+    private function getDistanceFilterSql(): string
+    {
+        return <<<'SQL'
+            (
+                6371 * acos(
+                    LEAST(
+                        1,
+                        GREATEST(
+                            -1,
+                            cos(radians(?))
+                            * cos(radians(latitude))
+                            * cos(radians(longitude) - radians(?))
+                            + sin(radians(?))
+                            * sin(radians(latitude))
+                        )
+                    )
+                )
+            ) <= ?
+        SQL;
+    }
 
-        $restaurants = Restaurant::query()
-            ->select(['id', 'name', 'address', 'status', 'latitude', 'longitude', 'image_path'])
-            ->selectRaw($distanceSql, [$latitude, $longitude, $latitude])
-            ->when($menuName, function ($query) use ($menuName, $operator) {
-                $query->whereHas('menus', function ($menuQuery) use ($menuName, $operator) {
-                    $menuQuery->where('name', $operator, $menuName);
-                });
-            })
+    private function applyIncludes(Builder $query, ?string $include, ?string $menuName, ?string $search, string $operator): void
+    {
+        $query
             ->when($include === 'menus', function ($query) {
                 $query->with('menus');
             })
@@ -149,50 +195,33 @@ class RestaurantService
                             ]);
                     },
                 ]);
-            })
-            ->when(!empty($keywords), function ($query) use ($keywords, $operator) {
-                foreach ($keywords as $keyword) {
-                    $query->where(function ($query) use ($keyword, $operator) {
-                        $query
+            });
+    }
 
-                            ->where('restaurants.name', $operator, "%{$keyword}%")
-                            ->orWhere('restaurants.address', $operator, "%{$keyword}%")
-                            ->orWhereHas('menus', function ($menuQuery) use ($keyword, $operator) {
-                                $menuQuery->where('name', $operator, "%{$keyword}%");
-                            })
+    private function applyKeywordSearch(Builder $query, array $keywords, string $operator): void
+    {
+        if (empty($keywords)) {
+            return;
+        }
 
-                            ->orWhereHas('menus.menuItems', function ($itemQuery) use ($keyword, $operator) {
-                                $itemQuery->where('name', $operator, "%{$keyword}%");
-                            });
+        foreach ($keywords as $keyword) {
+            $query->where(function ($query) use ($keyword, $operator) {
+                $query
+                    ->where('restaurants.name', $operator, "%{$keyword}%")
+                    ->orWhere('restaurants.address', $operator, "%{$keyword}%")
+                    ->orWhereHas('menus', function ($menuQuery) use ($keyword, $operator) {
+                        $menuQuery->where('name', $operator, "%{$keyword}%");
+                    })
+                    ->orWhereHas('menus.menuItems', function ($itemQuery) use ($keyword, $operator) {
+                        $itemQuery->where('name', $operator, "%{$keyword}%");
                     });
-                }
-            })
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->when($openNow, function ($query) {
-                $query->where('status', 'open');
-            })
-            ->whereRaw(
-                <<<'SQL'
-                (
-                    6371 * acos(
-                        LEAST(
-                            1,
-                            GREATEST(
-                                -1,
-                                cos(radians(?))
-                                * cos(radians(latitude))
-                                * cos(radians(longitude) - radians(?))
-                                + sin(radians(?))
-                                * sin(radians(latitude))
-                            )
-                        )
-                    )
-                ) <= ?
-                SQL
-                ,
-                [$latitude, $longitude, $latitude, $radius],
-            )
+            });
+        }
+    }
+
+    private function applySorting(Builder $query, ?string $sortBy): void
+    {
+        $query
             ->when($sortBy === 'nearest', function ($query) {
                 $query->orderBy('distance');
             })
@@ -201,10 +230,11 @@ class RestaurantService
             })
             ->when($sortBy === 'z-a', function ($query) {
                 $query->orderByDesc('name');
-            })
-            ->paginate($perPage)
-            ->withQueryString();
+            });
+    }
 
+    private function formatDistances(LengthAwarePaginator $restaurants): LengthAwarePaginator
+    {
         $restaurants->setCollection(
             $restaurants->getCollection()->map(function (Restaurant $restaurant) {
                 $distance = (float) $restaurant->distance;
