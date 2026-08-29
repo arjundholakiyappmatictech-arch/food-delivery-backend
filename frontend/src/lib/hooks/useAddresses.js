@@ -16,7 +16,6 @@ export default function useAddresses() {
    const [loadingMore, setLoadingMore] = useState(false);
    const [error, setError] = useState('');
 
-   // Deletion state
    const [deletingAddress, setDeletingAddress] = useState(null);
    const [isDeleting, setIsDeleting] = useState(false);
 
@@ -114,6 +113,7 @@ export default function useAddresses() {
             if (item.id === updatedAddress.id) {
                return { ...item, ...updatedAddress };
             }
+            // Ensure only one address is marked as default
             if (updatedAddress.is_default) {
                return { ...item, is_default: false };
             }

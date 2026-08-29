@@ -28,6 +28,7 @@ export default function MenuItemCard({ item, restaurant, isLast = false, restaur
       } catch (error) {
          const apiError = parseApiError(error);
 
+         // Prompt user before discarding existing items from a different restaurant
          if (apiError.status === 409 && apiError.message === 'Your cart contains items from another restaurant.') {
             setPendingItem({
                restaurantId: restaurant.id,
@@ -65,7 +66,6 @@ export default function MenuItemCard({ item, restaurant, isLast = false, restaur
    return (
       <div className="menu-item-card">
          <div className="flex h-[150px] justify-between max-[600px]:h-[105px]">
-            {/* Left - Item Information */}
             <div className="ml-[20px] flex w-[550px] flex-col justify-center max-[760px]:ml-[5px] max-[760px]:w-[70vw] max-[600px]:w-[65vw]">
                <h3 className="text-[20px] font-[700] leading-[1.3] text-[#02060CBF] max-[600px]:text-[17px]">
                   {item.name}
@@ -88,7 +88,6 @@ export default function MenuItemCard({ item, restaurant, isLast = false, restaur
                </span>
             </div>
 
-            {/* Right - Image + Quantity */}
             <div className="relative mr-[20px] flex flex-col max-[760px]:mr-[5px] max-[600px]:my-auto">
                <div className="h-[135px] w-[156px] max-[600px]:h-[100px] max-[600px]:w-[28vw]">
                   <img
@@ -99,7 +98,6 @@ export default function MenuItemCard({ item, restaurant, isLast = false, restaur
                   />
                </div>
 
-               {/* Unavailable */}
                {restaurantClosed ? (
                   <div
                      className={`${addToCartBtnStyles} !text-[14px] cursor-not-allowed justify-center whitespace-nowrap bg-[#F2F2F2] py-[7px] font-[600] text-[#999] shadow-none max-[600px]:!text-[9px]`}

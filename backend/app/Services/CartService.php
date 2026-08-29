@@ -125,8 +125,6 @@ class CartService
             fn(Restaurant $restaurant): bool => $restaurant->status === 'open',
         );
 
-        /* dd($hasOpenRestaurant); */
-
         if (!$hasOpenRestaurant) {
             throw new RestaurantClosedException();
         }

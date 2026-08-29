@@ -27,7 +27,6 @@ export default function OrderCard({ order }) {
 
    return (
       <article className="rounded-2xl border border-[#E9E9E9] bg-white shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-         {/* Restaurant */}
          <div className="flex items-center gap-5 p-6">
             <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full">
                <img
@@ -55,7 +54,6 @@ export default function OrderCard({ order }) {
 
          <div className="border-t border-[#E9E9E9]" />
 
-         {/* Items */}
          <div className="space-y-3 px-6 py-5">
             {visibleItems.map((item) => {
                const itemTotal = Number(item.price_at_purchase) * item.quantity;
@@ -76,7 +74,6 @@ export default function OrderCard({ order }) {
 
          <div className="border-t border-[#E9E9E9]" />
 
-         {/* Order information */}
          <div className="flex items-center justify-between gap-6 px-6 py-5">
             <div>
                <p className="text-xs text-gray-500">Order Placed</p>
@@ -99,7 +96,6 @@ export default function OrderCard({ order }) {
 
          <div className="border-t border-[#E9E9E9]" />
 
-         {/* Actions */}
          <div className="mt-5 mb-3 flex px-3 items-center justify-end gap-4">
             {order.status === 'delivered' &&
                (review ? (

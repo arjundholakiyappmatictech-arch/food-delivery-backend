@@ -17,11 +17,6 @@ class SendWelcomeEmailJob implements ShouldQueue
 
     public function handle(): void
     {
-        /* Log::info('Welcome email sent', [
-            'user_id' => $this->user->id,
-            'email' => $this->user->email,
-        ]); */
-
         Mail::to($this->user->email)->send(new WelcomMail($this->user));
     }
 }

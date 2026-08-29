@@ -34,7 +34,6 @@ export default function OrdersPage() {
       loadOrders();
    }, []);
 
-   // searching logic
    const query = search.trim().toLowerCase();
 
    const filteredOrders = orders.filter((order) => {
@@ -54,14 +53,12 @@ export default function OrdersPage() {
    if (loading) {
       return (
          <main className="mx-auto w-full max-w-[900px] px-4 py-8">
-            {/* Header Skeleton */}
             <div className="animate-pulse">
                <div className="h-8 w-36 rounded bg-gray-200" />
 
                <div className="mt-5 h-12 w-full rounded-xl bg-gray-200" />
             </div>
 
-            {/* Order Skeletons */}
             <div className="mt-6">
                <OrderCardSkeleton count={2} />
             </div>
@@ -103,15 +100,12 @@ export default function OrdersPage() {
 
    return (
       <main className="mx-auto w-full max-w-[900px] px-4 py-8">
-         {/* Header */}
          <header>
             <h1 className="text-3xl font-bold text-[#02060C]">My Orders</h1>
 
-            {/* Search */}
             <OrderSearch value={search} onChange={setSearch} />
          </header>
 
-         {/* Search Result */}
          {filteredOrders.length === 0 ? (
             <div className="mt-10 text-center">
                <p className="text-sm font-medium text-[#02060C]">No matching orders found.</p>

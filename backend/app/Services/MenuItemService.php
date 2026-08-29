@@ -26,7 +26,6 @@ class MenuItemService
         /** @var UploadedFile $image */
         $image = $data['image'];
 
-        // Do not send the uploadfile object to MenuItem::create().
         unset($data['image']);
 
         $storedImagePath = null;
@@ -53,7 +52,7 @@ class MenuItemService
                 return $menuItem->refresh()->load('menu');
             });
         } catch (Exception $exception) {
-            // to cleanup orphan file
+            // Clean up stored image if database transaction fails
             if ($storedImagePath !== null) {
                 Storage::disk('public')->delete($storedImagePath);
             }

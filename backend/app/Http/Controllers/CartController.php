@@ -23,13 +23,11 @@ class CartController extends Controller
 
     public function store(StoreCartRequest $request): JsonResponse
     {
-        /* dd($request->toArray()); */
         try {
             $cart = $this->cartService->store($request->validated());
 
             return $this->successResponse('Item added to cart successfully', new CartResource($cart), 201);
         } catch (Exception $exception) {
-            /* dd($exception); */
             return $this->errorResponse($exception->getMessage(), null, $exception->getCode());
         }
     }

@@ -6,7 +6,6 @@ import { ArrowRight } from 'lucide-react';
 export default function CreativeCtaSection({ creativeFontClass }) {
    return (
       <section className="bg-white min-h-[85vh] flex flex-col justify-center py-20 pb-28 max-[800px]:py-16 max-[560px]:py-12 relative overflow-hidden">
-         {/* Subtle top border gradient */}
          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[1px] bg-gradient-to-r from-transparent via-[#E2E2E2] to-transparent" />
 
          <div className="relative z-10 mx-auto w-full max-w-[1800px] px-[60px] max-[1200px]:px-[40px] max-[800px]:px-[25px] max-[560px]:px-[15px]">

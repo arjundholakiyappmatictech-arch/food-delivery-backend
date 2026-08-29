@@ -19,13 +19,10 @@ export const metadata = {
 export default function AboutPage() {
    return (
       <main className="min-h-screen bg-white text-[#02060C] font-sans">
-         {/* Section 1: Full-Length Hero Image, Name, Quote, Description */}
          <FullHeroSection creativeFontClass={caveat.className} />
 
-         {/* Section 2: Pin Route Journey Timeline */}
          <JourneyRouteSection creativeFontClass={caveat.className} />
 
-         {/* Section 3: Creative Finale CTA */}
          <CreativeCtaSection creativeFontClass={caveat.className} />
       </main>
    );

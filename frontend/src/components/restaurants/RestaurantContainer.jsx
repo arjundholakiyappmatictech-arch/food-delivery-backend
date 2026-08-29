@@ -107,7 +107,6 @@ export default function RestaurantContainer({
                </div>
             ))}
 
-            {/* Only show these during pagination */}
             {loadingMore &&
                Array.from({ length: 5 }).map((_, index) => <RestaurantSkeleton key={`skeleton-${index}`} />)}
          </div>

@@ -25,16 +25,6 @@ export default function useRestaurants(
    const searchQuery = submittedSearch.trim();
    const categoryQuery = submittedCategory.trim();
 
-   console.log('step 8', searchQuery); // read values from the sunmittedSearch
-
-   /* const searchQuery = restaurantFilters.searchText;
-   const categoryQuery = restaurantFilters.menuName; */
-
-   // reads from submitted search and category
-
-   /*
-    * Extract unique menus/categories from restaurants.
-    */
    const extractMenus = useCallback((items) => {
       return Array.from(
          new Map(
@@ -71,24 +61,17 @@ export default function useRestaurants(
                addressId: selectedLocation?.addressId,
                latitude: selectedLocation?.latitude,
                longitude: selectedLocation?.longitude,
-
-               // step 9 pass this value to the query params and call apis
                query: searchQuery,
-
-               // Submitted category from URL
                menuName: categoryQuery,
-
                sortBy: restaurantFilters.sortBy,
                openNow: restaurantFilters.openNow,
-
                page: currentPage,
                signal,
             });
 
             const items = response.data ?? [];
 
-            /*
-             * When there is no search/category filter,
+            /** When there is no search/category filter,
              * this response already contains the restaurants
              * and their menus, so use it to build Explore Menu.
              */
@@ -96,15 +79,9 @@ export default function useRestaurants(
                setMenus(extractMenus(items));
             }
 
-            /*
-             * First page replaces the current restaurants.
-             */
             if (currentPage === 1) {
                setRestaurants(items);
             } else {
-               /*
-                * Additional pages are appended.
-                */
                setRestaurants((prev) => {
                   const existingIds = new Set(prev.map((restaurant) => restaurant.id));
                   const newItems = items.filter((restaurant) => !existingIds.has(restaurant.id));
@@ -119,7 +96,6 @@ export default function useRestaurants(
              * Ignore intentionally cancelled requests.
              */
             if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
-               console.log('REQUEST CANCELLED');
                return;
             }
 
@@ -182,9 +158,6 @@ export default function useRestaurants(
 
             setMenus(extractMenus(items));
          } catch (error) {
-            /*
-             * Ignore cancelled requests.
-             */
             if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
                return;
             }
@@ -212,9 +185,6 @@ export default function useRestaurants(
       };
    }, [fetchRestaurants, fetchMenus, searchQuery, categoryQuery]);
 
-   /*
-    * Fetch additional pages.
-    */
    useEffect(() => {
       if (page === 1) {
          return;
@@ -223,9 +193,6 @@ export default function useRestaurants(
       fetchRestaurants(undefined, page);
    }, [page, fetchRestaurants]);
 
-   /*
-    * Load next page.
-    */
    const loadMore = useCallback(() => {
       if (loadingMore || !hasMore) {
          return;
@@ -234,9 +201,6 @@ export default function useRestaurants(
       setPage((prevPage) => prevPage + 1);
    }, [loadingMore, hasMore]);
 
-   /*
-    * Retry first-page request.
-    */
    const retry = useCallback(() => {
       setPage(1);
 

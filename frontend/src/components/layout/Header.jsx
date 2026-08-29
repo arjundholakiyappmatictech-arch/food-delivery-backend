@@ -58,7 +58,6 @@ export default function Header() {
    return (
       <header className="fixed top-0 left-0 right-0 z-50 h-[75px] bg-white shadow-[0_15px_40px_-20px_#282C3F26] max-[610px]:h-[60px]">
          <div className="mx-auto flex h-full w-full max-w-[1800px] items-center px-[60px] max-[1200px]:px-[40px] max-[800px]:px-[25px] max-[610px]:px-[15px]">
-            {/* Logo */}
             <div className="flex shrink-0 items-center">
                <Link href="/" className="flex items-center">
                   <img
@@ -70,7 +69,6 @@ export default function Header() {
                </Link>
             </div>
 
-            {/* Desktop Navigation */}
             <nav className="flex flex-1 items-center justify-center max-[610px]:hidden">
                <ul className="flex">
                   <li className={navItemStyles}>
@@ -109,11 +107,9 @@ export default function Header() {
                </ul>
             </nav>
 
-            {/* Right Side */}
             <div className="ml-auto flex shrink-0 items-center gap-3">
                <UserProfile />
 
-               {/* Mobile Menu Button */}
                <button
                   type="button"
                   onClick={() => setMobileMenuOpen((prev) => !prev)}
@@ -126,7 +122,6 @@ export default function Header() {
             </div>
          </div>
 
-         {/* Mobile Navigation */}
          {mobileMenuOpen && (
             <nav className="border-t border-[#E9E9E9] bg-white shadow-[0_10px_20px_rgba(0,0,0,0.06)] min-[611px]:hidden">
                <ul className="px-4 py-2">

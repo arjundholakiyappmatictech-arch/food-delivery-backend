@@ -1,7 +1,6 @@
 export default function RestaurantMenuSkeleton() {
    return (
       <div className="mx-auto mt-[30px] w-[800px] max-[820px]:mt-[10px] max-[820px]:w-[98%]">
-         {/* Restaurant Card */}
          <div className="flex rounded-[0.3cm] border border-[#E9E9E9] shadow-[3px_3px_10px_#E9E9E9]">
             <div className="m-[20px] h-[175px] w-[175px] animate-pulse rounded-[0.3cm] bg-[#E5E5E5] max-[600px]:m-[10px] max-[600px]:h-[125px] max-[600px]:w-[125px]" />
 
@@ -18,12 +17,10 @@ export default function RestaurantMenuSkeleton() {
             </div>
          </div>
 
-         {/* MENU */}
          <div className="my-[25px] flex justify-center">
             <div className="h-7 w-28 animate-pulse rounded bg-[#E5E5E5]" />
          </div>
 
-         {/* Categories */}
          {[1, 2, 3].map((category) => (
             <div key={category} className="mb-[30px] rounded-[0.3cm] shadow-[0px_3px_3px_#EBEBEB]">
                <div className="flex items-center justify-between p-[15px]">

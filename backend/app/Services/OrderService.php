@@ -61,7 +61,6 @@ class OrderService
 
         $subtotal = 0;
 
-        // simple version
         foreach ($cartItems as $cart) {
             $menuItem = $cart->menuItem;
 

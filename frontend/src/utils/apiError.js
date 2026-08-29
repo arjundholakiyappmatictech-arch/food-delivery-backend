@@ -1,3 +1,4 @@
+// Normalize Axios errors, offline rejections, and aborted requests into uniform UI error states
 export const parseApiError = (error) => {
    const isCancelled = error?.name === 'CanceledError' || error?.code === 'ERR_CANCELED';
 

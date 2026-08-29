@@ -232,7 +232,7 @@ class RestaurantService
 
         $radiusInKm = self::DUPLICATE_RADIUS_METERS / 1000;
 
-        // calculated distance using Nowdoc syntax
+        // Haversine formula to calculate distance in km for geospatial duplicate checking
         $distanceSql = <<<'SQL'
             restaurants.*,
             (

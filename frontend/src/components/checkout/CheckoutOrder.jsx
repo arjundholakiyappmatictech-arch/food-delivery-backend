@@ -25,7 +25,6 @@ export default function CheckoutOrder({ cartItems }) {
                return (
                   <div key={cartItem.id}>
                      <div className="flex min-w-0 items-center justify-between gap-[15px] py-[15px]">
-                        {/* Item */}
                         <div className="flex min-w-0 flex-1 items-center gap-[15px]">
                            <img
                               src={item.image_url || '/assets/pizza.jpg'}
@@ -43,7 +42,6 @@ export default function CheckoutOrder({ cartItems }) {
                            </div>
                         </div>
 
-                        {/* Quantity */}
                         <div className="flex shrink-0 items-center overflow-hidden rounded-[0.15cm] border border-[#E9E9E9] bg-white">
                            <button
                               type="button"

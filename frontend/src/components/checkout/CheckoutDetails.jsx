@@ -27,7 +27,6 @@ export default function CheckoutDetails() {
 
    const [deliveryInstructions, setDeliveryInstructions] = useState('');
 
-   // Fetch the cart when checkout loads.
    useEffect(() => {
       const loadCart = async () => {
          try {
@@ -100,7 +99,6 @@ export default function CheckoutDetails() {
       } catch {}
    };
 
-   // Don't render checkout while checking the backend cart.
    if (cartLoading) {
       return (
          <main className="mx-auto mt-2 flex min-h-[60vh] w-full max-w-[1800px] items-center justify-center px-[40px] max-[1200px]:px-[30px] max-[800px]:px-[20px] max-[560px]:px-[10px]">
@@ -122,7 +120,6 @@ export default function CheckoutDetails() {
             </h1>
 
             <div className="grid w-full grid-cols-[minmax(0,1fr)_320px] items-start gap-[30px] max-[1000px]:grid-cols-[minmax(0,1fr)_280px] max-[1000px]:gap-[20px] max-[800px]:grid-cols-1 max-[800px]:gap-[25px]">
-               {/* LEFT */}
                <section className="flex w-full min-w-0 flex-col gap-[25px]">
                   <CheckoutAddress selectedLocation={selectedLocation} />
 
@@ -131,7 +128,6 @@ export default function CheckoutDetails() {
                   <CheckoutInstructions value={deliveryInstructions} onChange={setDeliveryInstructions} />
                </section>
 
-               {/* RIGHT */}
                <aside className="w-full min-w-0">
                   <CheckoutBill
                      totalItems={totalItems}

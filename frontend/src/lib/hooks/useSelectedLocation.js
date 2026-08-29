@@ -62,6 +62,7 @@ export default function useSelectedLocation() {
          try {
             const location = JSON.parse(storedLocation);
 
+            // Validate stored location against backend before restoring; clear if stale or invalid
             await getNearbyRestaurants(location);
 
             setSelectedLocation(location);

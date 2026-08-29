@@ -31,9 +31,7 @@ export default function OrderTrackingTimeline({ order }) {
 
    return (
       <section className="rounded-2xl border border-[#E9E9E9] bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,0.04)] max-[800px]:p-5">
-         {/* Desktop */}
          <div className="relative flex items-start justify-between max-[640px]:hidden">
-            {/* Progress line */}
             <div className="absolute left-[12.5%] right-[12.5%] top-5 h-[2px] bg-[#E9E9E9]" />
 
             <div
@@ -81,7 +79,6 @@ export default function OrderTrackingTimeline({ order }) {
             })}
          </div>
 
-         {/* Mobile */}
          <div className="hidden space-y-5 max-[640px]:block">
             {trackingSteps.map((step, index) => {
                const isCompleted = index <= currentStep;

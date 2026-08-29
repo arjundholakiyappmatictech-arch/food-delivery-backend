@@ -82,7 +82,6 @@ export default function UserProfile() {
 
    return (
       <div className="relative h-[40px] w-[40px] shrink-0 max-[700px]:h-[36px] max-[700px]:w-[36px] max-[500px]:h-[32px] max-[500px]:w-[32px]">
-         {/* Profile Button */}
          <button
             ref={buttonRef}
             type="button"
@@ -99,14 +98,12 @@ export default function UserProfile() {
             />
          </button>
 
-         {/* Dropdown */}
          {isProfileOpen && (
             <div
                ref={profileRef}
                className="absolute right-0 top-[50px] z-[120] w-[240px] overflow-hidden rounded-2xl border border-[#ECECEC] bg-white shadow-[0_8px_24px_rgba(40,44,63,.12)]"
             >
                <div className="relative p-3">
-                  {/* User information */}
                   <div className="flex flex-col items-center">
                      <img
                         src="/assets/user.png"
@@ -124,7 +121,6 @@ export default function UserProfile() {
 
                   <div className="my-2.5 border-t border-[#F1F1F1]" />
 
-                  {/* Menu */}
                   <div className="space-y-0.5">
                      {menuItems.map(({ title, href, icon, iconClass }) => (
                         <button
@@ -148,7 +144,6 @@ export default function UserProfile() {
 
                   <div className="my-2.5 border-t border-[#F1F1F1]" />
 
-                  {/* Logout */}
                   <button
                      type="button"
                      onClick={handleLogout}

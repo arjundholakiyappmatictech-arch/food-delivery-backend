@@ -45,7 +45,6 @@ export default function RestaurantDetails({ restaurantId }) {
 
    return (
       <div className="mx-auto mt-[30px] w-[800px] max-[820px]:mt-[10px] max-[820px]:w-[98%]">
-         {/* Restaurant Info */}
          <div className="flex rounded-[0.3cm] border border-[#E9E9E9] shadow-[3px_3px_10px_#E9E9E9]">
             <div className="m-[20px] max-[600px]:m-[10px]">
                <img
@@ -87,7 +86,7 @@ export default function RestaurantDetails({ restaurantId }) {
                </h4>
             </div>
          </div>
-         {/* MENU */}
+
          <div className="flex justify-center mt-[20px] mb-[10px]">
             <img
                src={MENU_ICON_URL}

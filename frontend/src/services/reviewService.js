@@ -6,9 +6,6 @@ export const getReviews = async (page = 1, signal) => {
       signal,
    });
 
-   console.log(response);
-
-
    return response.data;
 };
 

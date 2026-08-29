@@ -46,10 +46,8 @@ export default function OrderDetailsPage() {
          }
       };
 
-      // Initial request
       loadOrder();
 
-      // Poll every 5 seconds
       intervalId = setInterval(() => {
          loadOrder();
       }, 5000);

@@ -12,12 +12,10 @@ use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
-// auth routes
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
-// address routes
 Route::middleware('auth:sanctum')
     ->controller(AddressController::class)
     ->group(function () {
@@ -27,7 +25,6 @@ Route::middleware('auth:sanctum')
         Route::delete('addresses/{address}/destroy', 'destroy');
     });
 
-// restaurant routes
 Route::middleware('auth:sanctum')
     ->controller(RestaurantController::class)
     ->group(function () {
@@ -36,13 +33,10 @@ Route::middleware('auth:sanctum')
         Route::get('restaurants/{restaurant}/menus', 'menus');
     });
 
-// menu routes
 Route::post('menus/store', [MenuController::class, 'store'])->middleware('auth:sanctum');
 
-// menuItem routes
 Route::post('menu-items/store', [MenuItemController::class, 'store'])->middleware('auth:sanctum');
 
-// cart routes
 Route::middleware('auth:sanctum')
     ->controller(CartController::class)
     ->group(function () {
@@ -53,7 +47,6 @@ Route::middleware('auth:sanctum')
         Route::delete('cart', 'clear');
     });
 
-// order routes
 Route::middleware('auth:sanctum')
     ->controller(OrderController::class)
     ->group(function () {
@@ -64,10 +57,8 @@ Route::middleware('auth:sanctum')
         Route::patch('orders/{order}/cancel', 'cancel');
     });
 
-// payment routes
 Route::post('orders/{order}/payment', [PaymentController::class, 'store'])->middleware('auth:sanctum');
 
-// delivery routes
 Route::middleware('auth:sanctum')
     ->controller(OrderDeliveryController::class)
     ->group(function () {
@@ -77,7 +68,6 @@ Route::middleware('auth:sanctum')
         Route::patch('deliveries/{delivery}/delivered', 'markDelivered');
     });
 
-// review routes
 Route::middleware('auth:sanctum')
     ->controller(ReviewController::class)
     ->group(function () {

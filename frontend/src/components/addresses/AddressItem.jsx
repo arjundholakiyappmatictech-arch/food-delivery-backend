@@ -20,7 +20,6 @@ export default function AddressItem({ address, isMenuOpen, menuRef, onToggleMenu
 
    return (
       <div className="group relative flex items-start justify-between gap-3 rounded-xl border border-[#E9E9E9] bg-white p-3 transition-all duration-150 hover:border-[#E56A77] hover:bg-[#FFF4F5]/20">
-         {/* Icon and details */}
          <div className="flex min-w-0 flex-1 items-start gap-3">
             <div className="mt-0.5 flex size-8.5 shrink-0 items-center justify-center rounded-lg bg-[#FFF4F5] text-[#E56A77]">
                <AddressIcon className="size-4" />
@@ -33,7 +32,6 @@ export default function AddressItem({ address, isMenuOpen, menuRef, onToggleMenu
             </div>
          </div>
 
-         {/* Three dots kebab menu */}
          <div className="relative shrink-0" ref={isMenuOpen ? menuRef : null}>
             <button
                type="button"

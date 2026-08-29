@@ -15,9 +15,6 @@ export function generateInvoicePdf(invoice, order = null) {
 
    const payment = invoice?.payment || order?.order_payment;
 
-   /*
-    * HEADER
-    */
    doc.setFont('helvetica', 'bold');
    doc.setFontSize(24);
    doc.setTextColor(2, 6, 12);
@@ -39,9 +36,6 @@ export function generateInvoicePdf(invoice, order = null) {
 
    drawDivider(doc, y);
 
-   /*
-    * INVOICE INFORMATION
-    */
    y += 12;
 
    doc.setFontSize(10);
@@ -57,9 +51,6 @@ export function generateInvoicePdf(invoice, order = null) {
 
    doc.text(`Generated: ${formatDate(invoice?.generated_at)}`, 20, y);
 
-   /*
-    * CUSTOMER
-    */
    y += 15;
 
    drawHeading(doc, 'Customer', y);
@@ -77,9 +68,6 @@ export function generateInvoicePdf(invoice, order = null) {
       drawNormalText(doc, `Phone: ${user.phone_number}`, 20, y);
    }
 
-   /*
-    * DELIVERY ADDRESS
-    */
    y += 15;
 
    drawHeading(doc, 'Delivery Address', y);
@@ -98,9 +86,6 @@ export function generateInvoicePdf(invoice, order = null) {
       drawNormalText(doc, location, 20, y);
    }
 
-   /*
-    * ORDER ITEMS
-    */
    y += 15;
 
    drawHeading(doc, 'Order Items', y);
@@ -122,9 +107,6 @@ export function generateInvoicePdf(invoice, order = null) {
 
    y += 8;
 
-   /*
-    * THIS IS THE IMPORTANT PART
-    */
    if (items.length === 0) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
@@ -141,37 +123,22 @@ export function generateInvoicePdf(invoice, order = null) {
 
          const itemName = item?.menu_item?.name || item?.name || 'Unknown Item';
 
-         /*
-          * Item name
-          */
          doc.setFont('helvetica', 'normal');
          doc.setFontSize(10);
          doc.setTextColor(60, 60, 60);
 
          doc.text(itemName, 20, y);
 
-         /*
-          * Quantity
-          */
          doc.text(String(quantity), 120, y);
 
-         /*
-          * Price
-          */
          doc.text(`Rs. ${price.toFixed(2)}`, 145, y);
 
-         /*
-          * Item Total
-          */
          doc.text(`Rs. ${total.toFixed(2)}`, 175, y);
 
          y += 7;
       });
    }
 
-   /*
-    * BILL SUMMARY
-    */
    y += 8;
 
    drawDivider(doc, y);
@@ -201,9 +168,6 @@ export function generateInvoicePdf(invoice, order = null) {
       align: 'right',
    });
 
-   /*
-    * PAYMENT
-    */
    if (payment) {
       y += 15;
 
@@ -224,9 +188,6 @@ export function generateInvoicePdf(invoice, order = null) {
       }
    }
 
-   /*
-    * FOOTER
-    */
    y += 18;
 
    drawDivider(doc, y);
@@ -241,15 +202,9 @@ export function generateInvoicePdf(invoice, order = null) {
       align: 'center',
    });
 
-   /*
-    * DOWNLOAD
-    */
    doc.save(`Tomato-Invoice-${invoice?.invoice_number || invoice?.order_id}.pdf`);
 }
 
-/*
- * SUMMARY ROW
- */
 function addSummaryRow(doc, label, value, y) {
    const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -264,9 +219,6 @@ function addSummaryRow(doc, label, value, y) {
    });
 }
 
-/*
- * HEADING
- */
 function drawHeading(doc, text, y) {
    doc.setFont('helvetica', 'bold');
    doc.setFontSize(12);
@@ -275,9 +227,6 @@ function drawHeading(doc, text, y) {
    doc.text(text, 20, y);
 }
 
-/*
- * NORMAL TEXT
- */
 function drawNormalText(doc, text, x, y) {
    doc.setFont('helvetica', 'normal');
    doc.setFontSize(10);
@@ -286,9 +235,6 @@ function drawNormalText(doc, text, x, y) {
    doc.text(text, x, y);
 }
 
-/*
- * DIVIDER
- */
 function drawDivider(doc, y) {
    const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -296,9 +242,6 @@ function drawDivider(doc, y) {
    doc.line(20, y, pageWidth - 20, y);
 }
 
-/*
- * DATE
- */
 function formatDate(date) {
    if (!date) {
       return 'N/A';
@@ -314,9 +257,6 @@ function formatDate(date) {
    });
 }
 
-/*
- * PAYMENT METHOD
- */
 function formatPaymentMethod(method) {
    if (!method) {
       return 'N/A';
@@ -325,9 +265,6 @@ function formatPaymentMethod(method) {
    return method.replaceAll('_', ' ').toUpperCase();
 }
 
-/*
- * PAYMENT STATUS
- */
 function formatPaymentStatus(status) {
    if (!status) {
       return 'N/A';

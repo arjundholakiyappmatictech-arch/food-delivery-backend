@@ -19,13 +19,8 @@ function HomePageContent() {
    const router = useRouter();
    const searchParams = useSearchParams();
 
-   console.log('step 1', searchParams); // read and get size of url params
-
    const submittedSearch = searchParams.get('search') || '';
-   console.log('step 2', submittedSearch); // read values of individual
-
    const submittedCategory = searchParams.get('category') || '';
-
    const submittedSort = searchParams.get('sort') || '';
    const submittedOpenNow = searchParams.get('openNow') === 'true';
 
@@ -38,19 +33,8 @@ function HomePageContent() {
       menuName: submittedCategory || null,
    };
 
-   console.log('step 3', defaultFilters); // build inital filter object
-
-   /* const defaultFilters = {
-      searchText: null,
-      sortBy: null,
-      openNow: null,
-      menuName: null,
-   }; */
-
    const [restaurantFilters, setRestaurantFilters] = useState(defaultFilters);
-   console.log('step 4', restaurantFilters); //pass that object to the react state
 
-   /* step 7 pass this submittedSearch values to the hook for api call */
    const { restaurants, menus, loading, loadingMore, searching, hasMore, error, retry, loadMore } = useRestaurants(
       selectedLocation,
       restaurantFilters,
@@ -73,8 +57,6 @@ function HomePageContent() {
 
    return (
       <main className="mx-auto mt-2 w-full max-w-[1800px] px-[60px] max-[1200px]:px-[40px] max-[800px]:px-[25px] max-[560px]:px-[15px] max-[380px]:px-[10px]">
-         {/* step 5 passed that state to component */}
-         {/* Search */}
          <Search
             selectedLocation={selectedLocation}
             restaurantFilters={restaurantFilters}
@@ -82,7 +64,6 @@ function HomePageContent() {
             restaurants={restaurants}
          />
 
-         {/* Explore Menu */}
          <ExploreMenu
             menus={menus}
             selectedMenuName={restaurantFilters.menuName}
@@ -94,7 +75,6 @@ function HomePageContent() {
             }}
          />
 
-         {/* Filters */}
          <div className="my-5 flex flex-wrap items-center justify-center gap-2">
             <FilterButton
                filterId="sortBy"
@@ -127,7 +107,6 @@ function HomePageContent() {
             />
          </div>
 
-         {/* Restaurants */}
          <RestaurantContainer
             restaurantsList={restaurants}
             loading={loading}

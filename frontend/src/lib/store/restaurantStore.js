@@ -32,6 +32,7 @@ const useRestaurantStore = create(
       {
          name: 'selected-restaurant',
 
+         // Track rehydration to prevent hydration mismatch with persisted state
          onRehydrateStorage: () => (state) => {
             state?.setHasHydrated(true);
          },

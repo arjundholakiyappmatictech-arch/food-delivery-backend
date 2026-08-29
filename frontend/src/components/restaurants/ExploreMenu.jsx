@@ -5,8 +5,6 @@ export default function ExploreMenu({ menus = [], selectedMenuName, setSelectedM
    const pathname = usePathname();
    const searchParams = useSearchParams();
 
-   /* console.log('menuName', selectedMenuName); */
-
    const uniqueMenus = Array.from(new Map(menus.map((menu) => [menu.name.toLowerCase(), menu])).values());
 
    const handleCategoryClick = (menuName) => {
@@ -20,10 +18,8 @@ export default function ExploreMenu({ menus = [], selectedMenuName, setSelectedM
          params.set('category', menuName);
       }
 
-      // Update React state
       setSelectedMenuName(isSameCategory ? null : menuName);
 
-      // Update URL
       const query = params.toString();
 
       router.push(query ? `${pathname}?${query}` : pathname);
@@ -31,12 +27,9 @@ export default function ExploreMenu({ menus = [], selectedMenuName, setSelectedM
 
    return (
       <section className="w-full min-w-0">
-         {/* Carousel Area */}
          <div className="w-full min-w-0">
-            {/* Heading */}
             <h2 className="text-[20px] font-[600] text-[#02060C]">Explore by category</h2>
 
-            {/* Menu Carousel */}
             <div
                className="
       flex w-full min-w-0 items-start
@@ -70,7 +63,6 @@ export default function ExploreMenu({ menus = [], selectedMenuName, setSelectedM
             max-[380px]:min-w-[65px]
          "
                   >
-                     {/* Circle */}
                      <div
                         className={`h-[90px] w-[90px] rounded-full p-[4px] transition-all duration-200 group-hover:-translate-y-1 max-[610px]:h-[75px] max-[610px]:w-[75px] max-[380px]:h-[64px] max-[380px]:w-[64px] ${
                            selectedMenuName === menu.name ? 'bg-[#E56A77]' : 'bg-transparent'
@@ -86,7 +78,6 @@ export default function ExploreMenu({ menus = [], selectedMenuName, setSelectedM
                         </div>
                      </div>
 
-                     {/* Menu Name */}
                      <p
                         className={`mt-2 whitespace-nowrap text-[15px] font-[500] transition-all duration-200 group-hover:-translate-y-1 max-[610px]:text-[13px] max-[380px]:text-[12px] ${
                            selectedMenuName === menu.name ? 'text-[#E56A77]' : 'text-[#747474]'
@@ -99,7 +90,6 @@ export default function ExploreMenu({ menus = [], selectedMenuName, setSelectedM
             </div>
          </div>
 
-         {/* Divider */}
          <div className="mt-4 w-full border-t border-[#E2E2E2]" />
       </section>
    );

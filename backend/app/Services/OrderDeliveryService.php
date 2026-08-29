@@ -55,7 +55,6 @@ class OrderDeliveryService
         });
     }
 
-    // out for delivery
     public function makeOutForDelivery(OrderDelivery $delivery): OrderDelivery
     {
         $user = Auth::user();
@@ -83,7 +82,6 @@ class OrderDeliveryService
         });
     }
 
-    // delivered
     public function makeDelivered(OrderDelivery $delivery): OrderDelivery
     {
         $user = Auth::user();

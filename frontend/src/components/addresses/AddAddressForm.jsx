@@ -89,7 +89,6 @@ export function AddAddressForm() {
 
    return (
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-2.5">
-         {/* Save As Pills */}
          <div>
             <label className="mb-1 block text-xs font-semibold text-[#02060C]">
                Save address as <span className="text-[#E56A77]">*</span>
@@ -146,7 +145,6 @@ export function AddAddressForm() {
             )}
          </div>
 
-         {/* Address Line */}
          <div>
             <label htmlFor="address_line" className="mb-1 block text-xs font-semibold text-[#02060C]">
                Address details <span className="text-[#E56A77]">*</span>
@@ -173,7 +171,6 @@ export function AddAddressForm() {
             )}
          </div>
 
-         {/* City, State & Pincode in 3-column row */}
          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <div>
                <label htmlFor="city" className="mb-1 block text-xs font-semibold text-[#02060C]">
@@ -256,7 +253,6 @@ export function AddAddressForm() {
             </div>
          </div>
 
-         {/* Coordinates Box */}
          <div className="rounded-xl border border-[#E9E9E9] bg-[#FAFAFA] p-2.5">
             <div className="mb-1 flex items-center justify-between">
                <span className="text-[11px] font-semibold text-[#02060C]">Coordinates</span>
@@ -310,7 +306,6 @@ export function AddAddressForm() {
             </div>
          </div>
 
-         {/* Submit Button */}
          <div className="pt-0.5">
             <button
                type="submit"

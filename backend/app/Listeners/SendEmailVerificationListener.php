@@ -9,6 +9,5 @@ class SendEmailVerificationListener
 {
     public function handle(UserRegistered $event): void
     {
-        /* SendEmailVerificationJob::dispatch($event->user); */
     }
 }

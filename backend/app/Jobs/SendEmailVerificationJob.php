@@ -17,11 +17,6 @@ class SendEmailVerificationJob implements ShouldQueue
 
     public function handle(): void
     {
-        /* Log::info('Email verification sent', [
-            'user_id' => $this->user->id,
-            'email' => $this->user->email,
-        ]); */
-
         $url = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
@@ -30,7 +25,5 @@ class SendEmailVerificationJob implements ShouldQueue
                 'hash' => sha1($this->user->email),
             ]
         );
-
-        /*     Mail::to($this->user->email)->send(new VerifyEmailMail($this->user, $url)); */
     }
 }

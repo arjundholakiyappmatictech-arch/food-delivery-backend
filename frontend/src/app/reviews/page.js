@@ -28,7 +28,6 @@ export default function ReviewsPage() {
 
    return (
       <main className="mx-auto w-full max-w-[850px] px-4 py-6 sm:px-6 sm:py-8">
-         {/* Page Header */}
          <header className="mb-5 sm:mb-6">
             <h1 className="text-xl font-bold tracking-tight text-[#02060C] sm:text-2xl">
                My Reviews
@@ -39,10 +38,8 @@ export default function ReviewsPage() {
             </p>
          </header>
 
-         {/* Initial Loading */}
          {loading && <ReviewSkeleton count={2} />}
 
-         {/* Error */}
          {!loading && error && (
             <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-center">
                <p className="text-xs font-semibold text-red-600 sm:text-sm">
@@ -60,10 +57,8 @@ export default function ReviewsPage() {
             </div>
          )}
 
-         {/* Empty */}
          {!loading && !error && reviews.length === 0 && <EmptyReviews />}
 
-         {/* Reviews */}
          {!loading && !error && reviews.length > 0 && (
             <div className="space-y-4">
                {reviews.map((review) => (
@@ -74,7 +69,6 @@ export default function ReviewsPage() {
                   />
                ))}
 
-               {/* Infinite Scroll */}
                {hasMore && (
                   <div
                      ref={loaderRef}
@@ -113,7 +107,6 @@ export default function ReviewsPage() {
             </div>
          )}
 
-         {/* Delete Confirmation */}
          <DeleteReviewModal
             review={deletingReview}
             isDeleting={isDeleting}

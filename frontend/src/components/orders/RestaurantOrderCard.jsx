@@ -5,7 +5,6 @@ export default function RestaurantOrderCard({ restaurant, order }) {
 
    return (
       <section className="rounded-2xl border border-[#E9E9E9] bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-         {/* Restaurant */}
          <div className="flex items-center gap-5">
             <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full">
                <img
@@ -27,7 +26,6 @@ export default function RestaurantOrderCard({ restaurant, order }) {
             </div>
          </div>
 
-         {/* Order Details */}
          <div className="mt-6 border-t border-[#E9E9E9] pt-5">
             <div className="flex items-center justify-between">
                <div>

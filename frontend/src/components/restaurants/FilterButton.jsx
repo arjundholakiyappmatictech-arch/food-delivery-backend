@@ -10,7 +10,6 @@ export default function FilterButton({ filterId, restaurantFilters, setRestauran
    const pathname = usePathname();
    const searchParams = useSearchParams();
 
-   /* simplified version */
    const filterChecks = {
       sortBy: restaurantFilters.sortBy !== '',
       nearest: restaurantFilters.sortBy === 'nearest',
@@ -18,8 +17,6 @@ export default function FilterButton({ filterId, restaurantFilters, setRestauran
       aToZ: restaurantFilters.sortBy === 'a-z',
       zToA: restaurantFilters.sortBy === 'z-a',
    };
-
-   console.log(filterChecks);
 
    const isCurrentFilterActive = filterChecks[filterId] ?? false;
 
@@ -135,13 +132,9 @@ export default function FilterButton({ filterId, restaurantFilters, setRestauran
       router.push(query ? `${pathname}?${query}` : pathname);
    };
 
-   /*
-    * Sort By
-    */
    if (filterId === 'sortBy') {
       return (
          <div className="flex items-center gap-2">
-            {/* Clear ALL filters icon */}
             {isAnyFilterActive && (
                <button
                   type="button"
@@ -197,7 +190,6 @@ export default function FilterButton({ filterId, restaurantFilters, setRestauran
                 ? 'A-Z'
                 : 'Z-A'}
 
-         {/* Keep the cross */}
          {isCurrentFilterActive && <span className="text-[#A6A6A6]">✖</span>}
       </button>
    );

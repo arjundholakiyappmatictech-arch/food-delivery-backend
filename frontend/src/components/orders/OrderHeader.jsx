@@ -22,7 +22,6 @@ export default function OrderHeader({ order }) {
 
    return (
       <div className="mb-8">
-         {/* Back */}
          <button
             type="button"
             onClick={() => router.push('/orders')}
@@ -32,9 +31,7 @@ export default function OrderHeader({ order }) {
             Back to Orders
          </button>
 
-         {/* Header */}
          <div className="flex items-start justify-between gap-6 max-[640px]:flex-col">
-            {/* Order information */}
             <div>
                <h1 className="text-4xl font-semibold tracking-tight text-[#02060C] max-[640px]:text-3xl">
                   Order Details
@@ -47,11 +44,9 @@ export default function OrderHeader({ order }) {
                </div>
             </div>
 
-            {/* Actions + status */}
             <div className="flex items-center gap-3 max-[640px]:w-full max-[640px]:flex-col max-[640px]:items-stretch">
                <GenerateInvoiceButton order={order} />
 
-               {/* Order status */}
                <div className="flex items-center gap-3 rounded-xl bg-green-50 px-5 py-3">
                   <CheckCircle2 size={20} className="shrink-0 text-green-600" />
 

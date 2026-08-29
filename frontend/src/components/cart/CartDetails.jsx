@@ -40,9 +40,7 @@ export default function CartDetails() {
 
    return (
       <main className="mt-[20px] flex justify-evenly max-[1000px]:mt-[10px] max-[1000px]:flex-col max-[1000px]:items-center">
-         {/* Cart */}
          <section className="w-[800px] max-[820px]:w-[98%]">
-            {/* Header */}
             <div className="relative mb-[25px] flex justify-center">
                <h1 className="text-[30px] font-[500] max-[600px]:text-[20px]">Cart</h1>
 
@@ -70,7 +68,6 @@ export default function CartDetails() {
                </button>
             </div>
 
-            {/* Cart Items */}
             <div className="cart-items">
                {cartItems.map((cartItem, index) => (
                   <MenuItemCard
@@ -84,7 +81,6 @@ export default function CartDetails() {
             </div>
          </section>
 
-         {/* Bill */}
          <section
             className="
                w-[300px]
@@ -96,13 +92,11 @@ export default function CartDetails() {
          >
             <h1 className="mb-[10px] text-[20px] font-[600] text-[#02060C]">Bill Details</h1>
 
-            {/* Item Total */}
             <div className={`${billRowStyles} mb-[5px]`}>
                <span>Items</span>
                <span>{totalItems}</span>
             </div>
 
-            {/* Item Total */}
             <div className={`${billRowStyles} mb-[5px]`}>
                <span>Item Subtotal</span>
 
@@ -111,7 +105,6 @@ export default function CartDetails() {
 
             <hr className="my-[30px] w-full border-[#E5E6E6] max-[600px]:my-[15px]" />
 
-            {/* Delivery Fee */}
             <div className={billRowStyles}>
                <span>Delivery Fee</span>
 
@@ -120,7 +113,6 @@ export default function CartDetails() {
 
             <hr className="my-[30px] w-full border-[#02060C] max-[600px]:my-[15px]" />
 
-            {/* Total */}
             <div className="flex justify-between text-[18px] font-[700] text-[#02060C]">
                <span>To Pay</span>
 

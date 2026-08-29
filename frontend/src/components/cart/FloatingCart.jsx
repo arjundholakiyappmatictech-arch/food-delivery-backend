@@ -23,22 +23,17 @@ export default function FloatingCart() {
       const handleScroll = () => {
          const currentScrollY = window.scrollY;
 
-         // Always show at the top
+         // Auto-hide during downward scrolling to save screen space; restore when scrolling up or idle
          if (currentScrollY <= 20) {
             setIsVisible(true);
-         }
-         // Scrolling down → hide
-         else if (currentScrollY > lastScrollY) {
+         } else if (currentScrollY > lastScrollY) {
             setIsVisible(false);
-         }
-         // Scrolling up → show
-         else if (currentScrollY < lastScrollY) {
+         } else if (currentScrollY < lastScrollY) {
             setIsVisible(true);
          }
 
          lastScrollY = currentScrollY;
 
-         // Show again when scrolling stops
          clearTimeout(scrollTimeout);
 
          scrollTimeout = setTimeout(() => {
@@ -71,7 +66,6 @@ export default function FloatingCart() {
          }`}
       >
          <div className="flex items-center gap-4 rounded-2xl border border-[#E9E9E9] bg-white px-4 py-3 shadow-[0_8px_30px_rgba(0,0,0,0.12)] max-[480px]:gap-2.5 max-[380px]:px-3 max-[380px]:py-2">
-            {/* Item Images */}
             <div className="flex shrink-0 items-center">
                {cartItems.slice(0, 3).map((cartItem, index) => (
                   <img
@@ -91,7 +85,6 @@ export default function FloatingCart() {
                )}
             </div>
 
-            {/* Cart Information */}
             <div className="min-w-0 flex-1">
                <p className="text-[15px] font-semibold text-[#02060C] max-[380px]:text-[13px]">
                   {totalItems} {totalItems === 1 ? 'item' : 'items'}
@@ -107,7 +100,6 @@ export default function FloatingCart() {
                </div>
             </div>
 
-            {/* Continue */}
             <button
                type="button"
                onClick={handleContinue}

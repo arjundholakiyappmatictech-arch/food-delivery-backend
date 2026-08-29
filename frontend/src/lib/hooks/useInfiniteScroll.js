@@ -26,12 +26,14 @@ export default function useInfiniteScroll({ onLoadMore, hasMore, loading, rootRe
                return;
             }
 
+            // Prevent duplicate trigger fires while the next page request is in flight
             observer.unobserve(loaderElement);
 
             onLoadMore();
          },
          {
             root: rootRef?.current ?? null,
+            // Preload next page before the user reaches the absolute bottom
             rootMargin: '600px',
             threshold: 0,
          },

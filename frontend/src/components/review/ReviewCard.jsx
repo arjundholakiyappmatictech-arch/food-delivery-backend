@@ -45,7 +45,6 @@ export default function ReviewCard({ review, onDelete }) {
             hover:shadow-[0_4px_12px_rgba(229,106,119,0.06)]
          "
       >
-         {/* Header */}
          <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
                <div className="flex items-center gap-2">
@@ -72,7 +71,6 @@ export default function ReviewCard({ review, onDelete }) {
                {formattedDate && <p className="mt-1 text-xs text-[#8C8C8C]">{formattedDate}</p>}
             </div>
 
-            {/* Delete */}
             {onDelete && (
                <button
                   type="button"
@@ -94,7 +92,6 @@ export default function ReviewCard({ review, onDelete }) {
             )}
          </div>
 
-         {/* Rating */}
          <div className="mt-4 flex items-center gap-2">
             <div className="flex items-center gap-0.5">
                {[1, 2, 3, 4, 5].map((star) => {
@@ -114,14 +111,12 @@ export default function ReviewCard({ review, onDelete }) {
             <span className="text-sm font-semibold text-[#02060C]">{rating.toFixed(1)}</span>
          </div>
 
-         {/* Comment */}
          {comment ? (
             <p className="mt-3 break-words text-sm leading-relaxed text-[#595959]">{comment}</p>
          ) : (
             <p className="mt-3 text-xs italic text-[#A6A6A6]">No written comment provided.</p>
          )}
 
-         {/* Order Summary */}
          {order && (
             <div
                className="
