@@ -1,9 +1,21 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable react-hooks/preserve-manual-memoization */
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import getNearbyRestaurants from '@/services/restaurantService';
 import { parseApiError } from '@/utils/apiError';
-import { useCallback, useEffect, useState } from 'react';
-import { toast } from 'sonner';
+
+function hasValidLocation(location) {
+   return Boolean(location?.addressId || (location?.latitude != null && location?.longitude != null));
+}
+
+function extractMenus(items) {
+   return Array.from(
+      new Map(
+         items
+            .flatMap((restaurant) => restaurant?.menus ?? [])
+            .filter((menu) => menu?.name)
+            .map((menu) => [menu.name.toLowerCase(), menu]),
+      ).values(),
+   );
+}
 
 export default function useRestaurants(
    selectedLocation,
@@ -11,218 +23,100 @@ export default function useRestaurants(
    submittedSearch = '',
    submittedCategory = '',
 ) {
-   const [restaurants, setRestaurants] = useState([]);
-   const [page, setPage] = useState(1);
-   const [menus, setMenus] = useState([]);
-
-   const [loading, setLoading] = useState(false);
-   const [loadingMore, setLoadingMore] = useState(false);
-   const [searching, setSearching] = useState(false);
-
-   const [hasMore, setHasMore] = useState(true);
-   const [error, setError] = useState('');
+   const { sortBy = '', openNow = false } = restaurantFilters;
 
    const searchQuery = submittedSearch.trim();
    const categoryQuery = submittedCategory.trim();
 
-   const extractMenus = useCallback((items) => {
-      return Array.from(
-         new Map(
-            items.flatMap((restaurant) => restaurant.menus ?? []).map((menu) => [menu.name.toLowerCase(), menu]),
-         ).values(),
-      );
-   }, []);
+   const locationReady = hasValidLocation(selectedLocation);
 
-   const fetchRestaurants = useCallback(
-      async (signal, currentPage = 1) => {
-         const hasAddressId = Boolean(selectedLocation?.addressId);
-
-         const hasCoordinates = selectedLocation?.latitude != null && selectedLocation?.longitude != null;
-
-         if (!hasAddressId && !hasCoordinates) {
-            setRestaurants([]);
-            return;
-         }
-
-         try {
-            setError('');
-
-            if (currentPage === 1) {
-               if (searchQuery) {
-                  setSearching(true);
-               } else {
-                  setLoading(true);
-               }
-            } else {
-               setLoadingMore(true);
-            }
-
-            const response = await getNearbyRestaurants({
-               addressId: selectedLocation?.addressId,
-               latitude: selectedLocation?.latitude,
-               longitude: selectedLocation?.longitude,
-               query: searchQuery,
-               menuName: categoryQuery,
-               sortBy: restaurantFilters.sortBy,
-               openNow: restaurantFilters.openNow,
-               page: currentPage,
-               signal,
-            });
-
-            const items = response.data ?? [];
-
-            /** When there is no search/category filter,
-             * this response already contains the restaurants
-             * and their menus, so use it to build Explore Menu.
-             */
-            if (currentPage === 1 && !searchQuery && !categoryQuery) {
-               setMenus(extractMenus(items));
-            }
-
-            if (currentPage === 1) {
-               setRestaurants(items);
-            } else {
-               setRestaurants((prev) => {
-                  const existingIds = new Set(prev.map((restaurant) => restaurant.id));
-                  const newItems = items.filter((restaurant) => !existingIds.has(restaurant.id));
-
-                  return [...prev, ...newItems];
-               });
-            }
-
-            setHasMore(response.pagination?.has_more_pages ?? false);
-         } catch (error) {
-            /*
-             * Ignore intentionally cancelled requests.
-             */
-            if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
-               return;
-            }
-
-            if (currentPage === 1) {
-               setRestaurants([]);
-            }
-
-            const apiError = parseApiError(error);
-
-            setError(apiError.message ?? 'Unable to fetch restaurants.');
-
-            toast.error(apiError.message ?? 'Unable to fetch restaurants.');
-         } finally {
-            setLoading(false);
-            setSearching(false);
-            setLoadingMore(false);
-         }
-      },
-      [
-         selectedLocation?.addressId,
-         selectedLocation?.latitude,
-         selectedLocation?.longitude,
-         restaurantFilters.sortBy,
-         restaurantFilters.openNow,
-         searchQuery,
-         categoryQuery,
-         extractMenus,
+   const restaurantsQuery = useInfiniteQuery({
+      queryKey: [
+         'restaurants',
+         {
+            addressId: selectedLocation?.addressId,
+            latitude: selectedLocation?.latitude,
+            longitude: selectedLocation?.longitude,
+            search: searchQuery,
+            category: categoryQuery,
+            sortBy,
+            openNow,
+         },
       ],
-   );
 
-   const fetchMenus = useCallback(
-      async (signal) => {
-         const hasAddressId = Boolean(selectedLocation?.addressId);
+      queryFn: ({ pageParam = 1 }) =>
+         getNearbyRestaurants({
+            addressId: selectedLocation?.addressId,
+            latitude: selectedLocation?.latitude,
+            longitude: selectedLocation?.longitude,
+            query: searchQuery,
+            menuName: categoryQuery,
+            sortBy,
+            openNow,
+            page: pageParam,
+         }),
 
-         const hasCoordinates = selectedLocation?.latitude != null && selectedLocation?.longitude != null;
+      initialPageParam: 1,
 
-         if (!hasAddressId && !hasCoordinates) {
-            setMenus([]);
-            return;
+      getNextPageParam: (lastPage) => {
+         if (!lastPage?.pagination?.has_more_pages) {
+            return undefined;
          }
 
-         try {
-            const response = await getNearbyRestaurants({
-               addressId: selectedLocation?.addressId,
-               latitude: selectedLocation?.latitude,
-               longitude: selectedLocation?.longitude,
-
-               // Intentionally unfiltered
-               query: '',
-               menuName: '',
-
-               sortBy: '',
-               openNow: false,
-
-               page: 1,
-               signal,
-            });
-
-            const items = response.data ?? [];
-
-            setMenus(extractMenus(items));
-         } catch (error) {
-            if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
-               return;
-            }
-
-            console.error('FETCH MENUS ERROR:', error);
-         }
+         return (lastPage.pagination.current_page ?? 1) + 1;
       },
-      [selectedLocation?.addressId, selectedLocation?.latitude, selectedLocation?.longitude, extractMenus],
-   );
 
-   useEffect(() => {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setPage(1);
+      enabled: locationReady,
+   });
 
-      const controller = new AbortController();
+   const restaurants = restaurantsQuery.data?.pages.flatMap((page) => page?.data ?? []) ?? [];
 
-      fetchRestaurants(controller.signal, 1);
+   const menusQuery = useQuery({
+      queryKey: [
+         'restaurant-menus',
+         {
+            addressId: selectedLocation?.addressId,
+            latitude: selectedLocation?.latitude,
+            longitude: selectedLocation?.longitude,
+         },
+      ],
 
-      if (searchQuery || categoryQuery) {
-         fetchMenus(controller.signal);
-      }
+      queryFn: async () => {
+         const response = await getNearbyRestaurants({
+            addressId: selectedLocation?.addressId,
+            latitude: selectedLocation?.latitude,
+            longitude: selectedLocation?.longitude,
+            query: '',
+            menuName: '',
+            sortBy: '',
+            openNow: false,
+            page: 1,
+         });
 
-      return () => {
-         controller.abort();
-      };
-   }, [fetchRestaurants, fetchMenus, searchQuery, categoryQuery]);
+         return extractMenus(response?.data ?? []);
+      },
 
-   useEffect(() => {
-      if (page === 1) {
-         return;
-      }
+      enabled: locationReady,
+   });
 
-      fetchRestaurants(undefined, page);
-   }, [page, fetchRestaurants]);
+   const restaurantError = restaurantsQuery.error ? parseApiError(restaurantsQuery.error) : null;
 
-   const loadMore = useCallback(() => {
-      if (loadingMore || !hasMore) {
-         return;
-      }
-
-      setPage((prevPage) => prevPage + 1);
-   }, [loadingMore, hasMore]);
-
-   const retry = useCallback(() => {
-      setPage(1);
-
-      fetchRestaurants(undefined, 1);
-
-      if (searchQuery || categoryQuery) {
-         fetchMenus(undefined);
-      }
-   }, [fetchRestaurants, fetchMenus, searchQuery, categoryQuery]);
+   const menuError = menusQuery.error ? parseApiError(menusQuery.error) : null;
 
    return {
       restaurants,
-      menus,
-
-      loading,
-      loadingMore,
-      searching,
-
-      hasMore,
-      error,
-
-      retry,
-      loadMore,
+      menus: menusQuery.data ?? [],
+      loading: restaurantsQuery.isLoading || menusQuery.isLoading,
+      searching: restaurantsQuery.isFetching && !restaurantsQuery.isFetchingNextPage,
+      loadingMore: restaurantsQuery.isFetchingNextPage,
+      hasMore: Boolean(restaurantsQuery.hasNextPage),
+      error: restaurantError?.message ?? menuError?.message ?? '',
+      loadMore: restaurantsQuery.fetchNextPage,
+      retry: () => {
+         restaurantsQuery.refetch();
+         menusQuery.refetch();
+      },
+      fetching: restaurantsQuery.isFetching,
+      isError: restaurantsQuery.isError || menusQuery.isError,
    };
 }

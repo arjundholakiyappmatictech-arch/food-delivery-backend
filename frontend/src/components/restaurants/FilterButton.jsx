@@ -4,11 +4,11 @@ import { FILTER_ICON } from '@/assets/icons';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 export default function FilterButton({ filterId, restaurantFilters, setRestaurantFilters }) {
-   const isAnyFilterActive = restaurantFilters.sortBy !== '' || restaurantFilters.openNow === true;
-
    const router = useRouter();
    const pathname = usePathname();
    const searchParams = useSearchParams();
+
+   const isAnyFilterActive = restaurantFilters.sortBy !== '' || restaurantFilters.openNow === true;
 
    const filterChecks = {
       sortBy: restaurantFilters.sortBy !== '',
@@ -55,62 +55,49 @@ export default function FilterButton({ filterId, restaurantFilters, setRestauran
 
       const query = params.toString();
 
-      router.push(query ? `${pathname}?${query}` : pathname);
+      router.replace(query ? `${pathname}?${query}` : pathname);
+   };
+
+   const updateFilters = (sortBy, openNow) => {
+      setRestaurantFilters((prev) => ({
+         ...prev,
+         sortBy,
+         openNow,
+      }));
+
+      updateUrl(sortBy, openNow);
    };
 
    const handleClick = () => {
       switch (filterId) {
          case 'nearest': {
-            const newSortBy = restaurantFilters.sortBy === 'nearest' ? '' : 'nearest';
+            const sortBy = restaurantFilters.sortBy === 'nearest' ? '' : 'nearest';
 
-            setRestaurantFilters((prev) => ({
-               ...prev,
-               sortBy: newSortBy,
-            }));
-
-            updateUrl(newSortBy, restaurantFilters.openNow);
-
+            updateFilters(sortBy, restaurantFilters.openNow);
             break;
          }
 
          case 'openNow': {
-            const newOpenNow = !restaurantFilters.openNow;
-
-            setRestaurantFilters((prev) => ({
-               ...prev,
-               openNow: newOpenNow,
-            }));
-
-            updateUrl(restaurantFilters.sortBy, newOpenNow);
-
+            updateFilters(restaurantFilters.sortBy, !restaurantFilters.openNow);
             break;
          }
 
          case 'aToZ': {
-            const newSortBy = restaurantFilters.sortBy === 'a-z' ? '' : 'a-z';
+            const sortBy = restaurantFilters.sortBy === 'a-z' ? '' : 'a-z';
 
-            setRestaurantFilters((prev) => ({
-               ...prev,
-               sortBy: newSortBy,
-            }));
-
-            updateUrl(newSortBy, restaurantFilters.openNow);
-
+            updateFilters(sortBy, restaurantFilters.openNow);
             break;
          }
 
          case 'zToA': {
-            const newSortBy = restaurantFilters.sortBy === 'z-a' ? '' : 'z-a';
+            const sortBy = restaurantFilters.sortBy === 'z-a' ? '' : 'z-a';
 
-            setRestaurantFilters((prev) => ({
-               ...prev,
-               sortBy: newSortBy,
-            }));
-
-            updateUrl(newSortBy, restaurantFilters.openNow);
-
+            updateFilters(sortBy, restaurantFilters.openNow);
             break;
          }
+
+         default:
+            break;
       }
    };
 
@@ -126,10 +113,11 @@ export default function FilterButton({ filterId, restaurantFilters, setRestauran
 
       params.delete('sort');
       params.delete('openNow');
+      params.delete('category');
 
       const query = params.toString();
 
-      router.push(query ? `${pathname}?${query}` : pathname);
+      router.replace(query ? `${pathname}?${query}` : pathname);
    };
 
    if (filterId === 'sortBy') {
@@ -140,18 +128,7 @@ export default function FilterButton({ filterId, restaurantFilters, setRestauran
                   type="button"
                   onClick={clearAllFilters}
                   aria-label="Clear all filters"
-                  className="
-                     flex
-                     h-[30px]
-                     w-[30px]
-                     cursor-pointer
-                     items-center
-                     justify-center
-                     p-0
-                     text-[#E56A77]
-                     transition
-                     hover:scale-110
-                  "
+                  className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center p-0 text-[#E56A77] transition hover:scale-110"
                >
                   <span className="h-[22px] w-[22px]">{FILTER_ICON}</span>
                </button>
@@ -161,14 +138,7 @@ export default function FilterButton({ filterId, restaurantFilters, setRestauran
                className={`${buttonClass} outline-none`}
                value={restaurantFilters.sortBy || ''}
                onChange={(e) => {
-                  const newSortBy = e.target.value;
-
-                  setRestaurantFilters((prev) => ({
-                     ...prev,
-                     sortBy: newSortBy,
-                  }));
-
-                  updateUrl(newSortBy, restaurantFilters.openNow);
+                  updateFilters(e.target.value, restaurantFilters.openNow);
                }}
             >
                <option value="">Sort By</option>

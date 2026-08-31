@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/sonner';
 import FloatingCart from '@/components/cart/FloatingCart';
 import NetworkStatus from '@/components/common/NetworkStatus';
+import QueryProvider from '@/providers/QueryProvider';
 
 export const metadata = {
    title: 'Food Delivery App',
@@ -13,11 +14,13 @@ export default function RootLayout({ children }) {
    return (
       <html>
          <body className="min-h-full flex flex-col">
-            <ConditionalHeader />
-            {children}
-            <FloatingCart />
-            <Toaster />
-            <NetworkStatus />
+            <QueryProvider>
+               <ConditionalHeader />
+               {children}
+               <FloatingCart />
+               <Toaster />
+               <NetworkStatus />
+            </QueryProvider>
          </body>
       </html>
    );

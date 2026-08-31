@@ -8,9 +8,11 @@ export default function ExploreMenu({ menus = [], selectedMenuName, setSelectedM
    const uniqueMenus = Array.from(new Map(menus.map((menu) => [menu.name.toLowerCase(), menu])).values());
 
    const handleCategoryClick = (menuName) => {
-      const params = new URLSearchParams(searchParams.toString());
-
       const isSameCategory = selectedMenuName === menuName;
+
+      setSelectedMenuName(isSameCategory ? null : menuName);
+
+      const params = new URLSearchParams(searchParams.toString());
 
       if (isSameCategory) {
          params.delete('category');
@@ -18,11 +20,9 @@ export default function ExploreMenu({ menus = [], selectedMenuName, setSelectedM
          params.set('category', menuName);
       }
 
-      setSelectedMenuName(isSameCategory ? null : menuName);
-
       const query = params.toString();
 
-      router.push(query ? `${pathname}?${query}` : pathname);
+      router.replace(query ? `${pathname}?${query}` : pathname);
    };
 
    return (
@@ -32,19 +32,20 @@ export default function ExploreMenu({ menus = [], selectedMenuName, setSelectedM
 
             <div
                className="
-      flex w-full min-w-0 items-start
-      gap-[35px]
-      overflow-x-auto
-      scroll-smooth
-      snap-x snap-proximity
-      px-4 py-4 sm:px-6
-      scrollbar-hide
-      max-[900px]:gap-[25px]
-      max-[610px]:gap-[18px]
-      max-[610px]:px-4
-      max-[380px]:gap-[12px]
-      max-[380px]:px-3
-   "
+                  flex w-full min-w-0
+                  items-start
+                  gap-[35px]
+                  overflow-x-auto
+                  scroll-smooth
+                  snap-x snap-proximity
+                  px-4 py-4 sm:px-6
+                  scrollbar-hide
+                  max-[900px]:gap-[25px]
+                  max-[610px]:gap-[18px]
+                  max-[610px]:px-4
+                  max-[380px]:gap-[12px]
+                  max-[380px]:px-3
+               "
                style={{
                   scrollbarWidth: 'none',
                   msOverflowStyle: 'none',
@@ -55,13 +56,13 @@ export default function ExploreMenu({ menus = [], selectedMenuName, setSelectedM
                      key={menu.id}
                      onClick={() => handleCategoryClick(menu.name)}
                      className="
-            group flex shrink-0 cursor-pointer
-            snap-start
-            flex-col items-center
-            min-w-[95px]
-            max-[610px]:min-w-[75px]
-            max-[380px]:min-w-[65px]
-         "
+                        group flex shrink-0
+                        cursor-pointer snap-start
+                        flex-col items-center
+                        min-w-[95px]
+                        max-[610px]:min-w-[75px]
+                        max-[380px]:min-w-[65px]
+                     "
                   >
                      <div
                         className={`h-[90px] w-[90px] rounded-full p-[4px] transition-all duration-200 group-hover:-translate-y-1 max-[610px]:h-[75px] max-[610px]:w-[75px] max-[380px]:h-[64px] max-[380px]:w-[64px] ${

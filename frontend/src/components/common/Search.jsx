@@ -1,15 +1,18 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
 import { SEARCH_ICON_URL, LOCATION_SVG } from '@/assets/icons';
 import { ChevronDown } from 'lucide-react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
-export default function Search({ restaurantFilters, setRestaurantFilters, selectedLocation, restaurants = [] }) {
+export default function Search({
+   restaurantFilters,
+   setRestaurantFilters,
+   selectedLocation,
+   restaurants = [],
+   onSearchSubmit,
+}) {
    const router = useRouter();
-   const pathname = usePathname();
-   const searchParams = useSearchParams();
 
    const [suggestionIndex, setSuggestionIndex] = useState(0);
 
@@ -23,6 +26,7 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
    );
 
    useEffect(() => {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSuggestionIndex(0);
    }, [menuNames.length]);
 
@@ -38,24 +42,8 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
       return () => clearInterval(interval);
    }, [menuNames.length]);
 
-   const animatedName = menuNames[suggestionIndex] || 'food';
-
-   const displayName = animatedName.length > 22 ? `${animatedName.slice(0, 22)}...` : animatedName;
-
-   const handleSearchSubmit = () => {
-      const params = new URLSearchParams(searchParams.toString());
-
-      const search = restaurantFilters.searchText.trim();
-
-      if (search) {
-         params.set('search', search);
-      } else {
-         params.delete('search');
-      }
-
-      const query = params.toString();
-
-      router.push(query ? `${pathname}?${query}` : pathname);
+   const handleSubmit = () => {
+      onSearchSubmit(restaurantFilters.searchText.trim());
    };
 
    const clearSearch = () => {
@@ -64,13 +52,12 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
          searchText: '',
       }));
 
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete('search');
-
-      const query = params.toString();
-
-      router.push(query ? `${pathname}?${query}` : pathname);
+      onSearchSubmit('');
    };
+
+   const animatedName = menuNames[suggestionIndex] || 'food';
+
+   const displayName = animatedName.length > 22 ? `${animatedName.slice(0, 22)}...` : animatedName;
 
    return (
       <div className="mx-auto my-[30px] flex w-[600px] justify-between rounded-[0.1cm] border border-[#BEBFC5] max-[610px]:my-[15px] max-[610px]:w-full">
@@ -88,6 +75,7 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
                {selectedLocation?.address && (
                   <>
                      <span className="mx-1 text-[#A6A6A6]">/</span>
+
                      <span>{selectedLocation.address}</span>
                   </>
                )}
@@ -98,13 +86,13 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
 
          <div className="mx-[8px] mt-0.5 h-[30px] w-px shrink-0 bg-[#D9D9D9] max-[500px]:mx-[4px]" />
 
-         <div className="group relative  flex min-w-0 flex-1 items-center overflow-hidden">
+         <div className="group relative flex min-w-0 flex-1 items-center overflow-hidden">
             {!restaurantFilters.searchText && (
                <>
                   <div className="pointer-events-none absolute inset-0 flex items-center overflow-hidden group-focus-within:hidden">
                      <span
                         key={animatedName}
-                        className="animate-search-placeholder   truncate text-[18px] font-[400] text-[#A6A6A6] max-[610px]:text-[15px] max-[410px]:text-[13.5px] max-[360px]:text-[12.5px]"
+                        className="animate-search-placeholder truncate text-[18px] font-[400] text-[#A6A6A6] max-[610px]:text-[15px] max-[410px]:text-[13.5px] max-[360px]:text-[12.5px]"
                      >
                         Search for&nbsp; &quot;{displayName}&quot;
                      </span>
@@ -129,7 +117,7 @@ export default function Search({ restaurantFilters, setRestaurantFilters, select
                }
                onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                     handleSearchSubmit();
+                     handleSubmit();
                   }
                }}
             />

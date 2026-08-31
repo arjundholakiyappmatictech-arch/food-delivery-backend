@@ -1,22 +1,22 @@
 'use client';
-import { Suspense, useEffect, useState } from 'react';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import Search from '@/components/common/Search';
 import RestaurantContainer from '@/components/restaurants/RestaurantContainer';
-
+import FilterButton from '@/components/restaurants/FilterButton';
+import ExploreMenu from '@/components/restaurants/ExploreMenu';
+import HomePageSkeleton from '@/components/skeletons/HomePageSkeleton';
 import useAuthGuard from '@/lib/hooks/useAuth';
 import useRestaurants from '@/lib/hooks/useRestaurants';
 import useSelectedLocation from '@/lib/hooks/useSelectedLocation';
 
-import FilterButton from '@/components/restaurants/FilterButton';
-import ExploreMenu from '@/components/restaurants/ExploreMenu';
-import HomePageSkeleton from '@/components/skeletons/HomePageSkeleton';
-
 function HomePageContent() {
    useAuthGuard();
+
    const router = useRouter();
+   const pathname = usePathname();
    const searchParams = useSearchParams();
 
    const submittedSearch = searchParams.get('search') || '';
@@ -26,14 +26,40 @@ function HomePageContent() {
 
    const { selectedLocation, initialized: locationInitialized } = useSelectedLocation();
 
-   const defaultFilters = {
+   const [restaurantFilters, setRestaurantFilters] = useState({
       searchText: submittedSearch,
       sortBy: submittedSort,
       openNow: submittedOpenNow,
       menuName: submittedCategory || null,
+   });
+
+   const updateUrl = (updates) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      Object.entries(updates).forEach(([key, value]) => {
+         if (value === '' || value === null || value === undefined || value === false) {
+            params.delete(key);
+         } else {
+            params.set(key, String(value));
+         }
+      });
+
+      const query = params.toString();
+
+      router.replace(query ? `${pathname}?${query}` : pathname);
    };
 
-   const [restaurantFilters, setRestaurantFilters] = useState(defaultFilters);
+   const handleSearchSubmit = (search) => {
+      updateUrl({
+         search: search.trim(),
+      });
+   };
+
+   const handleCategoryChange = (category) => {
+      updateUrl({
+         category,
+      });
+   };
 
    const { restaurants, menus, loading, loadingMore, searching, hasMore, error, retry, loadMore } = useRestaurants(
       selectedLocation,
@@ -62,49 +88,24 @@ function HomePageContent() {
             restaurantFilters={restaurantFilters}
             setRestaurantFilters={setRestaurantFilters}
             restaurants={restaurants}
+            onSearchSubmit={handleSearchSubmit}
          />
 
          <ExploreMenu
             menus={menus}
             selectedMenuName={restaurantFilters.menuName}
-            setSelectedMenuName={(menuName) => {
-               setRestaurantFilters((prev) => ({
-                  ...prev,
-                  menuName: prev.menuName === menuName ? null : menuName,
-               }));
-            }}
+            setSelectedMenuName={handleCategoryChange}
          />
 
          <div className="my-5 flex flex-wrap items-center justify-center gap-2">
-            <FilterButton
-               filterId="sortBy"
-               restaurantFilters={restaurantFilters}
-               setRestaurantFilters={setRestaurantFilters}
-            />
-
-            <FilterButton
-               filterId="nearest"
-               restaurantFilters={restaurantFilters}
-               setRestaurantFilters={setRestaurantFilters}
-            />
-
-            <FilterButton
-               filterId="openNow"
-               restaurantFilters={restaurantFilters}
-               setRestaurantFilters={setRestaurantFilters}
-            />
-
-            <FilterButton
-               filterId="aToZ"
-               restaurantFilters={restaurantFilters}
-               setRestaurantFilters={setRestaurantFilters}
-            />
-
-            <FilterButton
-               filterId="zToA"
-               restaurantFilters={restaurantFilters}
-               setRestaurantFilters={setRestaurantFilters}
-            />
+            {['sortBy', 'nearest', 'openNow', 'aToZ', 'zToA'].map((filterId) => (
+               <FilterButton
+                  key={filterId}
+                  filterId={filterId}
+                  restaurantFilters={restaurantFilters}
+                  setRestaurantFilters={setRestaurantFilters}
+               />
+            ))}
          </div>
 
          <RestaurantContainer
