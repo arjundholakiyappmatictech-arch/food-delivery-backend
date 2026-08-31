@@ -69,7 +69,13 @@ export default function useRestaurants(
       enabled: locationReady,
    });
 
-   const restaurants = restaurantsQuery.data?.pages.flatMap((page) => page?.data ?? []) ?? [];
+   const restaurants = Array.from(
+      new Map(
+         (restaurantsQuery.data?.pages ?? [])
+            .flatMap((page) => page?.data ?? [])
+            .map((restaurant) => [restaurant.id, restaurant]),
+      ).values(),
+   );
 
    const menusQuery = useQuery({
       queryKey: [
