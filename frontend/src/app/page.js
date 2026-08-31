@@ -33,6 +33,16 @@ function HomePageContent() {
       menuName: submittedCategory || null,
    });
 
+   useEffect(() => {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRestaurantFilters({
+         searchText: submittedSearch,
+         sortBy: submittedSort,
+         openNow: submittedOpenNow,
+         menuName: submittedCategory || null,
+      });
+   }, [submittedSearch, submittedCategory, submittedSort, submittedOpenNow]);
+
    const updateUrl = (updates) => {
       const params = new URLSearchParams(searchParams.toString());
 
