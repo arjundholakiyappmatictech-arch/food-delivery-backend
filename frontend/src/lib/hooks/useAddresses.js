@@ -1,161 +1,94 @@
-'use client';
-
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
-import { getAddresses, deleteAddress } from '@/services/addressService';
+
+import { deleteAddress, getAddresses } from '@/services/addressService';
 import { parseApiError } from '@/utils/apiError';
 
 export default function useAddresses() {
-   const [addresses, setAddresses] = useState([]);
+   const queryClient = useQueryClient();
+
    const [search, setSearch] = useState('');
-   const [page, setPage] = useState(1);
-   const [hasSavedAddresses, setHasSavedAddresses] = useState(false);
-   const [hasMore, setHasMore] = useState(false);
-   const [loading, setLoading] = useState(true);
-   const [searching, setSearching] = useState(false);
-   const [loadingMore, setLoadingMore] = useState(false);
-   const [error, setError] = useState('');
-
    const [deletingAddress, setDeletingAddress] = useState(null);
-   const [isDeleting, setIsDeleting] = useState(false);
 
-   const loadingMoreRef = useRef(false);
+   const addressesQuery = useInfiniteQuery({
+      queryKey: ['addresses', { search }],
 
-   const fetchAddresses = useCallback(async () => {
-      try {
-         setLoading(true);
-         setError('');
+      queryFn: ({ pageParam = 1 }) => {
+         return getAddresses(search, pageParam);
+      },
 
-         const result = await getAddresses('', 1);
+      initialPageParam: 1,
 
-         setAddresses(result.addresses);
-         setHasSavedAddresses(result.addresses.length > 0);
-         setSearch('');
-         setPage(result.pagination?.current_page ?? 1);
-         setHasMore(result.pagination?.has_more_pages ?? false);
-      } catch (error) {
-         const message = error.response?.data?.message || 'Unable to fetch your saved addresses.';
-         setError(message);
-      } finally {
-         setLoading(false);
-      }
+      getNextPageParam: (lastPage) => {
+         if (!lastPage?.pagination?.has_more_pages) {
+            return undefined;
+         }
+
+         return (lastPage.pagination.current_page ?? 1) + 1;
+      },
+   });
+
+   const deleteMutation = useMutation({
+      mutationFn: (addressId) => deleteAddress(addressId),
+
+      onSuccess: () => {
+         queryClient.invalidateQueries({
+            queryKey: ['addresses'],
+         });
+
+         toast.success('Address deleted successfully.');
+         setDeletingAddress(null);
+      },
+
+      onError: (error) => {
+         const apiError = parseApiError(error);
+
+         toast.error(apiError.message ?? 'Unable to delete address. Please try again.');
+      },
+   });
+
+   const addresses = addressesQuery.data?.pages.flatMap((page) => page?.addresses ?? []) ?? [];
+
+   const hasSavedAddresses = addresses.length > 0;
+
+   const searchAddresses = useCallback((searchValue) => {
+      setSearch(searchValue.trim());
    }, []);
 
-   const searchAddresses = useCallback(async (searchValue) => {
-      const normalizedSearch = searchValue.trim();
-
-      try {
-         setSearching(true);
-         setError('');
-
-         const result = await getAddresses(normalizedSearch, 1);
-
-         setAddresses(result.addresses);
-         setSearch(normalizedSearch);
-         setPage(result.pagination?.current_page ?? 1);
-         setHasMore(result.pagination?.has_more_pages ?? false);
-      } catch (error) {
-         const message = error.response?.data?.message || 'Unable to search your saved addresses.';
-         setError(message);
-      } finally {
-         setSearching(false);
-      }
-   }, []);
-
-   const loadMoreAddresses = useCallback(async () => {
-      if (loadingMoreRef.current || !hasMore || searching) {
+   const loadMoreAddresses = useCallback(() => {
+      if (!addressesQuery.hasNextPage || addressesQuery.isFetchingNextPage) {
          return;
       }
 
-      loadingMoreRef.current = true;
-      setLoadingMore(true);
-      setError('');
+      addressesQuery.fetchNextPage();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [addressesQuery.hasNextPage, addressesQuery.isFetchingNextPage, addressesQuery.fetchNextPage]);
 
-      try {
-         const nextPage = page + 1;
-         const result = await getAddresses(search, nextPage);
-
-         setAddresses((currentAddresses) => {
-            const uniqueNewAddresses = result.addresses.filter(
-               (newAddress) => !currentAddresses.some((currentAddress) => currentAddress.id === newAddress.id),
-            );
-
-            return [...currentAddresses, ...uniqueNewAddresses];
-         });
-
-         setPage(result.pagination?.current_page ?? nextPage);
-         setHasMore(result.pagination?.has_more_pages ?? false);
-      } catch (error) {
-         const message = error.response?.data?.message || 'Unable to load more addresses.';
-         setError(message);
-      } finally {
-         loadingMoreRef.current = false;
-         setLoadingMore(false);
+   const deleteAddressItem = useCallback(() => {
+      if (!deletingAddress || deleteMutation.isPending) {
+         return;
       }
-   }, [page, search, hasMore, searching]);
 
-   useEffect(() => {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      fetchAddresses();
-   }, [fetchAddresses]);
+      deleteMutation.mutate(deletingAddress.id);
+   }, [deletingAddress, deleteMutation]);
 
-   const removeAddress = useCallback((addressId) => {
-      setAddresses((currentAddresses) => {
-         const nextAddresses = currentAddresses.filter((item) => item.id !== addressId);
-         setHasSavedAddresses(nextAddresses.length > 0);
-         return nextAddresses;
-      });
-   }, []);
-
-   const updateAddressInList = useCallback((updatedAddress) => {
-      setAddresses((currentAddresses) => {
-         const nextAddresses = currentAddresses.map((item) => {
-            if (item.id === updatedAddress.id) {
-               return { ...item, ...updatedAddress };
-            }
-            // Ensure only one address is marked as default
-            if (updatedAddress.is_default) {
-               return { ...item, is_default: false };
-            }
-            return item;
-         });
-         return nextAddresses;
-      });
-   }, []);
-
-   const deleteAddressItem = useCallback(async () => {
-      if (!deletingAddress) return;
-
-      try {
-         setIsDeleting(true);
-         await deleteAddress(deletingAddress.id);
-         removeAddress(deletingAddress.id);
-         toast.success('Address deleted successfully.');
-         setDeletingAddress(null);
-      } catch (error) {
-         const apiError = parseApiError(error);
-         toast.error(apiError.message ?? 'Unable to delete address. Please try again.');
-      } finally {
-         setIsDeleting(false);
-      }
-   }, [deletingAddress, removeAddress]);
+   const apiError = addressesQuery.error ? parseApiError(addressesQuery.error) : null;
 
    return {
       addresses,
       hasSavedAddresses,
-      hasMore,
-      loading,
-      searching,
-      loadingMore,
-      error,
-      deletingAddress,
-      setDeletingAddress,
-      isDeleting,
-      deleteAddressItem,
-      fetchAddresses,
+      loading: addressesQuery.isLoading,
+      searching: addressesQuery.isFetching && !addressesQuery.isFetchingNextPage && search !== '',
+      loadingMore: addressesQuery.isFetchingNextPage,
+      hasMore: Boolean(addressesQuery.hasNextPage),
+      error: apiError?.message ?? '',
       searchAddresses,
       loadMoreAddresses,
-      removeAddress,
-      updateAddressInList,
+      deletingAddress,
+      setDeletingAddress,
+      isDeleting: deleteMutation.isPending,
+      deleteAddressItem,
+      retry: addressesQuery.refetch,
    };
 }

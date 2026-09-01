@@ -106,14 +106,12 @@ export default function FilterButton({ filterId, restaurantFilters, setRestauran
          ...prev,
          sortBy: '',
          openNow: false,
-         menuName: null,
       }));
 
       const params = new URLSearchParams(searchParams.toString());
 
       params.delete('sort');
       params.delete('openNow');
-      params.delete('category');
 
       const query = params.toString();
 
