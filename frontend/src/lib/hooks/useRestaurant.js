@@ -1,63 +1,27 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-
+import { useQuery } from '@tanstack/react-query';
 import { getRestaurantMenus } from '@/services/restaurantService';
+import { parseApiError } from '@/utils/apiError';
 
 export default function useRestaurant(restaurantId) {
-   const [menus, setMenus] = useState([]);
-   const [loading, setLoading] = useState(true);
-   const [error, setError] = useState('');
+   const restaurantQuery = useQuery({
+      queryKey: ['restaurant-menus', restaurantId],
 
-   const fetchMenus = useCallback(
-      async (signal) => {
-         const token = localStorage.getItem('access_token');
+      queryFn: ({ signal }) =>
+         getRestaurantMenus({
+            restaurantId,
+            signal,
+         }),
 
-         // Don't make authenticated request without token
-         if (!restaurantId || !token) {
-            setLoading(false);
-            return;
-         }
+      enabled: Boolean(restaurantId),
+   });
 
-         try {
-            setLoading(true);
-            setError('');
-
-            const data = await getRestaurantMenus({
-               restaurantId,
-               signal,
-            });
-
-            setMenus(data ?? []);
-         } catch (error) {
-            if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
-               return;
-            }
-
-            console.error(error);
-
-            setMenus([]);
-
-            setError(error.response?.data?.message ?? 'Unable to fetch restaurant menus.');
-         } finally {
-            setLoading(false);
-         }
-      },
-      [restaurantId],
-   );
-
-   useEffect(() => {
-      const controller = new AbortController();
-
-      fetchMenus(controller.signal);
-
-      return () => controller.abort();
-   }, [fetchMenus]);
+   const apiError = restaurantQuery.error ? parseApiError(restaurantQuery.error) : null;
 
    return {
-      menus,
-      loading,
-      error,
+      menus: restaurantQuery.data ?? [],
+      loading: restaurantQuery.isLoading,
+      error: apiError?.message ?? '',
    };
 }

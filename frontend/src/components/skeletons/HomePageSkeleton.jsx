@@ -7,7 +7,6 @@ export default function HomePageSkeleton() {
    return (
       <main className="mx-auto -mt-15 w-full max-w-[1800px] px-[40px] max-[1200px]:px-[30px] max-[800px]:px-[20px] max-[560px]:px-[10px]">
          <SearchSkeleton />
-
          <ExploreMenuSkeleton />
 
          <div className="my-5">

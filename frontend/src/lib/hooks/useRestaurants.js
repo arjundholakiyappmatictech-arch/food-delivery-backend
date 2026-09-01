@@ -44,7 +44,7 @@ export default function useRestaurants(
          },
       ],
 
-      queryFn: ({ pageParam = 1 }) =>
+      queryFn: ({ pageParam = 1, signal }) =>
          getNearbyRestaurants({
             addressId: selectedLocation?.addressId,
             latitude: selectedLocation?.latitude,
@@ -54,6 +54,7 @@ export default function useRestaurants(
             sortBy,
             openNow,
             page: pageParam,
+            signal,
          }),
 
       initialPageParam: 1,
@@ -79,7 +80,7 @@ export default function useRestaurants(
 
    const menusQuery = useQuery({
       queryKey: [
-         'restaurant-menus',
+         'nearby-restaurant-menus',
          {
             addressId: selectedLocation?.addressId,
             latitude: selectedLocation?.latitude,
@@ -87,7 +88,7 @@ export default function useRestaurants(
          },
       ],
 
-      queryFn: async () => {
+      queryFn: async ({ signal }) => {
          const response = await getNearbyRestaurants({
             addressId: selectedLocation?.addressId,
             latitude: selectedLocation?.latitude,
@@ -97,6 +98,7 @@ export default function useRestaurants(
             sortBy: '',
             openNow: false,
             page: 1,
+            signal,
          });
 
          return extractMenus(response?.data ?? []);
