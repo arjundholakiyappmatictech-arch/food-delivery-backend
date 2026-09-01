@@ -106,7 +106,6 @@ export default function useRestaurants(
    });
 
    const restaurantError = restaurantsQuery.error ? parseApiError(restaurantsQuery.error) : null;
-
    const menuError = menusQuery.error ? parseApiError(menusQuery.error) : null;
 
    return {

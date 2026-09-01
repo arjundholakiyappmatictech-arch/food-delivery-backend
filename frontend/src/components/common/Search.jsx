@@ -2,17 +2,13 @@
 
 import { SEARCH_ICON_URL, LOCATION_SVG } from '@/assets/icons';
 import { ChevronDown } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-export default function Search({
-   restaurantFilters,
-   setRestaurantFilters,
-   selectedLocation,
-   restaurants = [],
-   onSearchSubmit,
-}) {
+export default function Search({ restaurantFilters, setRestaurantFilters, selectedLocation, restaurants = [] }) {
    const router = useRouter();
+   const pathname = usePathname();
+   const searchParams = useSearchParams();
 
    const [suggestionIndex, setSuggestionIndex] = useState(0);
 
@@ -42,8 +38,22 @@ export default function Search({
       return () => clearInterval(interval);
    }, [menuNames.length]);
 
+   const updateSearchUrl = (search) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      if (search) {
+         params.set('search', search);
+      } else {
+         params.delete('search');
+      }
+
+      const query = params.toString();
+
+      router.replace(query ? `${pathname}?${query}` : pathname);
+   };
+
    const handleSubmit = () => {
-      onSearchSubmit(restaurantFilters.searchText.trim());
+      updateSearchUrl(restaurantFilters.searchText.trim());
    };
 
    const clearSearch = () => {
@@ -52,11 +62,10 @@ export default function Search({
          searchText: '',
       }));
 
-      onSearchSubmit('');
+      updateSearchUrl('');
    };
 
    const animatedName = menuNames[suggestionIndex] || 'food';
-
    const displayName = animatedName.length > 22 ? `${animatedName.slice(0, 22)}...` : animatedName;
 
    return (
@@ -75,7 +84,6 @@ export default function Search({
                {selectedLocation?.address && (
                   <>
                      <span className="mx-1 text-[#A6A6A6]">/</span>
-
                      <span>{selectedLocation.address}</span>
                   </>
                )}

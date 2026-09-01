@@ -1,13 +1,14 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import Search from '@/components/common/Search';
 import RestaurantContainer from '@/components/restaurants/RestaurantContainer';
 import FilterButton from '@/components/restaurants/FilterButton';
 import ExploreMenu from '@/components/restaurants/ExploreMenu';
 import HomePageSkeleton from '@/components/skeletons/HomePageSkeleton';
+
 import useAuthGuard from '@/lib/hooks/useAuth';
 import useRestaurants from '@/lib/hooks/useRestaurants';
 import useSelectedLocation from '@/lib/hooks/useSelectedLocation';
@@ -16,7 +17,6 @@ function HomePageContent() {
    useAuthGuard();
 
    const router = useRouter();
-   const pathname = usePathname();
    const searchParams = useSearchParams();
 
    const submittedSearch = searchParams.get('search') || '';
@@ -42,34 +42,6 @@ function HomePageContent() {
          menuName: submittedCategory || null,
       });
    }, [submittedSearch, submittedCategory, submittedSort, submittedOpenNow]);
-
-   const updateUrl = (updates) => {
-      const params = new URLSearchParams(searchParams.toString());
-
-      Object.entries(updates).forEach(([key, value]) => {
-         if (value === '' || value === null || value === undefined || value === false) {
-            params.delete(key);
-         } else {
-            params.set(key, String(value));
-         }
-      });
-
-      const query = params.toString();
-
-      router.replace(query ? `${pathname}?${query}` : pathname);
-   };
-
-   const handleSearchSubmit = (search) => {
-      updateUrl({
-         search: search.trim(),
-      });
-   };
-
-   const handleCategoryChange = (category) => {
-      updateUrl({
-         category,
-      });
-   };
 
    const { restaurants, menus, loading, loadingMore, searching, hasMore, error, retry, loadMore } = useRestaurants(
       selectedLocation,
@@ -98,13 +70,17 @@ function HomePageContent() {
             restaurantFilters={restaurantFilters}
             setRestaurantFilters={setRestaurantFilters}
             restaurants={restaurants}
-            onSearchSubmit={handleSearchSubmit}
          />
 
          <ExploreMenu
             menus={menus}
             selectedMenuName={restaurantFilters.menuName}
-            setSelectedMenuName={handleCategoryChange}
+            setSelectedMenuName={(menuName) => {
+               setRestaurantFilters((prev) => ({
+                  ...prev,
+                  menuName,
+               }));
+            }}
          />
 
          <div className="my-5 flex flex-wrap items-center justify-center gap-2">
