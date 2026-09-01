@@ -6,13 +6,13 @@ import { Plus, MapPin, Loader2 } from 'lucide-react';
 
 import useAuthGuard from '@/lib/hooks/useAuth';
 import useAddresses from '@/lib/hooks/useAddresses';
-import useSelectedLocation from '@/lib/hooks/useSelectedLocation';
 import { formatSavedAddress } from '@/lib/location';
 
 import { AddressSearch } from '@/components/location/AddressSearch';
 import { CurrentLocationButton } from '@/components/location/CurrentLocationButton';
 import AddressSkeleton from '@/components/skeletons/AddressSkeleton';
 import SelectAddressItem from '@/components/addresses/SelectAddressItem';
+import useLocationStore from '@/lib/store/locationStore';
 
 export default function SelectAddressPage() {
    useAuthGuard();
@@ -22,10 +22,10 @@ export default function SelectAddressPage() {
    const { addresses, hasSavedAddresses, loading, searching, hasMore, searchAddresses, loadMoreAddresses } =
       useAddresses();
 
-   const { selectLocation, loading: locationLoading, error: locationError } = useSelectedLocation();
+   const selectLocation = useLocationStore((state) => state.selectLocation);
 
-   const handleSelectLocation = async (location) => {
-      const success = await selectLocation(location);
+   const handleSelectLocation = (location) => {
+      const success = selectLocation(location);
 
       if (success) {
          router.replace('/');
@@ -37,6 +37,7 @@ export default function SelectAddressPage() {
          <div className="w-full max-w-[500px] rounded-2xl border border-[#E9E9E9] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] sm:p-6">
             <header className="mb-3.5 text-center">
                <h1 className="text-xl font-bold tracking-tight text-[#02060C] sm:text-2xl">Select Address</h1>
+
                <p className="mt-0.5 text-xs text-[#595959]">
                   {hasSavedAddresses
                      ? 'Select a delivery address to explore restaurants near you.'
@@ -45,16 +46,6 @@ export default function SelectAddressPage() {
             </header>
 
             <div className="space-y-3">
-               {locationError && (
-                  <div
-                     role="alert"
-                     aria-live="polite"
-                     className="rounded-xl border border-red-200 bg-red-50 p-2.5 text-center text-xs font-medium text-red-600"
-                  >
-                     {locationError}
-                  </div>
-               )}
-
                {loading && addresses.length === 0 ? (
                   <AddressSkeleton count={3} />
                ) : hasSavedAddresses ? (
@@ -65,18 +56,20 @@ export default function SelectAddressPage() {
                         {searching ? (
                            <div className="flex flex-col items-center justify-center py-4 text-center">
                               <Loader2 className="size-4 animate-spin text-[#E56A77]" />
+
                               <p className="mt-1 text-xs font-medium text-[#595959]">Searching addresses...</p>
                            </div>
                         ) : addresses.length === 0 ? (
                            <div className="rounded-xl border border-dashed border-[#E9E9E9] bg-[#FAFAFA] py-4 text-center">
-                              <p className="text-xs font-medium text-[#595959]">No saved addresses match your search.</p>
+                              <p className="text-xs font-medium text-[#595959]">
+                                 No saved addresses match your search.
+                              </p>
                            </div>
                         ) : (
                            addresses.map((address) => (
                               <SelectAddressItem
                                  key={address.id}
                                  address={address}
-                                 disabled={locationLoading}
                                  onSelect={(addr) => handleSelectLocation(formatSavedAddress(addr))}
                               />
                            ))
@@ -95,7 +88,7 @@ export default function SelectAddressPage() {
                         )}
                      </div>
 
-                     <CurrentLocationButton disabled={locationLoading} onLocationDetected={handleSelectLocation} />
+                     <CurrentLocationButton onLocationDetected={handleSelectLocation} />
 
                      <Link
                         href="/addresses/add?from=select"
@@ -113,8 +106,10 @@ export default function SelectAddressPage() {
 
                      <div className="space-y-1">
                         <h2 className="text-sm font-bold text-[#02060C] sm:text-base">No delivery address saved</h2>
+
                         <p className="text-xs leading-relaxed text-[#595959]">
-                           You need a delivery address to explore restaurants and place orders. Add your address to get started.
+                           You need a delivery address to explore restaurants and place orders. Add your address to get
+                           started.
                         </p>
                      </div>
 
@@ -127,7 +122,7 @@ export default function SelectAddressPage() {
                            <span>Add New Address</span>
                         </Link>
 
-                        <CurrentLocationButton disabled={locationLoading} onLocationDetected={handleSelectLocation} />
+                        <CurrentLocationButton onLocationDetected={handleSelectLocation} />
                      </div>
                   </div>
                )}

@@ -7,9 +7,11 @@ import CheckoutAddress from './CheckoutAddress';
 import CheckoutOrder from './CheckoutOrder';
 import CheckoutInstructions from './CheckoutInstructions';
 import CheckoutBill from './CheckoutBill';
+
 import useOrder from '@/lib/hooks/useOrder';
 import useCartStore from '@/lib/store/cartStore';
-import useSelectedLocation from '@/lib/hooks/useSelectedLocation';
+import useLocationStore from '@/lib/store/locationStore';
+
 import { toast } from 'sonner';
 
 export default function CheckoutDetails() {
@@ -19,13 +21,12 @@ export default function CheckoutDetails() {
    const fetchCart = useCartStore((state) => state.fetchCart);
    const restaurantId = useCartStore((state) => state.restaurantId);
 
-   const [cartLoading, setCartLoading] = useState(true);
+   const selectedLocation = useLocationStore((state) => state.selectedLocation);
 
-   const { selectedLocation } = useSelectedLocation();
+   const [cartLoading, setCartLoading] = useState(true);
+   const [deliveryInstructions, setDeliveryInstructions] = useState('');
 
    const { placeOrder, makePaymentt, loading, error } = useOrder();
-
-   const [deliveryInstructions, setDeliveryInstructions] = useState('');
 
    useEffect(() => {
       const loadCart = async () => {
@@ -39,7 +40,6 @@ export default function CheckoutDetails() {
       loadCart();
    }, [fetchCart]);
 
-   // Redirect only AFTER the cart request has finished.
    useEffect(() => {
       if (cartLoading) {
          return;
@@ -107,7 +107,6 @@ export default function CheckoutDetails() {
       );
    }
 
-   // Cart is empty. Redirect effect will handle navigation.
    if (cartItems.length === 0) {
       return null;
    }

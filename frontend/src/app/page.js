@@ -11,7 +11,7 @@ import HomePageSkeleton from '@/components/skeletons/HomePageSkeleton';
 
 import useAuthGuard from '@/lib/hooks/useAuth';
 import useRestaurants from '@/lib/hooks/useRestaurants';
-import useSelectedLocation from '@/lib/hooks/useSelectedLocation';
+import useLocationStore from '@/lib/store/locationStore';
 
 function HomePageContent() {
    useAuthGuard();
@@ -24,7 +24,8 @@ function HomePageContent() {
    const submittedSort = searchParams.get('sort') || '';
    const submittedOpenNow = searchParams.get('openNow') === 'true';
 
-   const { selectedLocation, initialized: locationInitialized } = useSelectedLocation();
+   const selectedLocation = useLocationStore((state) => state.selectedLocation);
+   const locationInitialized = useLocationStore((state) => state.hasHydrated);
 
    const [restaurantFilters, setRestaurantFilters] = useState({
       searchText: submittedSearch,
