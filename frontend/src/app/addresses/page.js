@@ -10,9 +10,13 @@ import { AddressSearch } from '@/components/location/AddressSearch';
 import AddressSkeleton from '@/components/skeletons/AddressSkeleton';
 import AddressItem from '@/components/addresses/AddressItem';
 import DeleteAddressModal from '@/components/addresses/DeleteAddressModal';
+import useLocationStore from '@/lib/store/locationStore';
+import { toast } from 'sonner';
 
 export default function AddressesPage() {
    useAuthGuard();
+
+   const selectedLocation = useLocationStore((state) => state.selectedLocation);
 
    const {
       addresses,
@@ -96,6 +100,12 @@ export default function AddressesPage() {
                                  onToggleMenu={() => setMenuOpenId(menuOpenId === address.id ? null : address.id)}
                                  onDeleteClick={() => {
                                     setMenuOpenId(null);
+
+                                    if (selectedLocation?.addressId === address.id) {
+                                       toast.error('You cannot delete your currently selected address.');
+                                       return;
+                                    }
+
                                     setDeletingAddress(address);
                                  }}
                               />

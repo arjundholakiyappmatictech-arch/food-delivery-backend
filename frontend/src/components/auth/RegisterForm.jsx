@@ -96,10 +96,11 @@ const RegisterForm = () => {
                      aria-invalid={Boolean(errors.full_name)}
                      aria-describedby={errors.full_name ? 'full-name-error' : undefined}
                      {...register('full_name')}
-                     className={`h-10 w-full rounded-xl border bg-white px-3.5 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${errors.full_name
+                     className={`h-10 w-full rounded-xl border bg-white px-3.5 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
+                        errors.full_name
                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                            : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
-                        }`}
+                     }`}
                   />
 
                   {errors.full_name?.message && (
@@ -123,10 +124,11 @@ const RegisterForm = () => {
                      aria-invalid={Boolean(errors.email)}
                      aria-describedby={errors.email ? 'email-error' : undefined}
                      {...register('email')}
-                     className={`h-10 w-full rounded-xl border bg-white px-3.5 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${errors.email
+                     className={`h-10 w-full rounded-xl border bg-white px-3.5 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
+                        errors.email
                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                            : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
-                        }`}
+                     }`}
                   />
 
                   {errors.email?.message && (
@@ -150,10 +152,11 @@ const RegisterForm = () => {
                      aria-invalid={Boolean(errors.phone_number)}
                      aria-describedby={errors.phone_number ? 'phone-number-error' : undefined}
                      {...register('phone_number')}
-                     className={`h-10 w-full rounded-xl border bg-white px-3.5 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${errors.phone_number
+                     className={`h-10 w-full rounded-xl border bg-white px-3.5 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
+                        errors.phone_number
                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                            : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
-                        }`}
+                     }`}
                   />
 
                   {errors.phone_number?.message && (
@@ -177,10 +180,11 @@ const RegisterForm = () => {
                      aria-invalid={Boolean(errors.password)}
                      aria-describedby={errors.password ? 'password-error' : undefined}
                      {...register('password')}
-                     className={`h-10 w-full rounded-xl border bg-white px-3.5 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${errors.password
+                     className={`h-10 w-full rounded-xl border bg-white px-3.5 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
+                        errors.password
                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
                            : 'border-[#E9E9E9] focus:border-[#E56A77] focus:ring-[#E56A77]/20'
-                        }`}
+                     }`}
                   />
 
                   {errors.password?.message && (
