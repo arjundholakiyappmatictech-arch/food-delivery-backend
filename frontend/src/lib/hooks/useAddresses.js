@@ -1,8 +1,8 @@
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
-
 import { deleteAddress, getAddresses } from '@/services/addressService';
+
 import { parseApiError } from '@/utils/apiError';
 
 export default function useAddresses() {
@@ -50,7 +50,7 @@ export default function useAddresses() {
 
    const addresses = addressesQuery.data?.pages.flatMap((page) => page?.addresses ?? []) ?? [];
 
-   const hasSavedAddresses = addresses.length > 0;
+   const hasSavedAddresses = addresses.length > 0 || search !== '';
 
    const searchAddresses = useCallback((searchValue) => {
       setSearch(searchValue.trim());
@@ -78,6 +78,7 @@ export default function useAddresses() {
    return {
       addresses,
       hasSavedAddresses,
+      search,
       loading: addressesQuery.isLoading,
       searching: addressesQuery.isFetching && !addressesQuery.isFetchingNextPage && search !== '',
       loadingMore: addressesQuery.isFetchingNextPage,
