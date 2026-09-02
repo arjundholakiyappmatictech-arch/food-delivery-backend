@@ -5,11 +5,16 @@ import { useRouter } from 'next/navigation';
 
 import { useAuthStore } from '../store/useAuthStore';
 import { logout } from '@/services/authService';
+import { useQueryClient } from '@tanstack/react-query';
+import useLocationStore from '../store/locationStore';
 
 export default function useAuthGuard() {
    const router = useRouter();
 
    const clearUser = useAuthStore((state) => state.clearUser);
+   const queryClient = useQueryClient();
+
+   const clearSelectedLocation = useLocationStore((state) => state.clearSelectedLocation);
 
    const [logoutLoading, setLogoutLoading] = useState(false);
    const [logoutError, setLogoutError] = useState('');
@@ -33,15 +38,16 @@ export default function useAuthGuard() {
 
          setLogoutError(error.response?.data?.message || 'Unable to logout from the server.');
       } finally {
-         // Always clear local authentication
          localStorage.removeItem('access_token');
          clearUser();
+         clearSelectedLocation();
+         queryClient.clear();
 
          setLogoutLoading(false);
       }
 
       router.replace('/login');
-   }, [clearUser, router]);
+   }, [clearSelectedLocation, clearUser, queryClient, router]);
 
    return {
       logoutUser,

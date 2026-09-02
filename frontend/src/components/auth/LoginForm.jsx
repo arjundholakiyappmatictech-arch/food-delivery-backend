@@ -10,10 +10,12 @@ import { loginSchema } from '@/lib/schemas/loginSchema';
 import { login } from '@/services/authService';
 import { parseApiError } from '@/utils/apiError';
 import { useAuthStore } from '@/lib/store/useAuthStore';
+import { useQueryClient } from '@tanstack/react-query';
 
 const LoginForm = () => {
    const router = useRouter();
    const setUser = useAuthStore((state) => state.setUser);
+   const queryClient = useQueryClient();
 
    const {
       register,
@@ -35,6 +37,8 @@ const LoginForm = () => {
          const { access_token, user } = response.data;
 
          localStorage.setItem('access_token', access_token);
+         
+         queryClient.clear();
 
          setUser(user);
 
