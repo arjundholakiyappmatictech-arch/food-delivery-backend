@@ -1,7 +1,7 @@
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
-import { deleteAddress, getAddresses } from '@/services/addressService';
+import { useCallback, useState } from 'react';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createAddress, deleteAddress, getAddresses, updateAddress } from '@/services/addressService';
 
 import { parseApiError } from '@/utils/apiError';
 
@@ -48,6 +48,88 @@ export default function useAddresses() {
       },
    });
 
+   const createMutation = useMutation({
+      mutationFn: async (data) => {
+         try {
+            return await createAddress(data);
+         } catch (error) {
+            throw parseApiError(error);
+         }
+      },
+
+      onSuccess: () => {
+         queryClient.invalidateQueries({
+            queryKey: ['addresses'],
+         });
+
+         toast.success('Address added successfully.');
+      },
+
+      onError: (error) => {
+         if (error.status === 422) {
+            return;
+         }
+
+         if (error.status === 409) {
+            toast.error(error.message ?? 'This address already exists.');
+            return;
+         }
+
+         if (error.status === 403) {
+            toast.error(error.message ?? 'You are not allowed to add an address.');
+            return;
+         }
+
+         if (error.isNetworkError) {
+            toast.error('Unable to connect to the server. Please check your connection.');
+            return;
+         }
+
+         toast.error(error.message ?? 'Unable to add address. Please try again.');
+      },
+   });
+
+   const updateMutation = useMutation({
+      mutationFn: async ({ addressId, data }) => {
+         try {
+            return await updateAddress(addressId, data);
+         } catch (error) {
+            throw parseApiError(error);
+         }
+      },
+
+      onSuccess: () => {
+         queryClient.invalidateQueries({
+            queryKey: ['addresses'],
+         });
+
+         toast.success('Address updated successfully.');
+      },
+
+      onError: (error) => {
+         if (error.status === 422) {
+            return;
+         }
+
+         if (error.status === 409) {
+            toast.error(error.message ?? 'This address already exists.');
+            return;
+         }
+
+         if (error.status === 403) {
+            toast.error(error.message ?? 'You are not allowed to update this address.');
+            return;
+         }
+
+         if (error.isNetworkError) {
+            toast.error('Unable to connect to the server. Please check your connection.');
+            return;
+         }
+
+         toast.error(error.message ?? 'Unable to update address. Please try again.');
+      },
+   });
+
    const addresses = addressesQuery.data?.pages.flatMap((page) => page?.addresses ?? []) ?? [];
 
    const hasSavedAddresses = addresses.length > 0 || search !== '';
@@ -86,10 +168,18 @@ export default function useAddresses() {
       error: apiError?.message ?? '',
       searchAddresses,
       loadMoreAddresses,
+
+      createAddress: createMutation.mutateAsync,
+      isCreating: createMutation.isPending,
+
+      updateAddress: updateMutation.mutateAsync,
+      isUpdating: updateMutation.isPending,
+
       deletingAddress,
       setDeletingAddress,
       isDeleting: deleteMutation.isPending,
       deleteAddressItem,
+
       retry: addressesQuery.refetch,
    };
 }

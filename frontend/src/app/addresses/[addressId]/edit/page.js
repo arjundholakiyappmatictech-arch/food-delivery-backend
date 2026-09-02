@@ -1,50 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { EditAddressForm } from '@/components/addresses/EditAddressForm';
 import useAuthGuard from '@/lib/hooks/useAuth';
-import { getAddresses } from '@/services/addressService';
+import useAddress from '@/lib/hooks/useAddress';
 
 export default function EditAddressPage() {
    useAuthGuard();
 
    const params = useParams();
-   const router = useRouter();
    const addressId = params?.addressId;
 
-   const [address, setAddress] = useState(null);
-   const [loading, setLoading] = useState(true);
-
-   useEffect(() => {
-      if (!addressId) return;
-
-      const fetchAddress = async () => {
-         try {
-            setLoading(true);
-            const response = await getAddresses('', 1);
-            const found = response.addresses.find((a) => String(a.id) === String(addressId));
-
-            if (found) {
-               setAddress(found);
-            } else {
-               toast.error('Address not found.');
-               router.replace('/addresses');
-            }
-         } catch {
-            toast.error('Failed to load address details.');
-            router.replace('/addresses');
-         } finally {
-            setLoading(false);
-         }
-      };
-
-      fetchAddress();
-   }, [addressId, router]);
+   const { address, loading, error } = useAddress(addressId);
 
    return (
       <main className="flex min-h-screen min-h-dvh w-full items-center justify-center bg-[#FAFAFA] px-4 py-6 sm:px-6">
@@ -66,11 +36,23 @@ export default function EditAddressPage() {
             {loading ? (
                <div className="flex flex-col items-center justify-center py-8 text-center">
                   <Loader2 className="size-5 animate-spin text-[#E56A77]" />
+
                   <p className="mt-2 text-xs font-medium text-[#595959]">Loading address details...</p>
                </div>
             ) : address ? (
                <EditAddressForm addressId={addressId} initialData={address} />
-            ) : null}
+            ) : (
+               <div className="py-8 text-center">
+                  <p className="text-xs font-medium text-[#595959]">{error || 'Address not found.'}</p>
+
+                  <Link
+                     href="/addresses"
+                     className="mt-2 inline-block text-xs font-semibold text-[#E56A77] hover:underline"
+                  >
+                     Back to addresses
+                  </Link>
+               </div>
+            )}
          </div>
       </main>
    );

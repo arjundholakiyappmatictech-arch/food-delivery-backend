@@ -80,7 +80,9 @@ export default function AddressesPage() {
                            </div>
                         ) : !hasSearchResults && search !== '' ? (
                            <div className="rounded-xl border border-dashed border-[#E9E9E9] bg-[#FAFAFA] py-4 text-center">
-                              <p className="text-xs font-medium text-[#595959]">No addresses found for "{search}".</p>
+                              <p className="text-xs font-medium text-[#595959]">
+                                 No addresses found for &ldquo;{search}&rdquo;
+                              </p>
 
                               <p className="mt-1 text-[11px] text-[#8A8A8A]">Try a different search.</p>
                            </div>
