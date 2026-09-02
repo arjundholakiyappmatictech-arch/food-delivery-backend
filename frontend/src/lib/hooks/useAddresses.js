@@ -11,6 +11,30 @@ export default function useAddresses() {
    const [search, setSearch] = useState('');
    const [deletingAddress, setDeletingAddress] = useState(null);
 
+   // common errors
+   const handleAddressMutationError = (error, action) => {
+      if (error.status === 422) {
+         return;
+      }
+
+      if (error.status === 409) {
+         toast.error(error.message ?? 'This address already exists.');
+         return;
+      }
+
+      if (error.status === 403) {
+         toast.error(error.message ?? `You are not allowed to ${action} this address.`);
+         return;
+      }
+
+      if (error.isNetworkError) {
+         toast.error('Unable to connect to the server. Please check your connection.');
+         return;
+      }
+
+      toast.error(error.message ?? `Unable to ${action} address. Please try again.`);
+   };
+
    const addressesQuery = useInfiniteQuery({
       queryKey: ['addresses', { search }],
 
@@ -66,26 +90,7 @@ export default function useAddresses() {
       },
 
       onError: (error) => {
-         if (error.status === 422) {
-            return;
-         }
-
-         if (error.status === 409) {
-            toast.error(error.message ?? 'This address already exists.');
-            return;
-         }
-
-         if (error.status === 403) {
-            toast.error(error.message ?? 'You are not allowed to add an address.');
-            return;
-         }
-
-         if (error.isNetworkError) {
-            toast.error('Unable to connect to the server. Please check your connection.');
-            return;
-         }
-
-         toast.error(error.message ?? 'Unable to add address. Please try again.');
+         handleAddressMutationError(error, 'update');
       },
    });
 
@@ -107,26 +112,7 @@ export default function useAddresses() {
       },
 
       onError: (error) => {
-         if (error.status === 422) {
-            return;
-         }
-
-         if (error.status === 409) {
-            toast.error(error.message ?? 'This address already exists.');
-            return;
-         }
-
-         if (error.status === 403) {
-            toast.error(error.message ?? 'You are not allowed to update this address.');
-            return;
-         }
-
-         if (error.isNetworkError) {
-            toast.error('Unable to connect to the server. Please check your connection.');
-            return;
-         }
-
-         toast.error(error.message ?? 'Unable to update address. Please try again.');
+         handleAddressMutationError(error, 'update');
       },
    });
 
