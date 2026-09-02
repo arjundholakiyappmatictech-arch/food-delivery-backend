@@ -46,7 +46,7 @@ class AddressService
                 }
             })
             ->latest()
-            ->paginate(10)
+            ->paginate(2)
             ->withQueryString();
     }
 
@@ -83,9 +83,9 @@ class AddressService
 
         $this->authorize($address, $user);
 
-        if (array_key_exists('is_default', $data) && $data['is_default'] === false && $address->is_default) {
+        /*  if (array_key_exists('is_default', $data) && $data['is_default'] === false && $address->is_default) {
             throw new DefaultAddressCannotBeUnsetException();
-        }
+        } */
 
         $updatedData = array_merge(
             [
