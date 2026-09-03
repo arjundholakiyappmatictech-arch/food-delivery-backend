@@ -29,9 +29,7 @@ export default function ReviewsPage() {
    return (
       <main className="mx-auto w-full max-w-[850px] px-4 py-6 sm:px-6 sm:py-8">
          <header className="mb-5 sm:mb-6">
-            <h1 className="text-xl font-bold tracking-tight text-[#02060C] sm:text-2xl">
-               My Reviews
-            </h1>
+            <h1 className="text-xl font-bold tracking-tight text-[#02060C] sm:text-2xl">My Reviews</h1>
 
             <p className="mt-1 text-xs text-[#595959] sm:text-sm">
                All your restaurant reviews and ratings in one place.
@@ -42,9 +40,7 @@ export default function ReviewsPage() {
 
          {!loading && error && (
             <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-center">
-               <p className="text-xs font-semibold text-red-600 sm:text-sm">
-                  {error}
-               </p>
+               <p className="text-xs font-semibold text-red-600 sm:text-sm">{error}</p>
 
                <button
                   type="button"
@@ -62,18 +58,11 @@ export default function ReviewsPage() {
          {!loading && !error && reviews.length > 0 && (
             <div className="space-y-4">
                {reviews.map((review) => (
-                  <ReviewCard
-                     key={review.id}
-                     review={review}
-                     onDelete={setDeletingReview}
-                  />
+                  <ReviewCard key={review.id} review={review} onDelete={setDeletingReview} />
                ))}
 
                {hasMore && (
-                  <div
-                     ref={loaderRef}
-                     className="flex min-h-12 w-full items-center justify-center py-4"
-                  >
+                  <div ref={loaderRef} className="flex min-h-12 w-full items-center justify-center py-4">
                      {loadingMore && (
                         <div className="flex items-center gap-2 text-xs font-medium text-[#595959]">
                            <svg

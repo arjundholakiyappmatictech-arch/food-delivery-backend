@@ -2,36 +2,38 @@
 
 import { createReview } from '@/services/reviewService';
 import { parseApiError } from '@/utils/apiError';
-import { useCallback, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function useReview() {
-   const [loading, setLoading] = useState(false);
-   const [error, setError] = useState('');
+   const queryClient = useQueryClient();
 
-   const submitReview = useCallback(async (orderId, data, signal) => {
-      try {
-         setLoading(true);
-         setError('');
+   const reviewMutation = useMutation({
+      mutationFn: async ({ orderId, data, signal }) => {
+         try {
+            return await createReview(orderId, data, signal);
+         } catch (error) {
+            const apiError = parseApiError(error);
 
-         return await createReview(orderId, data, signal);
-      } catch (error) {
-         if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
-            return null;
+            throw new Error(apiError.message || 'Unable to submit review.');
          }
+      },
 
-         const apiError = parseApiError(error);
-
-         setError(apiError.message || 'Unable to submit review.');
-
-         return null;
-      } finally {
-         setLoading(false);
-      }
-   }, []);
+      onSuccess: () => {
+         queryClient.invalidateQueries({
+            queryKey: ['reviews'],
+         });
+      },
+   });
 
    return {
-      submitReview,
-      loading,
-      error,
+      submitReview: (orderId, data, signal) =>
+         reviewMutation.mutateAsync({
+            orderId,
+            data,
+            signal,
+         }),
+
+      loading: reviewMutation.isPending,
+      error: reviewMutation.error?.message || '',
    };
 }

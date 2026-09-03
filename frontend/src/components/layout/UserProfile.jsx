@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { SHOPPING_BAG_SVG2, LOCATION_SVG, REVIEW_SVG, LOGOUT_SVG } from '@/assets/icons';
+import { LOCATION_SVG, LOGOUT_SVG, REVIEW_SVG, SHOPPING_BAG_SVG2 } from '@/assets/icons';
 
-import { useAuthStore } from '@/lib/store/useAuthStore';
 import useAuthGuard from '@/lib/hooks/useAuth';
+import { useAuthStore } from '@/lib/store/authStore';
 
 export default function UserProfile() {
    const router = useRouter();

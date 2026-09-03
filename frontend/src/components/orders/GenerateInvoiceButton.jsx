@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { Download } from 'lucide-react';
 
 import { generateInvoicePdf } from '@/utils/generateInvoicePDF';
-import useOrder from '@/lib/hooks/useOrder';
+import useGenerateInvoice from '@/lib/hooks/useGenerateInvoice';
 
 export default function GenerateInvoiceButton({ order }) {
-   const { generateOrderInvoice } = useOrder();
+   const { generateOrderInvoice } = useGenerateInvoice();
 
    const [generating, setGenerating] = useState(false);
 

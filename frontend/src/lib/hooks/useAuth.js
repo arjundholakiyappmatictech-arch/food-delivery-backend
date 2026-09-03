@@ -1,12 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 
-import { useAuthStore } from '../store/useAuthStore';
 import { logout } from '@/services/authService';
 import { useQueryClient } from '@tanstack/react-query';
 import useLocationStore from '../store/locationStore';
+import { useAuthStore } from '../store/authStore';
 
 export default function useAuthGuard() {
    const router = useRouter();
