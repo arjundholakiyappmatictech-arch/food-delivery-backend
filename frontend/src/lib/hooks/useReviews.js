@@ -27,6 +27,8 @@ export default function useReviews() {
 
          return (lastPage.pagination.current_page ?? 1) + 1;
       },
+
+      refetchOnMount: true,
    });
 
    const deleteMutation = useMutation({
