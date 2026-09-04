@@ -18,7 +18,44 @@ export default function useReview() {
          }
       },
 
-      onSuccess: () => {
+      onSuccess: (response) => {
+         const newReview = response?.data;
+
+         if (!newReview) {
+            queryClient.invalidateQueries({
+               queryKey: ['reviews'],
+            });
+
+            return;
+         }
+
+         queryClient.setQueryData(['reviews'], (oldData) => {
+            if (!oldData?.pages?.length) {
+               return oldData;
+            }
+
+            const alreadyExists = oldData.pages.some(
+               (page) => Array.isArray(page?.data) && page.data.some((review) => review.id === newReview.id),
+            );
+
+            if (alreadyExists) {
+               return oldData;
+            }
+
+            return {
+               ...oldData,
+               pages: oldData.pages.map((page, index) => {
+                  if (index !== 0) {
+                     return page;
+                  }
+                  return {
+                     ...page,
+                     data: [newReview, ...(page.data ?? [])],
+                  };
+               }),
+            };
+         });
+
          queryClient.invalidateQueries({
             queryKey: ['reviews'],
          });
@@ -34,6 +71,7 @@ export default function useReview() {
          }),
 
       loading: reviewMutation.isPending,
+
       error: reviewMutation.error?.message || '',
    };
 }
