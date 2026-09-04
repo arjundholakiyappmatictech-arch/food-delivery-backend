@@ -3,7 +3,6 @@
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
 import useInfiniteScroll from '@/lib/hooks/useInfiniteScroll';
 import { deleteReview, getReviews } from '@/services/reviewService';
 import { parseApiError } from '@/utils/apiError';
@@ -16,7 +15,7 @@ export default function useReviews() {
    const reviewsQuery = useInfiniteQuery({
       queryKey: ['reviews'],
 
-      queryFn: ({ pageParam, signal }) => getReviews(pageParam, signal),
+      queryFn: ({ pageParam = 1, signal }) => getReviews(pageParam, signal),
 
       initialPageParam: 1,
 
@@ -34,12 +33,27 @@ export default function useReviews() {
    const deleteMutation = useMutation({
       mutationFn: (reviewId) => deleteReview(reviewId),
 
-      onSuccess: () => {
+      onSuccess: (_, reviewId) => {
+         queryClient.setQueryData(['reviews'], (oldData) => {
+            if (!oldData) {
+               return oldData;
+            }
+
+            return {
+               ...oldData,
+               pages: oldData.pages.map((page) => ({
+                  ...page,
+                  data: Array.isArray(page?.data) ? page.data.filter((review) => review.id !== reviewId) : [],
+               })),
+            };
+         });
+
          queryClient.invalidateQueries({
             queryKey: ['reviews'],
          });
 
          toast.success('Review deleted successfully.');
+
          setDeletingReview(null);
       },
 
@@ -53,7 +67,7 @@ export default function useReviews() {
    const reviews =
       reviewsQuery.data?.pages
          .flatMap((page) => (Array.isArray(page?.data) ? page.data : []))
-         .filter((review, index, reviews) => index === reviews.findIndex((item) => item.id === review.id)) ?? [];
+         .filter((review, index, allReviews) => index === allReviews.findIndex((item) => item.id === review.id)) ?? [];
 
    const hasMore = Boolean(reviewsQuery.hasNextPage);
 
