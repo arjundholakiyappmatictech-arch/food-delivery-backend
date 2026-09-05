@@ -1,62 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
-import OrderHeader from '@/components/orders/OrderHeader';
-import OrderTrackingTimeline from '@/components/orders/OrderTrackingTimeline';
-import RestaurantOrderCard from '@/components/orders/RestaurantOrderCard';
 import BillSummaryCard from '@/components/orders/BillSummaryCard';
-
+import OrderHeader from '@/components/orders/OrderHeader';
 import OrderedItemsCard from '@/components/orders/OrderItemsCard';
+import OrderTrackingTimeline from '@/components/orders/OrderTrackingTimeline';
 import OrderUserInfoCard from '@/components/orders/OrderUserInfoCard';
+import RestaurantOrderCard from '@/components/orders/RestaurantOrderCard';
 import useOrder from '@/lib/hooks/useOrder';
 
 export default function OrderDetailsPage() {
    const params = useParams();
-   const orderId = params.id;
-
-   const { fetchOrder, loading, error } = useOrder();
-
-   const [order, setOrder] = useState(null);
-
-   useEffect(() => {
-      if (!orderId) {
-         return;
-      }
-
-      const controller = new AbortController();
-
-      let intervalId;
-
-      const loadOrder = async () => {
-         const response = await fetchOrder(orderId, controller.signal);
-
-         if (!response) {
-            return;
-         }
-
-         const updatedOrder = response.data;
-
-         setOrder(updatedOrder);
-
-         // Stop polling once order is completed
-         if (updatedOrder.status === 'delivered') {
-            clearInterval(intervalId);
-         }
-      };
-
-      loadOrder();
-
-      intervalId = setInterval(() => {
-         loadOrder();
-      }, 5000);
-
-      return () => {
-         controller.abort();
-         clearInterval(intervalId);
-      };
-   }, [orderId, fetchOrder]);
+   const { order, loading, error } = useOrder(params.id);
 
    if (loading && !order) {
       return (
@@ -85,13 +41,9 @@ export default function OrderDetailsPage() {
 
             <div className="mt-8 space-y-6">
                <OrderTrackingTimeline order={order} />
-
                <RestaurantOrderCard restaurant={order.restaurant} order={order} />
-
                <OrderedItemsCard items={order.order_items} />
-
                <BillSummaryCard order={order} />
-
                <OrderUserInfoCard
                   customer={order.customer}
                   payment={order.order_payment}

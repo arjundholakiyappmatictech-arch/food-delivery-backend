@@ -3,16 +3,14 @@
 import { useRouter } from 'next/navigation';
 import { Home, BriefcaseBusiness, MapPin, Pencil, Trash2, MoreVertical } from 'lucide-react';
 
-function getAddressIcon(label) {
-   const normalized = label?.toLowerCase();
-   if (normalized === 'home') return Home;
-   if (normalized === 'work') return BriefcaseBusiness;
-   return MapPin;
-}
+const ADDRESS_ICONS = {
+   home: Home,
+   work: BriefcaseBusiness,
+};
 
 export default function AddressItem({ address, isMenuOpen, menuRef, onToggleMenu, onDeleteClick }) {
    const router = useRouter();
-   const AddressIcon = getAddressIcon(address.label);
+   const Icon = ADDRESS_ICONS[address.label?.toLowerCase()] || MapPin;
 
    const completeAddress = [address.address_line, address.city, address.state, address.pincode]
       .filter(Boolean)
@@ -22,7 +20,7 @@ export default function AddressItem({ address, isMenuOpen, menuRef, onToggleMenu
       <div className="group relative flex items-start justify-between gap-3 rounded-xl border border-[#E9E9E9] bg-white p-3 transition-all duration-150 hover:border-[#E56A77] hover:bg-[#FFF4F5]/20">
          <div className="flex min-w-0 flex-1 items-start gap-3">
             <div className="mt-0.5 flex size-8.5 shrink-0 items-center justify-center rounded-lg bg-[#FFF4F5] text-[#E56A77]">
-               <AddressIcon className="size-4" />
+               <Icon className="size-4" />
             </div>
 
             <div className="min-w-0 flex-1">

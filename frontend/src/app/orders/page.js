@@ -1,38 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import OrderCard from '@/components/orders/OrdersCard';
 import OrderCardSkeleton from '@/components/skeletons/OrderCardSkeleton';
-import { getOrders } from '@/services/orderService';
 import OrderSearch from '@/components/orders/OrderSearch';
+import useOrders from '@/lib/hooks/useOrders';
 
 export default function OrdersPage() {
-   const [orders, setOrders] = useState([]);
-   const [loading, setLoading] = useState(true);
-   const [error, setError] = useState('');
    const [search, setSearch] = useState('');
-
-   useEffect(() => {
-      const loadOrders = async () => {
-         try {
-            setLoading(true);
-            setError('');
-
-            const response = await getOrders();
-
-            setOrders(response?.data ?? []);
-         } catch (error) {
-            console.error('ORDERS ERROR:', error);
-
-            setError('Failed to load your orders.');
-         } finally {
-            setLoading(false);
-         }
-      };
-
-      loadOrders();
-   }, []);
+   const { orders, loading, error, refetch } = useOrders();
 
    const query = search.trim().toLowerCase();
 
@@ -74,7 +51,7 @@ export default function OrdersPage() {
 
                <button
                   type="button"
-                  onClick={() => window.location.reload()}
+                  onClick={() => refetch()}
                   className="mt-4 rounded-xl bg-[#D95765] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#C74655]"
                >
                   Try Again
