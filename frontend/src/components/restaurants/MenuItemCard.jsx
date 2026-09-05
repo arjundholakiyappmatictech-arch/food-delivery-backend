@@ -3,7 +3,7 @@
 import useCartStore from '@/lib/store/cartStore';
 import { useState } from 'react';
 import ReplaceCartDialog from '../cart/ReplaceCartDialog';
-import { toast } from 'sonner';
+import { toast } from 'react-hot-toast';
 import { parseApiError } from '@/utils/apiError';
 
 export default function MenuItemCard({ item, restaurant, isLast = false, restaurantClosed = false }) {

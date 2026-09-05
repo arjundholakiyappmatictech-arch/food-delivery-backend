@@ -1,6 +1,6 @@
 import ConditionalHeader from '@/components/layout/ConditionalHeader';
 import './globals.css';
-import { Toaster } from '@/components/ui/sonner';
+import { Toaster } from 'react-hot-toast';
 import FloatingCart from '@/components/cart/FloatingCart';
 import NetworkStatus from '@/components/common/NetworkStatus';
 import QueryProvider from '@/providers/QueryProvider';
@@ -18,7 +18,7 @@ export default function RootLayout({ children }) {
                <ConditionalHeader />
                {children}
                <FloatingCart />
-               <Toaster />
+               <Toaster position="bottom-right" reverseOrder={true} />
                <NetworkStatus />
             </QueryProvider>
          </body>

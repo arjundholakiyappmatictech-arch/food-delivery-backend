@@ -1,11 +1,11 @@
 'use client';
 
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
-import { toast } from 'sonner';
 import useInfiniteScroll from '@/lib/hooks/useInfiniteScroll';
 import { deleteReview, getReviews } from '@/services/reviewService';
 import { parseApiError } from '@/utils/apiError';
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { toast } from 'react-hot-toast';
 
 export default function useReviews() {
    const queryClient = useQueryClient();

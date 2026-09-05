@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 import { getCart, addToCart, updateCart, removeFromCart, clearCart } from '@/services/cartServices';
 import { parseApiError } from '@/utils/apiError';
-import { toast } from 'sonner';
+import { toast } from 'react-hot-toast';
 
 const useCartStore = create((set, get) => ({
    cartItems: [],

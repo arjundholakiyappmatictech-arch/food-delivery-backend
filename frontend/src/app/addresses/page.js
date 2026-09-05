@@ -11,7 +11,7 @@ import AddressSkeleton from '@/components/skeletons/AddressSkeleton';
 import AddressItem from '@/components/addresses/AddressItem';
 import DeleteAddressModal from '@/components/addresses/DeleteAddressModal';
 import useLocationStore from '@/lib/store/locationStore';
-import { toast } from 'sonner';
+import { toast } from 'react-hot-toast';
 
 export default function AddressesPage() {
    useAuthGuard();

@@ -12,7 +12,7 @@ import useOrder from '@/lib/hooks/useOrder';
 import useCartStore from '@/lib/store/cartStore';
 import useLocationStore from '@/lib/store/locationStore';
 
-import { toast } from 'sonner';
+import { toast } from 'react-hot-toast';
 
 export default function CheckoutDetails() {
    const router = useRouter();
@@ -88,12 +88,13 @@ export default function CheckoutDetails() {
 
          await fetchCart();
 
-         toast.success(paymentMethod === 'cod' ? 'Order placed successfully!' : 'Payment successful!', {
-            description:
-               paymentMethod === 'cod'
-                  ? `Order #${order.id} is confirmed. Pay when your order arrives.`
-                  : `Order #${order.id} is confirmed and payment was received.`,
-         });
+         const title = paymentMethod === 'cod' ? 'Order placed successfully!' : 'Payment successful!';
+         const description =
+            paymentMethod === 'cod'
+               ? `Order #${order.id} is confirmed. Pay when your order arrives.`
+               : `Order #${order.id} is confirmed and payment was received.`;
+
+         toast.success(`${title} ${description}`);
 
          router.push(`/orders/${order.id}`);
       } catch {}
