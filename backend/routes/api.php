@@ -57,8 +57,6 @@ Route::middleware('auth:sanctum')
         Route::patch('orders/{order}/cancel', 'cancel');
     });
 
-Route::post('orders/{order}/payment', [PaymentController::class, 'store'])->middleware('auth:sanctum');
-
 Route::middleware('auth:sanctum')
     ->controller(PaymentController::class)
     ->group(function () {
