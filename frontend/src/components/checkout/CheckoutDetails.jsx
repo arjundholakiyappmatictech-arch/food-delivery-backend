@@ -1,18 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import CheckoutAddress from './CheckoutAddress';
-import CheckoutOrder from './CheckoutOrder';
-import CheckoutInstructions from './CheckoutInstructions';
 import CheckoutBill from './CheckoutBill';
+import CheckoutInstructions from './CheckoutInstructions';
+import CheckoutOrder from './CheckoutOrder';
 
 import useOrder from '@/lib/hooks/useOrder';
 import useCartStore from '@/lib/store/cartStore';
 import useLocationStore from '@/lib/store/locationStore';
 
 import { toast } from 'react-hot-toast';
+import Script from 'next/script';
 
 export default function CheckoutDetails() {
    const router = useRouter();
@@ -26,7 +27,7 @@ export default function CheckoutDetails() {
    const [cartLoading, setCartLoading] = useState(true);
    const [deliveryInstructions, setDeliveryInstructions] = useState('');
 
-   const { placeOrder, makePaymentt, loading, error } = useOrder();
+   const { placeOrder, makePaymentt, verifyPayment, loading, error } = useOrder();
 
    useEffect(() => {
       const loadCart = async () => {
@@ -86,15 +87,45 @@ export default function CheckoutDetails() {
             return;
          }
 
+         if (paymentMethod === 'razorpay') {
+            const payment = paymentResponse.data;
+
+            const options = {
+               key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
+               amount: payment.amount,
+               currency: payment.currency,
+               order_id: payment.razorpay_order_id,
+
+               handler: async (response) => {
+                  try {
+                     const verifyResponse = await verifyPayment(order.id, response);
+
+                     if (!verifyResponse) {
+                        return;
+                     }
+
+                     await fetchCart();
+
+                     toast.success(`Payment successful! Order #${order.id} is confirmed and payment was received.`);
+
+                     router.push(`/orders/${order.id}`);
+                  } catch (error) {
+                     console.error('Payment verification failed:', error);
+                  }
+               },
+            };
+
+            const razorpay = new window.Razorpay(options);
+
+            razorpay.open();
+
+            return;
+         }
+
+         // COD flow
          await fetchCart();
 
-         const title = paymentMethod === 'cod' ? 'Order placed successfully!' : 'Payment successful!';
-         const description =
-            paymentMethod === 'cod'
-               ? `Order #${order.id} is confirmed. Pay when your order arrives.`
-               : `Order #${order.id} is confirmed and payment was received.`;
-
-         toast.success(`${title} ${description}`);
+         toast.success(`Order placed successfully! Order #${order.id} is confirmed. Pay when your order arrives.`);
 
          router.push(`/orders/${order.id}`);
       } catch {}
@@ -141,6 +172,8 @@ export default function CheckoutDetails() {
                </aside>
             </div>
          </div>
+
+         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       </main>
    );
 }

@@ -30,8 +30,8 @@ export default function CheckoutPayment({ loading, error, onPlaceOrder }) {
             <input
                type="radio"
                name="payment_method"
-               value="upi"
-               checked={paymentMethod === 'upi'}
+               value="razorpay"
+               checked={paymentMethod === 'razorpay'}
                onChange={(event) => setPaymentMethod(event.target.value)}
                className="accent-[#E56A77]"
             />
