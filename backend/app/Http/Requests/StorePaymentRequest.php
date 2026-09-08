@@ -14,7 +14,7 @@ class StorePaymentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'payment_method' => ['required', 'in:upi,card,cod'],
+            'payment_method' => ['required', 'in:razorpay,cod'],
         ];
     }
 }

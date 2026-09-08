@@ -60,6 +60,13 @@ Route::middleware('auth:sanctum')
 Route::post('orders/{order}/payment', [PaymentController::class, 'store'])->middleware('auth:sanctum');
 
 Route::middleware('auth:sanctum')
+    ->controller(PaymentController::class)
+    ->group(function () {
+        Route::post('orders/{order}/payment', 'store');
+        Route::post('orders/{order}/payment/verify', 'verify');
+    });
+
+Route::middleware('auth:sanctum')
     ->controller(OrderDeliveryController::class)
     ->group(function () {
         Route::get('deliveries', 'index');

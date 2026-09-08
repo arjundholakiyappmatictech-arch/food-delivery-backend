@@ -11,9 +11,13 @@ use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\RazorpayService;
+use RuntimeException;
 
 class PaymentService
 {
+    public function __construct(protected RazorpayService $razorpayService) {}
+
     public function makePayment(Order $order, array $data): Payment
     {
         $this->authorizeOrderOwner($order);
@@ -22,15 +26,62 @@ class PaymentService
 
         $paymentMethod = $data['payment_method'];
 
-        $paymentStatus = $paymentMethod === 'cod' ? 'pending' : 'paid';
+        return DB::transaction(function () use ($order, $paymentMethod) {
+            if ($paymentMethod === 'razorpay') {
+                $amount = (int) round($order->total * 100);
+                $razorpayOrder = $this->razorpayService->createOrder($amount, $order->id);
 
-        return DB::transaction(function () use ($order, $paymentMethod, $paymentStatus) {
+                return Payment::create([
+                    'order_id' => $order->id,
+                    'payment_method' => 'razorpay',
+                    'payment_status' => 'pending',
+                    'razorpay_order_id' => $razorpayOrder['id'],
+                    'paid_at' => null,
+                ])->load('order');
+            }
+
             return Payment::create([
                 'order_id' => $order->id,
-                'payment_method' => $paymentMethod,
-                'payment_status' => $paymentStatus,
-                'paid_at' => $paymentStatus === 'paid' ? now() : null,
+                'payment_method' => 'cod',
+                'payment_status' => 'pending',
+                'paid_at' => null,
             ])->load('order');
+        });
+    }
+
+    public function verifyPayment(Order $order, array $data): Payment
+    {
+        $this->authorizeOrderOwner($order);
+        $this->ensureOrderCanBePaid($order);
+
+        $payment = $order->payment;
+
+        if (!$payment) {
+            throw new RuntimeException('Payment not found.', 409);
+        }
+
+        if ($payment->payment_method !== 'razorpay') {
+            throw new RuntimeException('This order does not use Razorpay.', 409);
+        }
+
+        if ($payment->razorpay_order_id !== $data['razorpay_order_id']) {
+            throw new RuntimeException('Invalid Razorpay order ID.', 409);
+        }
+
+        $this->razorpayService->verifyPayment(
+            $data['razorpay_order_id'],
+            $data['razorpay_payment_id'],
+            $data['razorpay_signature'],
+        );
+
+        return DB::transaction(function () use ($payment, $data) {
+            $payment->update([
+                'razorpay_payment_id' => $data['razorpay_payment_id'],
+                'payment_status' => 'paid',
+                'paid_at' => now(),
+            ]);
+
+            return $payment->load('order');
         });
     }
 
