@@ -8,6 +8,7 @@ use App\Http\Controllers\MenuItemController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderDeliveryController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\RazorpayWebhookController;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
@@ -63,6 +64,8 @@ Route::middleware('auth:sanctum')
         Route::post('orders/{order}/payment', 'store');
         Route::post('orders/{order}/payment/verify', 'verify');
     });
+
+Route::post('razorpay/webhooks', [RazorpayWebhookController::class, 'handle']);
 
 Route::middleware('auth:sanctum')
     ->controller(OrderDeliveryController::class)

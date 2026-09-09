@@ -32,4 +32,13 @@ class RazorpayService
             'razorpay_signature' => $razorpaySignature,
         ]);
     }
+
+    public function verifyWebhookSignature(string $payload, string $signature): void
+    {
+        $this->razorpay->utility->verifyWebhookSignature(
+            $payload,
+            $signature,
+            config('services.razorpay.webhook_secret'),
+        );
+    }
 }
