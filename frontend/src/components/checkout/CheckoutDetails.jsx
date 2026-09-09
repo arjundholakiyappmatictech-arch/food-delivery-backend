@@ -96,6 +96,7 @@ export default function CheckoutDetails() {
                currency: payment.currency,
                order_id: payment.razorpay_order_id,
 
+               // verify payment
                handler: async (response) => {
                   try {
                      const verifyResponse = await verifyPayment(order.id, response);

@@ -18,8 +18,6 @@ export default function useOrder(orderId = null) {
          const orderData = data?.data ?? data;
          const status = orderData?.status;
 
-         console.log('running');
-
          return status === 'delivered' || status === 'cancelled' ? false : 5000;
       },
    });
