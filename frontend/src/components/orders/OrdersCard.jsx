@@ -84,7 +84,13 @@ export default function OrderCard({ order }) {
             <div>
                <p className="text-xs text-gray-500">Delivery Status</p>
 
-               <p className="mt-1 text-sm font-semibold text-green-600">● {formatOrderStatus(order.status)}</p>
+               <p
+                  className={`mt-1 text-sm font-semibold ${
+                     order.status === 'cancelled' ? 'text-red-600' : 'text-green-600'
+                  }`}
+               >
+                  ● {formatOrderStatus(order.status)}
+               </p>
             </div>
 
             <div className="text-right">
