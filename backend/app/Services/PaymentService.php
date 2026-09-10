@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\Order\OrderAlreadyCancelledException;
 use App\Exceptions\Payment\OrderAlreadyDeliveredExceptions;
 use App\Exceptions\Payment\PaymentAlreadyExistsExceptions;
+use App\Jobs\AssignDeliveryJob;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\User;
@@ -40,12 +41,16 @@ class PaymentService
                 ])->load('order');
             }
 
-            return Payment::create([
+            $payment = Payment::create([
                 'order_id' => $order->id,
                 'payment_method' => 'cod',
                 'payment_status' => 'pending',
                 'paid_at' => null,
-            ])->load('order');
+            ]);
+
+            AssignDeliveryJob::dispatch($order->id);
+
+            return $payment->load('order');
         });
     }
 
@@ -74,27 +79,18 @@ class PaymentService
             $data['razorpay_signature'],
         );
 
-        return DB::transaction(function () use ($payment, $data) {
+        return DB::transaction(function () use ($payment, $data, $order) {
             $payment->update([
                 'razorpay_payment_id' => $data['razorpay_payment_id'],
                 'payment_status' => 'paid',
                 'paid_at' => now(),
             ]);
 
+            // dispatch job after successful payment
+            AssignDeliveryJob::dispatch($order->id);
+
             return $payment->load('order');
         });
-    }
-
-    public function refundCancelledOrders(): int
-    {
-        return Payment::query()
-            ->where('payment_status', 'paid')
-            ->whereHas('order', function ($query) {
-                $query->where('status', 'cancelled')->where('cancelled_at', '<=', now()->subMinutes(2));
-            })
-            ->update([
-                'payment_status' => 'refunded',
-            ]);
     }
 
     private function authorizeOrderOwner(Order $order): User

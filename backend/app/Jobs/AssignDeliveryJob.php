@@ -13,21 +13,25 @@ class AssignDeliveryJob implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public int $orderId)
-    {}
+    public function __construct(public int $orderId) {}
 
     public function handle(): void
     {
         $order = Order::with('payment')->findOrFail($this->orderId);
+
+        if (
+            $order->payment === null ||
+            ($order->payment->payment_method === 'razorpay' && $order->payment->payment_status !== 'paid')
+        ) {
+            return;
+        }
 
         DB::transaction(function () use ($order) {
             if ($order->delivery) {
                 return;
             }
 
-            $deliveryAgent = User::query()
-                ->where('type', 'delivery_agent')
-                ->first();
+            $deliveryAgent = User::query()->where('type', 'delivery_agent')->first();
 
             if (!$deliveryAgent) {
                 return;
@@ -44,8 +48,6 @@ class AssignDeliveryJob implements ShouldQueue
             ]);
         });
 
-        PickupJob::dispatch($this->orderId)
-            ->delay(now()->addSeconds(30));
+        PickupJob::dispatch($this->orderId)->delay(now()->addSeconds(30));
     }
-
 }

@@ -9,10 +9,13 @@ import OrderTrackingTimeline from '@/components/orders/OrderTrackingTimeline';
 import OrderUserInfoCard from '@/components/orders/OrderUserInfoCard';
 import RestaurantOrderCard from '@/components/orders/RestaurantOrderCard';
 import useOrder from '@/lib/hooks/useOrder';
+import { useRazorpay } from '@/lib/hooks/useRazorpay';
+import Script from 'next/script';
 
 export default function OrderDetailsPage() {
    const params = useParams();
    const { order, loading, error } = useOrder(params.id);
+   const { openRazorpayCheckout } = useRazorpay();
 
    if (loading && !order) {
       return (
@@ -34,10 +37,33 @@ export default function OrderDetailsPage() {
       return null;
    }
 
+   const handlePayNow = () => {
+      const payment = order.order_payment;
+
+      if (!payment) {
+         return;
+      }
+
+      openRazorpayCheckout(order, payment);
+   };
+
+   const canPayNow =
+      order.status === 'placed' && order.order_payment?.method === 'razorpay' && order.order_payment?.status !== 'paid';
+
    return (
       <main className="min-h-screen bg-[#fafafa]">
          <div className="mx-auto max-w-[1200px] px-[40px] py-8 max-[1200px]:px-[30px] max-[800px]:px-[20px] max-[560px]:px-[10px]">
             <OrderHeader order={order} />
+
+            {canPayNow && (
+               <button
+                  type="button"
+                  onClick={handlePayNow}
+                  className="rounded-xl bg-[#E56A77] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
+               >
+                  Pay Now
+               </button>
+            )}
 
             <div className="mt-8 space-y-6">
                <OrderTrackingTimeline order={order} />
@@ -51,6 +77,7 @@ export default function OrderDetailsPage() {
                />
             </div>
          </div>
+         <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
       </main>
    );
 }

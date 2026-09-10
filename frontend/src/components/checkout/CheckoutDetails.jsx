@@ -12,8 +12,9 @@ import useOrder from '@/lib/hooks/useOrder';
 import useCartStore from '@/lib/store/cartStore';
 import useLocationStore from '@/lib/store/locationStore';
 
-import { toast } from 'react-hot-toast';
+import { useRazorpay } from '@/lib/hooks/useRazorpay';
 import Script from 'next/script';
+import { toast } from 'react-hot-toast';
 
 export default function CheckoutDetails() {
    const router = useRouter();
@@ -27,7 +28,8 @@ export default function CheckoutDetails() {
    const [cartLoading, setCartLoading] = useState(true);
    const [deliveryInstructions, setDeliveryInstructions] = useState('');
 
-   const { placeOrder, makePaymentt, verifyPayment, loading, error } = useOrder();
+   const { placeOrder, makePaymentt, loading, error } = useOrder();
+   const { openRazorpayCheckout } = useRazorpay();
 
    useEffect(() => {
       const loadCart = async () => {
@@ -90,35 +92,7 @@ export default function CheckoutDetails() {
          if (paymentMethod === 'razorpay') {
             const payment = paymentResponse.data;
 
-            const options = {
-               key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
-               amount: payment.amount,
-               currency: payment.currency,
-               order_id: payment.razorpay_order_id,
-
-               // verify payment
-               handler: async (response) => {
-                  try {
-                     const verifyResponse = await verifyPayment(order.id, response);
-
-                     if (!verifyResponse) {
-                        return;
-                     }
-
-                     await fetchCart();
-
-                     toast.success(`Payment successful! Order #${order.id} is confirmed and payment was received.`);
-
-                     router.push(`/orders/${order.id}`);
-                  } catch (error) {
-                     console.error('Payment verification failed:', error);
-                  }
-               },
-            };
-
-            const razorpay = new window.Razorpay(options);
-
-            razorpay.open();
+            openRazorpayCheckout(order, payment);
 
             return;
          }

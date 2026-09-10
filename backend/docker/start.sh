@@ -8,6 +8,9 @@ php artisan migrate --force
 echo "Starting Laravel queue worker..."
 php artisan queue:work &
 
+echo "Starting Laravel scheduler..."
+php artisan schedule:work &
+
 echo "Starting PHP-FPM..."
 php-fpm -D
 

@@ -9,4 +9,3 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('orders:cancel-unpaid')->everyMinute()->withoutOverlapping();
-Schedule::command('payments:refund-cancelled')->everyMinute()->withoutOverlapping();

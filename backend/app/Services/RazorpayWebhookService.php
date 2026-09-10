@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\AssignDeliveryJob;
 use App\Models\Payment;
 
 class RazorpayWebhookService
@@ -15,7 +16,6 @@ class RazorpayWebhookService
         match ($event) {
             'payment.captured' => $this->handlePaymentCaptured($payload, $eventId),
             'payment.failed' => $this->handlePaymentFailed($payload, $eventId),
-            'order.paid' => $this->handleOrderPaid($payload, $eventId),
             default => null,
         };
     }
@@ -43,6 +43,8 @@ class RazorpayWebhookService
             'payment_status' => 'paid',
             'paid_at' => now(),
         ]);
+
+        AssignDeliveryJob::dispatch($payment->order_id);
     }
 
     private function handlePaymentFailed(array $payload, ?string $eventId): void
@@ -70,29 +72,6 @@ class RazorpayWebhookService
             'razorpay_payment_id' => $razorpayPaymentId,
             'razorpay_event_id' => $eventId,
             'payment_status' => 'failed',
-        ]);
-    }
-
-    private function handleOrderPaid(array $payload, ?string $eventId): void
-    {
-        $orderData = $payload['order']['entity'] ?? [];
-
-        $razorpayOrderId = $orderData['id'] ?? null;
-
-        if (!$razorpayOrderId) {
-            return;
-        }
-
-        $payment = Payment::query()->where('razorpay_order_id', $razorpayOrderId)->first();
-
-        if (!$payment) {
-            return;
-        }
-
-        $payment->update([
-            'razorpay_event_id' => $eventId,
-            'payment_status' => 'paid',
-            'paid_at' => now(),
         ]);
     }
 }

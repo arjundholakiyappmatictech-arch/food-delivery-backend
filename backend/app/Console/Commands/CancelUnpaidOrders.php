@@ -10,7 +10,7 @@ class CancelUnpaidOrders extends Command
 {
     protected $signature = 'orders:cancel-unpaid';
 
-    protected $description = 'Cancel unpaid online orders after 1 minutes';
+    protected $description = 'Cancel unpaid online orders after 15 minutes';
 
     public function __construct(private OrderService $orderService)
     {
