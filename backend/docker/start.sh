@@ -9,7 +9,7 @@ echo "Starting Laravel queue worker..."
 php artisan queue:work &
 
 echo "Starting Laravel scheduler..."
-php artisan schedule:work &
+php artisan schedule:run &
 
 echo "Starting PHP-FPM..."
 php-fpm -D

@@ -14,7 +14,7 @@ import Script from 'next/script';
 
 export default function OrderDetailsPage() {
    const params = useParams();
-   const { order, loading, error } = useOrder(params.id);
+   const { order, loading, error, cancelOrder } = useOrder(params.id);
    const { openRazorpayCheckout } = useRazorpay();
 
    if (loading && !order) {
@@ -47,6 +47,14 @@ export default function OrderDetailsPage() {
       openRazorpayCheckout(order, payment);
    };
 
+   const handleCancelOrder = async () => {
+      try {
+         await cancelOrder(order.id);
+      } catch (error) {
+         console.error('Order cancellation failed:', error);
+      }
+   };
+
    const canPayNow =
       order.status === 'placed' && order.order_payment?.method === 'razorpay' && order.order_payment?.status !== 'paid';
 
@@ -62,6 +70,16 @@ export default function OrderDetailsPage() {
                   className="rounded-xl bg-[#E56A77] px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90"
                >
                   Pay Now
+               </button>
+            )}
+
+            {order.status === 'placed' && (
+               <button
+                  type="button"
+                  onClick={handleCancelOrder}
+                  className="ml-3 rounded-xl border border-red-500 px-6 py-3 text-sm font-semibold text-red-500 transition hover:bg-red-50"
+               >
+                  Cancel Order
                </button>
             )}
 

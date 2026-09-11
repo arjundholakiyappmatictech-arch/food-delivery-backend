@@ -48,7 +48,7 @@ class PaymentService
                 'paid_at' => null,
             ]);
 
-            AssignDeliveryJob::dispatch($order->id);
+            AssignDeliveryJob::dispatch($order->id)->delay(now()->addMinutes(2));
 
             return $payment->load('order');
         });
@@ -87,7 +87,7 @@ class PaymentService
             ]);
 
             // dispatch job after successful payment
-            AssignDeliveryJob::dispatch($order->id);
+           /*  AssignDeliveryJob::dispatch($order->id); */
 
             return $payment->load('order');
         });

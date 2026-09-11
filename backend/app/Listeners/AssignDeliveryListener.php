@@ -9,7 +9,7 @@ class AssignDeliveryListener
 {
     public function handle(OrderPlaced $event): void
     {
-         AssignDeliveryJob::dispatch($event->order->id)
-            ->delay(now()->addSeconds(10));
+         /* AssignDeliveryJob::dispatch($event->order->id)
+            ->delay(now()->addSeconds(10)); */
     }
 }

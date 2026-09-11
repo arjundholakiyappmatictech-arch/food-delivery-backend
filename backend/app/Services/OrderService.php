@@ -21,6 +21,8 @@ use RuntimeException;
 
 class OrderService
 {
+    public function __construct(protected RazorpayService $razorpayService) {}
+
     public function index(): LengthAwarePaginator
     {
         $user = $this->authorizeCustomer();
@@ -111,7 +113,7 @@ class OrderService
             return $order->load(['items.menuItem', 'address', 'user']);
         });
 
-        event(new OrderPlaced($order));
+        /* event(new OrderPlaced($order)); */
 
         return $order;
     }
@@ -164,6 +166,21 @@ class OrderService
 
         if ($order->status !== 'placed') {
             throw new OrderCannotBeCancelledException();
+        }
+
+        $payment = $order->payment;
+
+        if ($payment?->payment_method === 'razorpay' && $payment->payment_status === 'paid') {
+            if (!$payment->paid_at || $payment->paid_at->lt(now()->subMinutes(5))) {
+                throw new OrderCannotBeCancelledException();
+            }
+
+            if (!$payment->razorpay_payment_id) {
+                throw new RuntimeException('Razorpay payment ID not found.', 409);
+            }
+
+            // refund logic
+            $this->razorpayService->refundPayment($payment->razorpay_payment_id);
         }
 
         return DB::transaction(function () use ($order) {

@@ -16,6 +16,8 @@ class RazorpayWebhookService
         match ($event) {
             'payment.captured' => $this->handlePaymentCaptured($payload, $eventId),
             'payment.failed' => $this->handlePaymentFailed($payload, $eventId),
+            'refund.created' => $this->handleRefundCreated($payload, $eventId),
+            'refund.processed' => $this->handleRefundProcessed($payload, $eventId),
             default => null,
         };
     }
@@ -44,7 +46,7 @@ class RazorpayWebhookService
             'paid_at' => now(),
         ]);
 
-        AssignDeliveryJob::dispatch($payment->order_id);
+        AssignDeliveryJob::dispatch($payment->order_id)->delay(now()->addMinutes(2));
     }
 
     private function handlePaymentFailed(array $payload, ?string $eventId): void
@@ -72,6 +74,49 @@ class RazorpayWebhookService
             'razorpay_payment_id' => $razorpayPaymentId,
             'razorpay_event_id' => $eventId,
             'payment_status' => 'failed',
+        ]);
+    }
+
+    private function handleRefundCreated(array $payload, ?string $eventId): void
+    {
+        $refundData = $payload['refund']['entity'] ?? [];
+
+        $razorpayPaymentId = $refundData['payment_id'] ?? null;
+
+        if (!$razorpayPaymentId) {
+            return;
+        }
+
+        $payment = Payment::query()->where('razorpay_payment_id', $razorpayPaymentId)->first();
+
+        if (!$payment) {
+            return;
+        }
+
+        $payment->update([
+            'razorpay_event_id' => $eventId,
+        ]);
+    }
+
+    private function handleRefundProcessed(array $payload, ?string $eventId): void
+    {
+        $refundData = $payload['refund']['entity'] ?? [];
+
+        $razorpayPaymentId = $refundData['payment_id'] ?? null;
+
+        if (!$razorpayPaymentId) {
+            return;
+        }
+
+        $payment = Payment::query()->where('razorpay_payment_id', $razorpayPaymentId)->first();
+
+        if (!$payment) {
+            return;
+        }
+
+        $payment->update([
+            'payment_status' => 'refunded',
+            'razorpay_event_id' => $eventId,
         ]);
     }
 }

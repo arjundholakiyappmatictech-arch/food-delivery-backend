@@ -41,4 +41,11 @@ class RazorpayService
             config('services.razorpay.webhook_secret'),
         );
     }
+
+    public function refundPayment(string $paymentId): array
+    {
+        $refund = $this->razorpay->payment->fetch($paymentId)->refund();
+
+        return $refund->toArray();
+    }
 }

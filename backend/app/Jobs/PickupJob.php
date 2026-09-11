@@ -11,15 +11,21 @@ class PickupJob implements ShouldQueue
 {
     use Queueable;
 
-   public function __construct(
-        public int $orderId,
-    ) {}
+    public function __construct(public int $orderId) {}
 
     public function handle(): void
     {
         $order = Order::with('delivery')->findOrFail($this->orderId);
 
+        if ($order->status === 'cancelled') {
+            return;
+        }
+
         DB::transaction(function () use ($order) {
+            if ($order->status !== 'assigned') {
+                return;
+            }
+
             $delivery = $order->delivery;
 
             if (!$delivery) {
@@ -38,7 +44,13 @@ class PickupJob implements ShouldQueue
                 'status' => 'out_for_delivery',
             ]);
         });
-        DeliverJob::dispatch($this->orderId)
-            ->delay(now()->addMinutes(1));
+
+        $order->refresh();
+
+        if ($order->status !== 'out_for_delivery') {
+            return;
+        }
+
+        DeliverJob::dispatch($this->orderId)->delay(now()->addSeconds(10));
     }
 }

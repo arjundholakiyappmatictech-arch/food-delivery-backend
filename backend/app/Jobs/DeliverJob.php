@@ -11,16 +11,21 @@ class DeliverJob implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(
-        public int $orderId,
-    ) {}
+    public function __construct(public int $orderId) {}
 
     public function handle(): void
     {
-        $order = Order::with(['delivery', 'payment'])
-            ->findOrFail($this->orderId);
+        $order = Order::with(['delivery', 'payment'])->findOrFail($this->orderId);
+
+        if ($order->status === 'cancelled') {
+            return;
+        }
 
         DB::transaction(function () use ($order) {
+            if ($order->status !== 'out_for_delivery') {
+                return;
+            }
+
             $delivery = $order->delivery;
 
             if (!$delivery) {

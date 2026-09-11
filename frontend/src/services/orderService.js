@@ -30,3 +30,11 @@ export const getOrders = async (signal) => {
 
    return response.data;
 };
+
+export async function cancelOrder(orderId, signal) {
+   const response = await api.patch(`/orders/${orderId}/cancel`, null, {
+      signal,
+   });
+
+   return response.data;
+}

@@ -19,6 +19,10 @@ class AssignDeliveryJob implements ShouldQueue
     {
         $order = Order::with('payment')->findOrFail($this->orderId);
 
+        if ($order->status === 'cancelled') {
+            return;
+        }
+
         if (
             $order->payment === null ||
             ($order->payment->payment_method === 'razorpay' && $order->payment->payment_status !== 'paid')
@@ -27,6 +31,10 @@ class AssignDeliveryJob implements ShouldQueue
         }
 
         DB::transaction(function () use ($order) {
+            if ($order->status !== 'placed') {
+                return;
+            }
+
             if ($order->delivery) {
                 return;
             }
@@ -46,8 +54,14 @@ class AssignDeliveryJob implements ShouldQueue
             $order->update([
                 'status' => 'assigned',
             ]);
+
+            $order->refresh();
+
+            if ($order->status !== 'assigned') {
+                return;
+            }
         });
 
-        PickupJob::dispatch($this->orderId)->delay(now()->addSeconds(30));
+        PickupJob::dispatch($this->orderId)->delay(now()->addSeconds(10));
     }
 }
