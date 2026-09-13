@@ -2,8 +2,19 @@
 
 import { AlertCircle, Loader2 } from 'lucide-react';
 
-export default function DeleteReviewModal({ review, isDeleting, onConfirm, onCancel }) {
-   if (!review) return null;
+export default function ConfirmDeleteModal({
+   isOpen,
+   title = 'Delete Item?',
+   description,
+   children,
+   isDeleting = false,
+   onConfirm,
+   onCancel,
+   confirmText = 'Delete',
+   deletingText = 'Deleting...',
+   cancelText = 'Cancel',
+}) {
+   if (!isOpen) return null;
 
    return (
       <div
@@ -19,12 +30,9 @@ export default function DeleteReviewModal({ review, isDeleting, onConfirm, onCan
                <AlertCircle className="size-5" />
             </div>
 
-            <h3 className="mt-3 text-sm font-bold text-[#02060C]">Delete Review?</h3>
+            <h3 className="mt-3 text-sm font-bold text-[#02060C]">{title}</h3>
 
-            <p className="mt-1 text-xs leading-relaxed text-[#595959]">
-               Are you sure you want to delete your review for{' '}
-               <span className="font-semibold text-[#02060C]">this restaurant</span>?
-            </p>
+            <p className="mt-1 text-xs leading-relaxed text-[#595959]">{description || children}</p>
 
             <div className="mt-4 flex items-center justify-center gap-2">
                <button
@@ -33,7 +41,7 @@ export default function DeleteReviewModal({ review, isDeleting, onConfirm, onCan
                   onClick={onCancel}
                   className="flex-1 cursor-pointer rounded-xl border border-[#E9E9E9] bg-white py-2 text-xs font-semibold text-[#595959] transition hover:bg-gray-50 disabled:opacity-50"
                >
-                  Cancel
+                  {cancelText}
                </button>
 
                <button
@@ -45,10 +53,10 @@ export default function DeleteReviewModal({ review, isDeleting, onConfirm, onCan
                   {isDeleting ? (
                      <>
                         <Loader2 className="size-3 animate-spin" />
-                        <span>Deleting...</span>
+                        <span>{deletingText}</span>
                      </>
                   ) : (
-                     'Delete'
+                     confirmText
                   )}
                </button>
             </div>

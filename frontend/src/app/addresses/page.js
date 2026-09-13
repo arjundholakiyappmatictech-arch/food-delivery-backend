@@ -9,7 +9,7 @@ import useAddresses from '@/lib/hooks/useAddresses';
 import { AddressSearch } from '@/components/location/AddressSearch';
 import AddressSkeleton from '@/components/skeletons/AddressSkeleton';
 import AddressItem from '@/components/addresses/AddressItem';
-import DeleteAddressModal from '@/components/addresses/DeleteAddressModal';
+import ConfirmDeleteModal from '@/components/common/ConfirmDeleteModal';
 import useLocationStore from '@/lib/store/locationStore';
 import { toast } from 'react-hot-toast';
 
@@ -163,8 +163,17 @@ export default function AddressesPage() {
             </div>
          </div>
 
-         <DeleteAddressModal
-            address={deletingAddress}
+         <ConfirmDeleteModal
+            isOpen={Boolean(deletingAddress)}
+            title="Delete Address?"
+            description={
+               deletingAddress ? (
+                  <>
+                     Are you sure you want to delete your{' '}
+                     <span className="font-semibold capitalize text-[#02060C]">{deletingAddress.label}</span> address?
+                  </>
+               ) : null
+            }
             isDeleting={isDeleting}
             onConfirm={deleteAddressItem}
             onCancel={() => setDeletingAddress(null)}

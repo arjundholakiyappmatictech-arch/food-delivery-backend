@@ -7,7 +7,7 @@ import useReviews from '@/lib/hooks/useReviews';
 import ReviewCard from '@/components/review/ReviewCard';
 import ReviewSkeleton from '@/components/skeletons/ReviewSkeleton';
 import EmptyReviews from '@/components/review/EmptyReviews';
-import DeleteReviewModal from '@/components/review/DeleteReviewModal';
+import ConfirmDeleteModal from '@/components/common/ConfirmDeleteModal';
 
 export default function ReviewsPage() {
    useAuthGuard();
@@ -96,8 +96,15 @@ export default function ReviewsPage() {
             </div>
          )}
 
-         <DeleteReviewModal
-            review={deletingReview}
+         <ConfirmDeleteModal
+            isOpen={Boolean(deletingReview)}
+            title="Delete Review?"
+            description={
+               <>
+                  Are you sure you want to delete your review for{' '}
+                  <span className="font-semibold text-[#02060C]">this restaurant</span>?
+               </>
+            }
             isDeleting={isDeleting}
             onConfirm={deleteReviewItem}
             onCancel={() => setDeletingReview(null)}
