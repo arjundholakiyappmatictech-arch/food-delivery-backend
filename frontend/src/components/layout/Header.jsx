@@ -1,10 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { CART_SVG, HOME_SVG, SHOPPING_BAG_SVG, INFO_SVG } from '@/assets/icons';
+import { CART_SVG, HOME_SVG, INFO_SVG } from '@/assets/icons';
 import useCartStore from '@/lib/store/cartStore';
 import { useEffect, useState } from 'react';
 import UserProfile from './UserProfile';

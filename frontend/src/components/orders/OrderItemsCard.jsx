@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 export default function OrderedItemsCard({ items }) {
    return (
       <section className="rounded-2xl border border-[#E9E9E9] bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.04)]">

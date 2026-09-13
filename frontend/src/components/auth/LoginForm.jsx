@@ -44,13 +44,7 @@ const LoginForm = () => {
 
          toast.success(response.message ?? 'Login successful.');
 
-         if (user.type === 'customer') {
-            router.push('/addresses/select');
-         } else if (user.type === 'restaurant_owner') {
-            router.push('/owner/dashboard');
-         } else if (user.type === 'delivery_agent') {
-            router.push('/delivery/dashboard');
-         }
+         router.push('/addresses/select');
       } catch (error) {
          const apiError = parseApiError(error);
 
