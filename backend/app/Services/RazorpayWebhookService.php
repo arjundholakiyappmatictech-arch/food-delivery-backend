@@ -116,6 +116,7 @@ class RazorpayWebhookService
 
         $payment->update([
             'payment_status' => 'refunded',
+            'refunded_at' => now(),
             'razorpay_event_id' => $eventId,
         ]);
     }

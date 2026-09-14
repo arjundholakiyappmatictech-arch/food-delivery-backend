@@ -18,6 +18,7 @@ class PaymentResource extends JsonResource
             'amount' => (int) round($this->order->total * 100),
             'currency' => 'INR',
             'paid_at' => $this->paid_at,
+            'refunded_at' => $this->refunded_at,
         ];
     }
 }

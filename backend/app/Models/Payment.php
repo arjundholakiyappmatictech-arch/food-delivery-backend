@@ -17,10 +17,12 @@ class Payment extends Model
         'razorpay_payment_id',
         'razorpay_event_id',
         'paid_at',
+        'refunded_at',
     ];
 
     protected $casts = [
         'paid_at' => 'datetime',
+        'refunded_at' => 'datetime',
     ];
 
     public function order()

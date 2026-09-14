@@ -69,6 +69,7 @@ class PaymentService
             throw new RuntimeException('This order does not use Razorpay.', 409);
         }
 
+        // prevent the attack
         if ($payment->razorpay_order_id !== $data['razorpay_order_id']) {
             throw new RuntimeException('Invalid Razorpay order ID.', 409);
         }
