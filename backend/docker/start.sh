@@ -10,6 +10,8 @@ php artisan queue:work &
 
 echo "Starting Laravel scheduler..."
 php artisan schedule:work &
+SCHEDULER_PID=$!
+echo "Laravel scheduler started with PID: $SCHEDULER_PID"
 
 echo "Starting PHP-FPM..."
 php-fpm -D
