@@ -113,8 +113,6 @@ class OrderService
             return $order->load(['items.menuItem', 'address', 'user']);
         });
 
-        /* event(new OrderPlaced($order)); */
-
         return $order;
     }
 

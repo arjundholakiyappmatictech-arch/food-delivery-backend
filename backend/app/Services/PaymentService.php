@@ -86,9 +86,6 @@ class PaymentService
                 'paid_at' => now(),
             ]);
 
-            // dispatch job after successful payment
-           /*  AssignDeliveryJob::dispatch($order->id); */
-
             return $payment->load('order');
         });
     }
