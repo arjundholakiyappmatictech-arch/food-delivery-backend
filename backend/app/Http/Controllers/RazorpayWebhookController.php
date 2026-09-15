@@ -6,6 +6,7 @@ use App\Services\RazorpayService;
 use App\Services\RazorpayWebhookService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class RazorpayWebhookController extends Controller
 {
@@ -16,6 +17,13 @@ class RazorpayWebhookController extends Controller
 
     public function handle(Request $request): JsonResponse
     {
+
+        Log::info('Razorpay webhook received', [
+    'event' => $request->input('event'),
+    'event_id' => $request->header('x-razorpay-event-id'),
+]);
+
+
         $signature = $request->header('X-Razorpay-Signature');
 
         $this->razorpayService->verifyWebhookSignature($request->getContent(), $signature);
