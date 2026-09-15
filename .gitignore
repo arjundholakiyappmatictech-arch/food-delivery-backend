@@ -60,4 +60,3 @@ backend/chartdb-main/
 
 # Miscellaneous & Backups
 db-backup/local-data.sql
-docs

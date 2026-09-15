@@ -10,19 +10,21 @@ const api = axios.create({
 
 api.interceptors.request.use(
    (config) => {
-      const token = localStorage.getItem('access_token');
+      if (typeof window !== 'undefined') {
+         const token = localStorage.getItem('access_token');
 
-      if (token) {
-         config.headers.Authorization = `Bearer ${token}`;
-      }
+         if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+         }
 
-      // Fail early to prevent pending timeouts when the client is offline
-      if (typeof window !== 'undefined' && !navigator.onLine) {
-         const error = new Error('No internet connection. Please check your connection and try again.');
+         // Fail early to prevent pending timeouts when the client is offline
+         if (!navigator.onLine) {
+            const error = new Error('No internet connection. Please check your connection and try again.');
 
-         error.isNetworkOffline = true;
+            error.isNetworkOffline = true;
 
-         return Promise.reject(error);
+            return Promise.reject(error);
+         }
       }
 
       return config;
