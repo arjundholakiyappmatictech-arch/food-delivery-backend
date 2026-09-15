@@ -8,6 +8,7 @@ export default function useOrders() {
    const ordersQuery = useQuery({
       queryKey: ['orders'],
       queryFn: ({ signal }) => getOrders(signal),
+      refetchOnMount: true,
    });
 
    const orders = ordersQuery.data?.data ?? ordersQuery.data ?? [];

@@ -1,6 +1,6 @@
 'use client';
 import { LOCATION_SVG } from '@/assets/icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ReviewModal from '../review/ReviewModal';
 
 export default function OrderCard({ order }) {
@@ -9,6 +9,11 @@ export default function OrderCard({ order }) {
 
    const [reviewModalOpen, setReviewModalOpen] = useState(false);
    const [review, setReview] = useState(order.order_review);
+
+   useEffect(() => {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setReview(order.order_review);
+   }, [order.order_review]);
 
    function formatOrderDate(date) {
       return new Date(date).toLocaleString('en-IN', {

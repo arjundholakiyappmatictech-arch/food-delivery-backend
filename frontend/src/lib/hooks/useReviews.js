@@ -34,26 +34,29 @@ export default function useReviews() {
       mutationFn: (reviewId) => deleteReview(reviewId),
 
       onSuccess: (_, reviewId) => {
-         queryClient.setQueryData(['reviews'], (oldData) => {
-            if (!oldData) {
-               return oldData;
-            }
+         queryClient.setQueryData(['reviews'], (old) =>
+            old?.pages
+               ? {
+                    ...old,
+                    pages: old.pages.map((p) => ({
+                       ...p,
+                       data: (p.data ?? []).filter((r) => r.id !== reviewId),
+                    })),
+                 }
+               : old,
+         );
 
-            return {
-               ...oldData,
-               pages: oldData.pages.map((page) => ({
-                  ...page,
-                  data: Array.isArray(page?.data) ? page.data.filter((review) => review.id !== reviewId) : [],
-               })),
-            };
+         queryClient.setQueryData(['orders'], (old) => {
+            const list = old?.data ?? old;
+            if (!Array.isArray(list)) return old;
+            const updated = list.map((o) => (o.order_review?.id === reviewId ? { ...o, order_review: null } : o));
+            return old?.data ? { ...old, data: updated } : updated;
          });
 
-         queryClient.invalidateQueries({
-            queryKey: ['reviews'],
-         });
+         queryClient.invalidateQueries({ queryKey: ['orders'] });
+         queryClient.invalidateQueries({ queryKey: ['reviews'] });
 
          toast.success('Review deleted successfully.');
-
          setDeletingReview(null);
       },
 

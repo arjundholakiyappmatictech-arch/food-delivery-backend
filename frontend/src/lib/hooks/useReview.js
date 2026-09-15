@@ -18,47 +18,35 @@ export default function useReview() {
          }
       },
 
-      onSuccess: (response) => {
+      onSuccess: (response, variables) => {
          const newReview = response?.data;
+         const targetOrderId = newReview?.order_id || variables?.orderId;
 
-         if (!newReview) {
-            queryClient.invalidateQueries({
-               queryKey: ['reviews'],
+         if (targetOrderId) {
+            queryClient.setQueryData(['orders'], (old) => {
+               const list = old?.data ?? old;
+               if (!Array.isArray(list)) return old;
+               const updated = list.map((o) => (o.id === targetOrderId ? { ...o, order_review: newReview } : o));
+               return old?.data ? { ...old, data: updated } : updated;
             });
-
-            return;
+            queryClient.invalidateQueries({ queryKey: ['order', targetOrderId] });
          }
 
-         queryClient.setQueryData(['reviews'], (oldData) => {
-            if (!oldData?.pages?.length) {
-               return oldData;
-            }
+         queryClient.invalidateQueries({ queryKey: ['orders'] });
 
-            const alreadyExists = oldData.pages.some(
-               (page) => Array.isArray(page?.data) && page.data.some((review) => review.id === newReview.id),
-            );
+         if (newReview) {
+            queryClient.setQueryData(['reviews'], (old) => {
+               if (!old?.pages?.length || old.pages.some((p) => p?.data?.some((r) => r.id === newReview.id))) {
+                  return old;
+               }
+               return {
+                  ...old,
+                  pages: old.pages.map((p, i) => (i === 0 ? { ...p, data: [newReview, ...(p.data ?? [])] } : p)),
+               };
+            });
+         }
 
-            if (alreadyExists) {
-               return oldData;
-            }
-
-            return {
-               ...oldData,
-               pages: oldData.pages.map((page, index) => {
-                  if (index !== 0) {
-                     return page;
-                  }
-                  return {
-                     ...page,
-                     data: [newReview, ...(page.data ?? [])],
-                  };
-               }),
-            };
-         });
-
-         queryClient.invalidateQueries({
-            queryKey: ['reviews'],
-         });
+         queryClient.invalidateQueries({ queryKey: ['reviews'] });
       },
    });
 
