@@ -2,26 +2,30 @@
 
 import { useState } from 'react';
 import { Download } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
+import { generateInvoice } from '@/services/orderService';
 import { generateInvoicePdf } from '@/utils/generateInvoicePDF';
-import useGenerateInvoice from '@/lib/hooks/useGenerateInvoice';
+import { parseApiError } from '@/utils/apiError';
 
 export default function GenerateInvoiceButton({ order }) {
-   const { generateOrderInvoice } = useGenerateInvoice();
-
    const [generating, setGenerating] = useState(false);
 
    const handleGenerateInvoice = async () => {
       try {
          setGenerating(true);
 
-         const response = await generateOrderInvoice(order.id);
+         const response = await generateInvoice(order.id);
 
-         if (!response) {
+         if (!response?.data) {
             return;
          }
 
          generateInvoicePdf(response.data, order);
+      } catch (error) {
+         if (error?.name !== 'CanceledError' && error?.code !== 'ERR_CANCELED') {
+            toast.error(parseApiError(error).message || 'Unable to generate invoice.');
+         }
       } finally {
          setGenerating(false);
       }

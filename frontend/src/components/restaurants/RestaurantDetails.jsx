@@ -48,7 +48,7 @@ export default function RestaurantDetails({ restaurantId }) {
          <div className="flex rounded-[0.3cm] border border-[#E9E9E9] shadow-[3px_3px_10px_#E9E9E9]">
             <div className="m-[20px] max-[600px]:m-[10px]">
                <img
-                  src={selectedRestaurant?.image_url || '/assets/restaurant-placeholder.png'}
+                  src={selectedRestaurant?.image_url || '/assets/default-restaurant.jpg'}
                   alt={selectedRestaurant.name}
                   className={`h-[175px] w-[175px] rounded-[0.3cm] object-cover max-[600px]:h-[125px] max-[600px]:w-[125px] ${selectedRestaurant.status === 'closed' ? 'grayscale brightness-90' : ''}`}
                   draggable={false}
@@ -73,9 +73,9 @@ export default function RestaurantDetails({ restaurantId }) {
                   <span className="text-[#02060CEB]">
                      {menus.length
                         ? `${menus
-                             .slice(0, 3)
-                             .map((menu) => menu.name)
-                             .join(', ')}${menus.length > 3 ? ' +' + (menus.length - 3) + ' more' : ''}`
+                           .slice(0, 3)
+                           .map((menu) => menu.name)
+                           .join(', ')}${menus.length > 3 ? ' +' + (menus.length - 3) + ' more' : ''}`
                         : 'No menus available'}
                   </span>
                </h4>

@@ -103,7 +103,7 @@ export default function CheckoutDetails() {
          toast.success(`Order placed successfully! Order #${order.id} is confirmed. Pay when your order arrives.`);
 
          router.push(`/orders/${order.id}`);
-      } catch {}
+      } catch { }
    };
 
    if (cartLoading) {

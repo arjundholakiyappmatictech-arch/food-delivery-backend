@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation';
 
 import useCartStore from '@/lib/store/cartStore';
 import MenuItemCard from '../restaurants/MenuItemCard';
+import EmptyCart from './EmptyCart';
 import { CHECKOUT_ICON } from '@/assets/icons';
-import { useEffect } from 'react';
 
 export default function CartDetails() {
    const router = useRouter();
@@ -26,14 +26,8 @@ export default function CartDetails() {
       router.push('/checkout');
    };
 
-   useEffect(() => {
-      if (cartItems.length === 0 && restaurantId) {
-         router.replace(`/restaurants/${restaurantId}`);
-      }
-   }, [cartItems.length, restaurantId, router]);
-
    if (cartItems.length === 0) {
-      return null;
+      return <EmptyCart />;
    }
 
    const billRowStyles = 'flex justify-between text-[18px] font-[500] text-[#02060CB3] max-[600px]:text-[15px]';
