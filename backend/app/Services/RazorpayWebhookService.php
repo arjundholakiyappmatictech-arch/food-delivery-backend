@@ -54,7 +54,7 @@ class RazorpayWebhookService
             'razorpay_order_id' => $razorpayOrderId,
 ]);
 
-        AssignDeliveryJob::dispatch($payment->order_id)->delay(now()->addMinutes(2));
+        AssignDeliveryJob::dispatch($payment->order_id)->delay(now()->addSeconds(10));
 
         Log::info('Delivery job dispatched', [
     'order_id' => $payment->order_id,
