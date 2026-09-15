@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Jobs\AssignDeliveryJob;
 use App\Models\Payment;
+use Illuminate\Support\Facades\Log;
+
 
 class RazorpayWebhookService
 {
@@ -45,8 +47,18 @@ class RazorpayWebhookService
             'payment_status' => 'paid',
             'paid_at' => now(),
         ]);
+        
+        Log::info('Payment captured - dispatching delivery job', [
+            'payment_id' => $payment->id,
+            'order_id' => $payment->order_id,
+            'razorpay_order_id' => $razorpayOrderId,
+]);
 
         AssignDeliveryJob::dispatch($payment->order_id)->delay(now()->addMinutes(2));
+
+        Log::info('Delivery job dispatched', [
+    'order_id' => $payment->order_id,
+]);
     }
 
     private function handlePaymentFailed(array $payload, ?string $eventId): void
