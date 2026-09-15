@@ -1,27 +1,21 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { loginSchema } from '@/lib/schemas/loginSchema';
-import { login } from '@/services/authService';
-import { parseApiError } from '@/utils/apiError';
-import { useAuthStore } from '@/lib/store/authStore';
-import { useQueryClient } from '@tanstack/react-query';
+import useLogin from '@/lib/hooks/useLogin';
 
 const LoginForm = () => {
-   const router = useRouter();
-   const setUser = useAuthStore((state) => state.setUser);
-   const queryClient = useQueryClient();
+   const { loginUser, isLoggingIn } = useLogin();
 
    const {
       register,
       handleSubmit,
       setError,
-      formState: { errors, isSubmitting },
+      formState: { errors },
    } = useForm({
       resolver: zodResolver(loginSchema),
       defaultValues: {
@@ -32,22 +26,8 @@ const LoginForm = () => {
 
    const onSubmit = async (data) => {
       try {
-         const response = await login(data);
-
-         const { access_token, user } = response.data;
-
-         localStorage.setItem('access_token', access_token);
-
-         queryClient.clear();
-
-         setUser(user);
-
-         toast.success(response.message ?? 'Login successful.');
-
-         router.push('/addresses/select');
-      } catch (error) {
-         const apiError = parseApiError(error);
-
+         await loginUser(data);
+      } catch (apiError) {
          if (apiError.status === 422) {
             Object.entries(apiError.errors ?? {}).forEach(([field, messages]) => {
                const message = Array.isArray(messages) ? messages[0] : messages;
@@ -61,7 +41,6 @@ const LoginForm = () => {
             });
 
             toast.error(apiError.message ?? 'Please check the entered information.');
-
             return;
          }
 
@@ -72,23 +51,7 @@ const LoginForm = () => {
             });
 
             toast.error(apiError.message ?? 'Invalid email or password.');
-
-            return;
          }
-
-         if (apiError.status === 403) {
-            toast.error(apiError.message ?? 'You are not allowed to access this account.');
-
-            return;
-         }
-
-         if (apiError.isNetworkError) {
-            toast.error('Unable to connect to the server. Please check your connection.');
-
-            return;
-         }
-
-         toast.error(apiError.message ?? 'Login failed. Please try again.');
       }
    };
 
@@ -114,7 +77,7 @@ const LoginForm = () => {
                      type="email"
                      placeholder="Enter your email"
                      autoComplete="email"
-                     disabled={isSubmitting}
+                     disabled={isLoggingIn}
                      aria-invalid={Boolean(errors.email)}
                      {...register('email')}
                      className={`h-10 w-full rounded-xl border bg-white px-3.5 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
@@ -139,7 +102,7 @@ const LoginForm = () => {
                      type="password"
                      placeholder="Enter your password"
                      autoComplete="current-password"
-                     disabled={isSubmitting}
+                     disabled={isLoggingIn}
                      aria-invalid={Boolean(errors.password)}
                      {...register('password')}
                      className={`h-10 w-full rounded-xl border bg-white px-3.5 text-xs sm:text-sm text-[#02060C] placeholder:text-[#A6A6A6] transition duration-150 focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 ${
@@ -157,10 +120,10 @@ const LoginForm = () => {
                <div className="space-y-3 pt-1">
                   <button
                      type="submit"
-                     disabled={isSubmitting}
+                     disabled={isLoggingIn}
                      className="flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#D95765] px-4 text-xs sm:text-sm font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-[#C74655] active:bg-[#C84E5B] focus:outline-none focus:ring-2 focus:ring-[#E56A77]/40 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                     {isSubmitting ? (
+                     {isLoggingIn ? (
                         <>
                            <svg
                               className="size-4 animate-spin text-white"

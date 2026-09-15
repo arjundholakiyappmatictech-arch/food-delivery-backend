@@ -13,7 +13,8 @@ import { useEffect } from 'react';
 export default function RestaurantDetails({ restaurantId }) {
    const router = useRouter();
 
-   const { selectedRestaurant, hasHydrated } = useRestaurantStore();
+   const selectedRestaurant = useRestaurantStore((state) => state.selectedRestaurant);
+   const hasHydrated = useRestaurantStore((state) => state.hasHydrated);
 
    const { menus, loading, error } = useRestaurant(restaurantId);
 

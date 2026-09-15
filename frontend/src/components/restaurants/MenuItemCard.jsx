@@ -7,12 +7,17 @@ import { toast } from 'react-hot-toast';
 import { parseApiError } from '@/utils/apiError';
 
 export default function MenuItemCard({ item, restaurant, isLast = false, restaurantClosed = false }) {
-   const { cartItems, addItem, increaseQuantity, decreaseQuantity, clearCart } = useCartStore();
+   const addItem = useCartStore((state) => state.addItem);
+   const increaseQuantity = useCartStore((state) => state.increaseQuantity);
+   const decreaseQuantity = useCartStore((state) => state.decreaseQuantity);
+   const clearCart = useCartStore((state) => state.clearCart);
+
+   const cartItem = useCartStore((state) =>
+      state.cartItems.find((cart) => cart.menu_item.id === item.id),
+   );
 
    const [showReplaceDialog, setShowReplaceDialog] = useState(false);
    const [pendingItem, setPendingItem] = useState(null);
-
-   const cartItem = cartItems.find((cart) => cart.menu_item.id === item.id);
 
    const quantity = cartItem?.quantity ?? 0;
 

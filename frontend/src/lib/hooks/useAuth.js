@@ -1,23 +1,48 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { logout } from '@/services/authService';
-import { useQueryClient } from '@tanstack/react-query';
-import useLocationStore from '../store/locationStore';
+import { logout as logoutService } from '@/services/authService';
+import { parseApiError } from '@/utils/apiError';
 import { useAuthStore } from '../store/authStore';
+import useLocationStore from '../store/locationStore';
+
+export function useLogout() {
+   const router = useRouter();
+   const queryClient = useQueryClient();
+   const clearUser = useAuthStore((state) => state.clearUser);
+   const clearSelectedLocation = useLocationStore((state) => state.clearSelectedLocation);
+
+   const logoutMutation = useMutation({
+      mutationFn: async () => {
+         try {
+            return await logoutService();
+         } catch (error) {
+            throw parseApiError(error);
+         }
+      },
+
+      onSettled: () => {
+         localStorage.removeItem('access_token');
+         clearUser();
+         clearSelectedLocation();
+         queryClient.clear();
+         router.replace('/login');
+      },
+   });
+
+   return {
+      logoutUser: logoutMutation.mutateAsync,
+      logoutLoading: logoutMutation.isPending,
+      logoutError: logoutMutation.error?.message ?? '',
+   };
+}
 
 export default function useAuthGuard() {
    const router = useRouter();
-
-   const clearUser = useAuthStore((state) => state.clearUser);
-   const queryClient = useQueryClient();
-
-   const clearSelectedLocation = useLocationStore((state) => state.clearSelectedLocation);
-
-   const [logoutLoading, setLogoutLoading] = useState(false);
-   const [logoutError, setLogoutError] = useState('');
+   const { logoutUser, logoutLoading, logoutError } = useLogout();
 
    useEffect(() => {
       const token = localStorage.getItem('access_token');
@@ -26,28 +51,6 @@ export default function useAuthGuard() {
          router.replace('/login');
       }
    }, [router]);
-
-   const logoutUser = useCallback(async () => {
-      try {
-         setLogoutLoading(true);
-         setLogoutError('');
-
-         await logout();
-      } catch (error) {
-         console.error('LOGOUT ERROR:', error);
-
-         setLogoutError(error.response?.data?.message || 'Unable to logout from the server.');
-      } finally {
-         localStorage.removeItem('access_token');
-         clearUser();
-         clearSelectedLocation();
-         queryClient.clear();
-
-         setLogoutLoading(false);
-      }
-
-      router.replace('/login');
-   }, [clearSelectedLocation, clearUser, queryClient, router]);
 
    return {
       logoutUser,

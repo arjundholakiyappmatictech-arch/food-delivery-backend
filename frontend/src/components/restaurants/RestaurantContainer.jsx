@@ -75,12 +75,15 @@ export default function RestaurantContainer({
          {searching && <div className="mb-3 text-center text-sm text-[#747474]">Searching...</div>}
 
          <div
-            className="
+            className={`
                restaurant-container
                my-[20px]
                grid
                grid-cols-[repeat(auto-fill,minmax(250px,1fr))]
                gap-[20px]
+               transition-opacity
+               duration-200
+               ${searching ? 'opacity-70 pointer-events-none' : 'opacity-100'}
 
                max-[1000px]:grid-cols-[repeat(auto-fill,minmax(220px,1fr))]
                max-[1000px]:gap-[15px]
@@ -93,7 +96,7 @@ export default function RestaurantContainer({
                max-[560px]:grid-cols-2
                max-[560px]:gap-[10px]
                max-[380px]:gap-[8px]
-            "
+            `}
          >
             {restaurantsList.map((restaurant, index) => (
                <div

@@ -57,8 +57,7 @@ function HomePageContent() {
       }
    }, [locationInitialized, selectedLocation, router]);
 
-   const initialLoading =
-      !locationInitialized || selectedLocation === null || (selectedLocation && loading && restaurants.length === 0);
+   const initialLoading = !locationInitialized || selectedLocation === null;
 
    if (initialLoading) {
       return <HomePageSkeleton />;

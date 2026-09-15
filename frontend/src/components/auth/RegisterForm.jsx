@@ -1,23 +1,21 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { registerSchema } from '@/lib/schemas/registerSchema';
-import { register as registerService } from '@/services/authService';
-import { parseApiError } from '@/utils/apiError';
+import useRegister from '@/lib/hooks/useRegister';
 
 const RegisterForm = () => {
-   const router = useRouter();
+   const { registerUser, isRegistering } = useRegister();
 
    const {
       register,
       handleSubmit,
       setError,
-      formState: { errors, isSubmitting },
+      formState: { errors },
    } = useForm({
       resolver: zodResolver(registerSchema),
       defaultValues: {
@@ -30,14 +28,8 @@ const RegisterForm = () => {
 
    const onSubmit = async (data) => {
       try {
-         const response = await registerService(data);
-
-         toast.success(response.message ?? 'Registration successful. Please log in.');
-
-         router.push('/login');
-      } catch (error) {
-         const apiError = parseApiError(error);
-
+         await registerUser(data);
+      } catch (apiError) {
          if (apiError.status === 422) {
             Object.entries(apiError.errors ?? {}).forEach(([field, messages]) => {
                const message = Array.isArray(messages) ? messages[0] : messages;
@@ -51,23 +43,7 @@ const RegisterForm = () => {
             });
 
             toast.error(apiError.message ?? 'Please check the entered information.');
-
-            return;
          }
-
-         if (apiError.status === 409) {
-            toast.error(apiError.message ?? 'User already exists.');
-
-            return;
-         }
-
-         if (apiError.isNetworkError) {
-            toast.error('Unable to connect to the server. Please check your connection.');
-
-            return;
-         }
-
-         toast.error(apiError.message ?? 'Registration failed. Please try again.');
       }
    };
 
@@ -91,7 +67,7 @@ const RegisterForm = () => {
                      type="text"
                      placeholder="Enter your full name"
                      autoComplete="name"
-                     disabled={isSubmitting}
+                     disabled={isRegistering}
                      aria-invalid={Boolean(errors.full_name)}
                      aria-describedby={errors.full_name ? 'full-name-error' : undefined}
                      {...register('full_name')}
@@ -119,7 +95,7 @@ const RegisterForm = () => {
                      type="email"
                      placeholder="Enter your email"
                      autoComplete="email"
-                     disabled={isSubmitting}
+                     disabled={isRegistering}
                      aria-invalid={Boolean(errors.email)}
                      aria-describedby={errors.email ? 'email-error' : undefined}
                      {...register('email')}
@@ -147,7 +123,7 @@ const RegisterForm = () => {
                      type="tel"
                      placeholder="Enter your phone number"
                      autoComplete="tel"
-                     disabled={isSubmitting}
+                     disabled={isRegistering}
                      aria-invalid={Boolean(errors.phone_number)}
                      aria-describedby={errors.phone_number ? 'phone-number-error' : undefined}
                      {...register('phone_number')}
@@ -175,7 +151,7 @@ const RegisterForm = () => {
                      type="password"
                      placeholder="Enter password"
                      autoComplete="new-password"
-                     disabled={isSubmitting}
+                     disabled={isRegistering}
                      aria-invalid={Boolean(errors.password)}
                      aria-describedby={errors.password ? 'password-error' : undefined}
                      {...register('password')}
@@ -196,10 +172,10 @@ const RegisterForm = () => {
                <div className="space-y-3 pt-1">
                   <button
                      type="submit"
-                     disabled={isSubmitting}
+                     disabled={isRegistering}
                      className="flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#D95765] px-4 text-xs sm:text-sm font-semibold text-white shadow-sm transition-colors duration-150 hover:bg-[#C74655] active:bg-[#C84E5B] focus:outline-none focus:ring-2 focus:ring-[#E56A77]/40 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                     {isSubmitting ? (
+                     {isRegistering ? (
                         <>
                            <svg
                               className="size-4 animate-spin text-white"

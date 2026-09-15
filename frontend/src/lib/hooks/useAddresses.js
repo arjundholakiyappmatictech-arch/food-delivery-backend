@@ -14,6 +14,7 @@ export default function useAddresses() {
    // common errors
    const handleAddressMutationError = (error, action) => {
       if (error.status === 422) {
+         toast.error(error.message);
          return;
       }
 

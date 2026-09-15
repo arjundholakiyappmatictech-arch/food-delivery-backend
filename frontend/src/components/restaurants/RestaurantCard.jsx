@@ -7,7 +7,7 @@ import useRestaurantStore from '@/lib/store/restaurantStore';
 export default function RestaurantCard({ restaurant, animationDelay = 0 }) {
    const { id, name, address, status, distance, image_url, menus } = restaurant;
 
-   const { setSelectedRestaurant } = useRestaurantStore();
+   const setSelectedRestaurant = useRestaurantStore((state) => state.setSelectedRestaurant);
 
    return (
       <div

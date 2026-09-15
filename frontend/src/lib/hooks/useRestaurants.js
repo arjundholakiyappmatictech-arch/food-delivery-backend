@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import getNearbyRestaurants from '@/services/restaurantService';
 import { parseApiError } from '@/utils/apiError';
 
@@ -67,6 +67,8 @@ export default function useRestaurants(
          return (lastPage.pagination.current_page ?? 1) + 1;
       },
 
+      placeholderData: keepPreviousData,
+
       enabled: locationReady,
    });
 
@@ -110,11 +112,15 @@ export default function useRestaurants(
    const restaurantError = restaurantsQuery.error ? parseApiError(restaurantsQuery.error) : null;
    const menuError = menusQuery.error ? parseApiError(menusQuery.error) : null;
 
+   const isInitialLoading = restaurantsQuery.isLoading && !restaurantsQuery.isPlaceholderData;
+   const isSearching =
+      (restaurantsQuery.isFetching || restaurantsQuery.isPlaceholderData) && !restaurantsQuery.isFetchingNextPage;
+
    return {
       restaurants,
       menus: menusQuery.data ?? [],
-      loading: restaurantsQuery.isLoading || menusQuery.isLoading,
-      searching: restaurantsQuery.isFetching && !restaurantsQuery.isFetchingNextPage,
+      loading: isInitialLoading,
+      searching: isSearching,
       loadingMore: restaurantsQuery.isFetchingNextPage,
       hasMore: Boolean(restaurantsQuery.hasNextPage),
       error: restaurantError?.message ?? menuError?.message ?? '',
