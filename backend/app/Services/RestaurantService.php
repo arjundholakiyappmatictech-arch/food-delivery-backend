@@ -74,7 +74,7 @@ class RestaurantService
         $include = $data['include'] ?? null;
         $search = $data['q'] ?? null;
         $menuName = $data['menu_name'] ?? null;
-        $sortBy = $data['sort_by'] ?? null;
+        $sortBy = $data['sort_by'] ?? 'nearest';
         $openNow = filter_var($data['open_now'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $radius = (float) ($data['radius'] ?? 500);
         $perPage = $data['per_page'] ?? 5;
@@ -168,8 +168,13 @@ class RestaurantService
         SQL;
     }
 
-    private function applyIncludes(Builder $query, ?string $include, ?string $menuName, ?string $search, string $operator): void
-    {
+    private function applyIncludes(
+        Builder $query,
+        ?string $include,
+        ?string $menuName,
+        ?string $search,
+        string $operator,
+    ): void {
         $query
             ->when($include === 'menus', function ($query) {
                 $query->with('menus');
