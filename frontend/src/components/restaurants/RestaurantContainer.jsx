@@ -3,6 +3,7 @@
 import useInfiniteScroll from '@/lib/hooks/useInfiniteScroll';
 import RestaurantCard from './RestaurantCard';
 import RestaurantSkeleton from '../skeletons/RestaurantSkeleton';
+import ThreeBodyLoader from '../common/ThreeBodyLoader';
 
 export default function RestaurantContainer({
    restaurantsList,
@@ -72,7 +73,11 @@ export default function RestaurantContainer({
 
    return (
       <>
-         {searching && <div className="mb-3 text-center text-sm text-[#747474]">Searching...</div>}
+         {searching && (
+            <div className="my-3 flex items-center justify-center">
+               <ThreeBodyLoader />
+            </div>
+         )}
 
          <div
             className={`
@@ -82,7 +87,8 @@ export default function RestaurantContainer({
                grid-cols-[repeat(auto-fill,minmax(250px,1fr))]
                gap-[20px]
                transition-opacity
-               duration-200
+               duration-500
+               ease-in-out
                ${searching ? 'opacity-70 pointer-events-none' : 'opacity-100'}
 
                max-[1000px]:grid-cols-[repeat(auto-fill,minmax(220px,1fr))]
@@ -99,19 +105,20 @@ export default function RestaurantContainer({
             `}
          >
             {restaurantsList.map((restaurant, index) => (
-               <div
+               <RestaurantCard
                   key={restaurant.id}
-                  className="restaurant-card-animation"
-                  style={{
-                     animationDelay: `${(index % 5) * 120}ms`,
-                  }}
-               >
-                  <RestaurantCard restaurant={restaurant} />
-               </div>
+                  restaurant={restaurant}
+                  animationDelay={index * 130}
+               />
             ))}
 
             {loadingMore &&
-               Array.from({ length: 5 }).map((_, index) => <RestaurantSkeleton key={`skeleton-${index}`} />)}
+               Array.from({ length: 5 }).map((_, index) => (
+                  <RestaurantSkeleton
+                     key={`skeleton-${index}`}
+                     animationDelay={index * 130}
+                  />
+               ))}
          </div>
 
          {hasMore && (

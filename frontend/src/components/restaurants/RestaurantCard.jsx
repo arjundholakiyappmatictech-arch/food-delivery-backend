@@ -22,7 +22,7 @@ export default function RestaurantCard({ restaurant, animationDelay = 0 }) {
          cursor-pointer
          rounded-[0.3cm]
          bg-[#FFF]
-         animate-[restaurantIn_0.6s_cubic-bezier(0.22,1,0.36,1)_both]
+         animate-[restaurantIn_0.85s_cubic-bezier(0.22,1,0.36,1)_both]
          transition-all
          duration-200
          hover:scale-105

@@ -1,6 +1,21 @@
-export default function RestaurantSkeleton() {
+export default function RestaurantSkeleton({ animationDelay }) {
+   const hasAnimation = animationDelay !== undefined;
+
    return (
-      <div className="mx-auto w-[250px] animate-pulse rounded-[0.3cm] bg-white max-[1000px]:w-[220px] max-[800px]:w-[32vw] max-[560px]:w-full">
+      <div
+         style={hasAnimation ? { animationDelay: `${animationDelay}ms` } : undefined}
+         className={`
+            mx-auto
+            w-[250px]
+            animate-pulse
+            rounded-[0.3cm]
+            bg-white
+            max-[1000px]:w-[220px]
+            max-[800px]:w-[32vw]
+            max-[560px]:w-full
+            ${hasAnimation ? 'animate-[restaurantIn_0.85s_cubic-bezier(0.22,1,0.36,1)_both]' : ''}
+         `}
+      >
          <div className="h-[165px] w-full overflow-hidden rounded-[0.3cm] bg-[#E9E9E9]">
             <div className="h-full w-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
          </div>
