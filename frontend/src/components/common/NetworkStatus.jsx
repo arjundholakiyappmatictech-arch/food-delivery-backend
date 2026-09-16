@@ -1,32 +1,29 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
+
+function subscribe(callback) {
+   window.addEventListener('online', callback);
+   window.addEventListener('offline', callback);
+
+   return () => {
+      window.removeEventListener('online', callback);
+      window.removeEventListener('offline', callback);
+   };
+}
+
+function getSnapshot() {
+   return navigator.onLine;
+}
+
+function getServerSnapshot() {
+   return true;
+}
 
 export default function NetworkStatus() {
-   const [isOffline, setIsOffline] = useState(false);
+   const isOnline = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-   useEffect(() => {
-      const handleOffline = () => {
-         setIsOffline(true);
-      };
-
-      const handleOnline = () => {
-         setIsOffline(false);
-      };
-
-      setIsOffline(!navigator.onLine);
-
-      window.addEventListener('offline', handleOffline);
-      window.addEventListener('online', handleOnline);
-
-      return () => {
-         window.removeEventListener('offline', handleOffline);
-         window.removeEventListener('online', handleOnline);
-      };
-   }, []);
-
-   if (!isOffline) {
+   if (isOnline) {
       return null;
    }
 

@@ -4,7 +4,14 @@ import { DOWN_ARROW_SVG, UP_ARROW_SVG } from '@/assets/icons';
 
 import MenuItemCard from './MenuItemCard';
 
-export default function CategoryAccordion({ category, restaurant, index, activeIndex, setActiveIndex }) {
+export default function CategoryAccordion({
+   category,
+   restaurant,
+   index,
+   activeIndex,
+   setActiveIndex,
+   onCartConflict,
+}) {
    const isOpen = activeIndex === index;
 
    const handleClick = () => {
@@ -38,6 +45,7 @@ export default function CategoryAccordion({ category, restaurant, index, activeI
                         restaurant={restaurant}
                         restaurantClosed={restaurant?.status === 'closed'}
                         isLast={index === category.menu_items.length - 1}
+                        onCartConflict={onCartConflict}
                      />
                   ))
                ) : (

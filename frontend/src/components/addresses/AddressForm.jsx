@@ -1,7 +1,7 @@
 'use client';
 
 import { Home, BriefcaseBusiness, MapPin } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { addressSchema } from '@/lib/schemas/addressSchema';
@@ -11,7 +11,7 @@ export function AddressForm({ defaultValues, onSubmit, submitting, submitLabel, 
       register,
       handleSubmit,
       setValue,
-      watch,
+      control,
       setError,
       formState: { errors, isSubmitting },
    } = useForm({
@@ -19,7 +19,11 @@ export function AddressForm({ defaultValues, onSubmit, submitting, submitLabel, 
       defaultValues,
    });
 
-   const currentLabel = watch('label');
+   const currentLabel = useWatch({
+      control,
+      name: 'label',
+      defaultValue: defaultValues?.label,
+   });
    const isFormSubmitting = isSubmitting || submitting;
 
    const handleFormSubmit = async (data) => {

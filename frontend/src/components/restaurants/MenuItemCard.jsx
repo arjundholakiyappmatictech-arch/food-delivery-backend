@@ -1,23 +1,23 @@
 'use client';
 
 import useCartStore from '@/lib/store/cartStore';
-import { useState } from 'react';
-import ReplaceCartDialog from '../cart/ReplaceCartDialog';
 import { toast } from 'react-hot-toast';
 import { parseApiError } from '@/utils/apiError';
 
-export default function MenuItemCard({ item, restaurant, isLast = false, restaurantClosed = false }) {
+export default function MenuItemCard({
+   item,
+   restaurant,
+   isLast = false,
+   restaurantClosed = false,
+   onCartConflict,
+}) {
    const addItem = useCartStore((state) => state.addItem);
    const increaseQuantity = useCartStore((state) => state.increaseQuantity);
    const decreaseQuantity = useCartStore((state) => state.decreaseQuantity);
-   const clearCart = useCartStore((state) => state.clearCart);
 
    const cartItem = useCartStore((state) =>
       state.cartItems.find((cart) => cart.menu_item.id === item.id),
    );
-
-   const [showReplaceDialog, setShowReplaceDialog] = useState(false);
-   const [pendingItem, setPendingItem] = useState(null);
 
    const quantity = cartItem?.quantity ?? 0;
 
@@ -35,37 +35,15 @@ export default function MenuItemCard({ item, restaurant, isLast = false, restaur
 
          // Prompt user before discarding existing items from a different restaurant
          if (apiError.status === 409 && apiError.message === 'Your cart contains items from another restaurant.') {
-            setPendingItem({
+            onCartConflict?.({
                restaurantId: restaurant.id,
                menuItemId: item.id,
             });
-
-            setShowReplaceDialog(true);
 
             return;
          }
 
          toast.error(apiError.message ?? 'Unable to add item to cart.');
-      }
-   };
-
-   const handleReplaceCart = async () => {
-      if (!pendingItem) {
-         return;
-      }
-
-      try {
-         await clearCart();
-
-         await addItem({
-            restaurantId: pendingItem.restaurantId,
-            menuItemId: pendingItem.menuItemId,
-         });
-
-         setShowReplaceDialog(false);
-         setPendingItem(null);
-      } catch (error) {
-         console.error('Unable to replace cart:', error);
       }
    };
    return (
@@ -148,15 +126,6 @@ export default function MenuItemCard({ item, restaurant, isLast = false, restaur
                )}
             </div>
          </div>
-
-         <ReplaceCartDialog
-            open={showReplaceDialog}
-            onClose={() => {
-               setShowReplaceDialog(false);
-               setPendingItem(null);
-            }}
-            onReplace={handleReplaceCart}
-         />
 
          {!isLast && <hr className="border-1 border-[#E9E9E9] w-[97%] mx-[auto] mt-[30px] mb-[20px]" />}
       </div>
