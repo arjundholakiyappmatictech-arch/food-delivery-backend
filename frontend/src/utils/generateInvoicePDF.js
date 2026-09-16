@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import { formatDate } from '@/lib/utils';
 
 export function generateInvoicePdf(invoice, order = null) {
    const doc = new jsPDF();
@@ -49,7 +50,7 @@ export function generateInvoicePdf(invoice, order = null) {
 
    y += 7;
 
-   doc.text(`Generated: ${formatDate(invoice?.generated_at)}`, 20, y);
+   doc.text(`Generated: ${formatDate(invoice?.generated_at) || 'N/A'}`, 20, y);
 
    y += 15;
 
@@ -240,21 +241,6 @@ function drawDivider(doc, y) {
 
    doc.setDrawColor(220, 220, 220);
    doc.line(20, y, pageWidth - 20, y);
-}
-
-function formatDate(date) {
-   if (!date) {
-      return 'N/A';
-   }
-
-   return new Date(date).toLocaleString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-   });
 }
 
 function formatPaymentMethod(method) {

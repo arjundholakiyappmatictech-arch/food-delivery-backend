@@ -1,6 +1,7 @@
 'use client';
 import { LOCATION_SVG } from '@/assets/icons';
 import { useEffect, useState } from 'react';
+import { formatDate } from '@/lib/utils';
 import ReviewModal from '../review/ReviewModal';
 
 export default function OrderCard({ order }) {
@@ -14,17 +15,6 @@ export default function OrderCard({ order }) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setReview(order.order_review);
    }, [order.order_review]);
-
-   function formatOrderDate(date) {
-      return new Date(date).toLocaleString('en-IN', {
-         day: '2-digit',
-         month: 'short',
-         year: 'numeric',
-         hour: 'numeric',
-         minute: '2-digit',
-         hour12: true,
-      });
-   }
 
    function formatOrderStatus(status) {
       return status.replaceAll('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase());
@@ -83,7 +73,7 @@ export default function OrderCard({ order }) {
             <div>
                <p className="text-xs text-gray-500">Order Placed</p>
 
-               <p className="mt-1 text-sm font-medium text-[#02060C]">{formatOrderDate(order.created_at)}</p>
+               <p className="mt-1 text-sm font-medium text-[#02060C]">{formatDate(order.created_at)}</p>
             </div>
 
             <div>

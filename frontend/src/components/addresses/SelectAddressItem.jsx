@@ -1,6 +1,7 @@
 'use client';
 
 import { Home, BriefcaseBusiness, MapPin } from 'lucide-react';
+import { formatAddress } from '@/lib/location';
 
 function AddressIcon({ label, className }) {
    const normalized = label?.toLowerCase();
@@ -10,9 +11,7 @@ function AddressIcon({ label, className }) {
 }
 
 export default function SelectAddressItem({ address, disabled, onSelect }) {
-   const completeAddress = [address.address_line, address.city, address.state, address.pincode]
-      .filter(Boolean)
-      .join(', ');
+   const completeAddress = formatAddress(address);
 
    return (
       <button

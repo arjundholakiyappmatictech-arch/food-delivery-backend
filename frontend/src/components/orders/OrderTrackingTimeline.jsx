@@ -1,4 +1,5 @@
 import { Check } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
 
 const trackingSteps = [
    {
@@ -130,15 +131,4 @@ export default function OrderTrackingTimeline({ order }) {
          </div>
       </section>
    );
-}
-
-function formatDate(date) {
-   return new Date(date).toLocaleString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-   });
 }

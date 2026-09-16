@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Home, BriefcaseBusiness, MapPin, Pencil, Trash2, MoreVertical } from 'lucide-react';
+import { formatAddress } from '@/lib/location';
 
 const ADDRESS_ICONS = {
    home: Home,
@@ -12,9 +13,7 @@ export default function AddressItem({ address, isMenuOpen, menuRef, onToggleMenu
    const router = useRouter();
    const Icon = ADDRESS_ICONS[address.label?.toLowerCase()] || MapPin;
 
-   const completeAddress = [address.address_line, address.city, address.state, address.pincode]
-      .filter(Boolean)
-      .join(', ');
+   const completeAddress = formatAddress(address);
 
    return (
       <div className="group relative flex items-start justify-between gap-3 rounded-xl border border-[#E9E9E9] bg-white p-3 transition-all duration-150 hover:border-[#E56A77] hover:bg-[#FFF4F5]/20">

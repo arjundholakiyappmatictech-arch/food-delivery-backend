@@ -1,4 +1,5 @@
 import { USER_SVG, CARD_SVG, CALENDER_SVG, LOCATION_SVG } from '@/assets/icons';
+import { formatAddress } from '@/lib/location';
 
 export default function OrderUserInfoCard({ customer, payment, address }) {
    return (
@@ -57,10 +58,7 @@ export default function OrderUserInfoCard({ customer, payment, address }) {
                   <p className="text-xs text-gray-500">Delivery Address</p>
 
                   <p className="mt-1 text-sm font-medium text-[#02060C]">
-                     {address?.address_line}
-                     {address?.city && `, ${address.city}`}
-                     {address?.state && `, ${address.state}`}
-                     {address?.pincode && ` - ${address.pincode}`}
+                     {formatAddress(address) || 'N/A'}
                   </p>
                </div>
             </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { Star, Trash2 } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
 
 export default function ReviewCard({ review, onDelete }) {
    const order = review.order;
@@ -12,25 +13,7 @@ export default function ReviewCard({ review, onDelete }) {
 
    const rawDate = review.created_at || order?.delivered_at || order?.created_at;
 
-   const formatReviewDate = (dateString) => {
-      if (!dateString) {
-         return '';
-      }
-
-      const date = new Date(dateString);
-
-      if (Number.isNaN(date.getTime())) {
-         return '';
-      }
-
-      return date.toLocaleDateString('en-GB', {
-         day: 'numeric',
-         month: 'short',
-         year: 'numeric',
-      });
-   };
-
-   const formattedDate = formatReviewDate(rawDate);
+   const formattedDate = formatDate(rawDate, { dateOnly: true });
 
    return (
       <article

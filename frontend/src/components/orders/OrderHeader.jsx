@@ -2,6 +2,7 @@
 
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { formatDate } from '@/lib/utils';
 import GenerateInvoiceButton from './GenerateInvoiceButton';
 
 export default function OrderHeader({ order }) {
@@ -9,16 +10,7 @@ export default function OrderHeader({ order }) {
 
    const isDelivered = order.status === 'delivered';
 
-   const formattedDeliveredAt = order.delivered_at
-      ? new Date(order.delivered_at).toLocaleString('en-IN', {
-           day: '2-digit',
-           month: 'short',
-           year: 'numeric',
-           hour: '2-digit',
-           minute: '2-digit',
-           hour12: true,
-        })
-      : null;
+   const formattedDeliveredAt = formatDate(order.delivered_at) || null;
 
    return (
       <div className="mb-8">
