@@ -123,7 +123,11 @@ export default function RestaurantContainer({
 
          {hasMore && (
             <div ref={loaderRef} className="flex h-16 w-full items-center justify-center">
-               {loadingMore && <p className="text-sm text-gray-500">Loading...</p>}
+               {loadingMore && (
+                  <div className="my-3 flex items-center justify-center">
+                     <ThreeBodyLoader />
+                  </div>
+               )}
             </div>
          )}
       </>
