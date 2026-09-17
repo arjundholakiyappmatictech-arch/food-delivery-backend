@@ -11,29 +11,11 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class RestaurantService
 {
     private const DUPLICATE_RADIUS_METERS = 8;
-
-    public function bulkUpdateImages(array $data): Collection
-    {
-        return DB::transaction(function () use ($data) {
-            $restaurants = collect();
-
-            foreach ($data['restaurants'] as $item) {
-                $restaurant = Restaurant::findOrFail($item['id']);
-                $restaurant->update([
-                    'image_path' => $item['image_url'],
-                ]);
-                $restaurants->push($restaurant->refresh());
-            }
-
-            return $restaurants;
-        });
-    }
 
     public function store(array $data): Restaurant
     {
@@ -75,7 +57,7 @@ class RestaurantService
             ->menus()
             ->with([
                 'menuItems' => function ($query) {
-                    $query->where('availability', true)->latest('menu_items.created_at');
+                    $query->latest('menu_items.created_at');
                 },
             ])
             ->latest('menus.created_at')
