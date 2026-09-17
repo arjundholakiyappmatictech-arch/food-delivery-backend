@@ -13,7 +13,7 @@ export default async function getNearbyRestaurants({
 }) {
    const params = {
       address_id: addressId,
-      include: 'menus',
+      include: 'menus.menuItems',
       page,
    };
 

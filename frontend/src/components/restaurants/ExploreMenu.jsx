@@ -68,7 +68,7 @@ export default function ExploreMenu({ menus = [], selectedMenuName, setSelectedM
                      >
                         <div className="h-full w-full rounded-full bg-white p-[3px]">
                            <img
-                              src={menu.image_url || '/assets/pizza.jpg'}
+                              src={menu.menu_items?.[0]?.image_url || '/assets/pizza.jpg'}
                               alt={menu.name}
                               className="h-full w-full rounded-full object-cover"
                               draggable={false}

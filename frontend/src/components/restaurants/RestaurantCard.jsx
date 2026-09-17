@@ -7,6 +7,8 @@ import useRestaurantStore from '@/lib/store/restaurantStore';
 export default function RestaurantCard({ restaurant, animationDelay = 0 }) {
    const { id, name, address, status, distance, image_url, menus } = restaurant;
 
+   console.log(menus);
+
    const setSelectedRestaurant = useRestaurantStore((state) => state.setSelectedRestaurant);
 
    return (
@@ -68,12 +70,12 @@ export default function RestaurantCard({ restaurant, animationDelay = 0 }) {
                   {distance && ` • ${distance}`}
                </h4>
 
-               <h3 className="line-clamp-1 text-[14px] font-[600] text-[#6B7280] max-[700px]:text-[12px]">
-                  {menus?.length
+               <h3 className="line-clamp-1 text-sm font-semibold text-gray-500 max-[700px]:text-xs">
+                  {Array.isArray(menus) && menus.length > 0
                      ? menus
-                        .slice(0, 3)
-                        .map((menu) => menu.name)
-                        .join(', ')
+                          .slice(0, 3)
+                          .map((menu) => menu.name)
+                          .join(', ')
                      : 'No menus'}
                </h3>
 
