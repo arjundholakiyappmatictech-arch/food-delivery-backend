@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class MenuItemResource extends JsonResource
 {
@@ -16,7 +17,11 @@ class MenuItemResource extends JsonResource
             'name' => $this->name,
             'price' => $this->price,
             'availability' => $this->availability,
-            'image_url' => $this->image_path ? Storage::disk('public')->url($this->image_path) : null,
+            'image_url' => $this->image_path
+                ? (Str::startsWith($this->image_path, ['http://', 'https://'])
+                    ? $this->image_path
+                    : Storage::disk('public')->url($this->image_path))
+                : null,
         ];
     }
 }

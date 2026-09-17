@@ -6,7 +6,6 @@ use App\Exceptions\Menu\DuplicateMenuException;
 use App\Models\Menu;
 use App\Models\Restaurant;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 

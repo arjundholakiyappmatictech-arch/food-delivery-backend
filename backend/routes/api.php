@@ -39,6 +39,7 @@ Route::put('restaurants/images/bulk', [RestaurantController::class, 'bulkUpdateI
 Route::post('menus/store', [MenuController::class, 'store'])->middleware('auth:sanctum');
 
 Route::post('menu-items/store', [MenuItemController::class, 'store'])->middleware('auth:sanctum');
+Route::put('menu-items/images/bulk', [MenuItemController::class, 'bulkUpdateImages']);
 
 Route::middleware('auth:sanctum')
     ->controller(CartController::class)

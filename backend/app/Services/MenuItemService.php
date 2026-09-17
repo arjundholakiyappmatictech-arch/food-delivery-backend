@@ -8,6 +8,7 @@ use App\Models\MenuItem;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -15,6 +16,23 @@ use RuntimeException;
 
 class MenuItemService
 {
+    public function bulkUpdateImages(array $data): Collection
+    {
+        return DB::transaction(function () use ($data) {
+            $menuItems = collect();
+
+            foreach ($data['menu_items'] as $item) {
+                $menuItem = MenuItem::findOrFail($item['id']);
+                $menuItem->update([
+                    'image_path' => $item['image_url'],
+                ]);
+                $menuItems->push($menuItem->refresh());
+            }
+
+            return $menuItems;
+        });
+    }
+
     public function store(array $data): MenuItem
     {
         $menu = Menu::query()->findOrFail($data['menu_id']);
