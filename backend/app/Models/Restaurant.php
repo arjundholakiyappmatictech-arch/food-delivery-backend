@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Restaurant extends Model
 {
-    use HasFactory;
 
     protected $fillable = ['restaurant_owner_id', 'name', 'image_path', 'address', 'status', 'latitude', 'longitude'];
 
