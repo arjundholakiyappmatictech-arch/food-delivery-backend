@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
 
+use Illuminate\Support\Str;
+
 class RestaurantResource extends JsonResource
 {
     public function toArray(Request $request): array
@@ -13,7 +15,11 @@ class RestaurantResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'image_url' => $this->image_path ? Storage::disk('public')->url($this->image_path) : null,
+            'image_url' => $this->image_path
+                ? (Str::startsWith($this->image_path, ['http://', 'https://'])
+                    ? $this->image_path
+                    : Storage::disk('public')->url($this->image_path))
+                : null,
             'address' => $this->address,
             'status' => $this->status,
             'latitude' => $this->latitude,
