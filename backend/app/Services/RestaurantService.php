@@ -20,17 +20,11 @@ class RestaurantService
 
     public function updateImage(Restaurant $restaurant, array $data): Restaurant
     {
-        $oldImagePath = $restaurant->image_path;
-
-        $newImagePath = $data['image']->store("restaurants/{$restaurant->id}", 'public');
+        $imageUrl = $data['image'] ?? $data['image_url'] ?? $data['image_path'] ?? null;
 
         $restaurant->update([
-            'image_path' => $newImagePath,
+            'image_path' => $imageUrl,
         ]);
-
-        if ($oldImagePath && Storage::disk('public')->exists($oldImagePath)) {
-            Storage::disk('public')->delete($oldImagePath);
-        }
 
         return $restaurant->refresh();
     }
