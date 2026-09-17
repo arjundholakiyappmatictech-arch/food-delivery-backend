@@ -59,13 +59,12 @@ export default function MenuItemCard({
                </h4>
 
                <span
-                  className={`mt-[10px] inline-block text-[14px] font-[500] max-[600px]:mt-[8px] max-[600px]:text-[12px] ${
-                     restaurantClosed
-                        ? 'grayscale brightness-90'
-                        : item.availability
-                          ? 'text-[#1BA672]'
-                          : 'text-red-500'
-                  }`}
+                  className={`mt-[10px] inline-block text-[14px] font-[500] max-[600px]:mt-[8px] max-[600px]:text-[12px] ${restaurantClosed
+                     ? 'grayscale brightness-90'
+                     : item.availability
+                        ? 'text-[#1BA672]'
+                        : 'text-red-500'
+                     }`}
                >
                   {item.availability ? 'Available' : 'Not Available'}
                </span>
@@ -91,7 +90,7 @@ export default function MenuItemCard({
                   <div
                      className={`${addToCartBtnStyles} cursor-not-allowed justify-center bg-[#F2F2F2] py-[7px] text-[14px] text-[#999] shadow-none max-[600px]:text-[12px]`}
                   >
-                     Unavailable
+                     ADD
                   </div>
                ) : quantity === 0 ? (
                   <button
