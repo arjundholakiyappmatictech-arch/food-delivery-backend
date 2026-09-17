@@ -11,11 +11,29 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class RestaurantService
 {
     private const DUPLICATE_RADIUS_METERS = 8;
+
+    public function updateImage(Restaurant $restaurant, array $data): Restaurant
+    {
+        $oldImagePath = $restaurant->image_path;
+
+        $newImagePath = $data['image']->store("restaurants/{$restaurant->id}", 'public');
+
+        $restaurant->update([
+            'image_path' => $newImagePath,
+        ]);
+
+        if ($oldImagePath && Storage::disk('public')->exists($oldImagePath)) {
+            Storage::disk('public')->delete($oldImagePath);
+        }
+
+        return $restaurant->refresh();
+    }
 
     public function store(array $data): Restaurant
     {
