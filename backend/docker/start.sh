@@ -18,3 +18,6 @@ php-fpm -D
 
 echo "Starting Nginx..."
 nginx -g 'daemon off;'
+
+echo "Creating storage symlink..."
+php artisan storage:link || true
