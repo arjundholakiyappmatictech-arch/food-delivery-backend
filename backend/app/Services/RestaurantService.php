@@ -18,15 +18,21 @@ class RestaurantService
 {
     private const DUPLICATE_RADIUS_METERS = 8;
 
-    public function updateImage(Restaurant $restaurant, array $data): Restaurant
+    public function bulkUpdateImages(array $data): Collection
     {
-        $imageUrl = $data['image'] ?? $data['image_url'] ?? $data['image_path'] ?? null;
+        return DB::transaction(function () use ($data) {
+            $restaurants = collect();
 
-        $restaurant->update([
-            'image_path' => $imageUrl,
-        ]);
+            foreach ($data['restaurants'] as $item) {
+                $restaurant = Restaurant::findOrFail($item['id']);
+                $restaurant->update([
+                    'image_path' => $item['image_url'],
+                ]);
+                $restaurants->push($restaurant->refresh());
+            }
 
-        return $restaurant->refresh();
+            return $restaurants;
+        });
     }
 
     public function store(array $data): Restaurant

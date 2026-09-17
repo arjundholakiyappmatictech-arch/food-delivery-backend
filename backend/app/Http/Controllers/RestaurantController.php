@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\BulkUpdateRestaurantImagesRequest;
 use App\Http\Requests\NearByRestaurantRequest;
 use App\Http\Requests\StoreRestaurantRequest;
-use App\Http\Requests\UpdateRestaurantImageRequest;
 use App\Http\Resources\MenuResource;
 use App\Http\Resources\RestaurantResource;
 use App\Models\Restaurant;
@@ -34,12 +34,15 @@ class RestaurantController extends Controller
         }
     }
 
-    public function updateImage(UpdateRestaurantImageRequest $request, Restaurant $restaurant): JsonResponse
+    public function bulkUpdateImages(BulkUpdateRestaurantImagesRequest $request): JsonResponse
     {
         try {
-            $restaurant = $this->restaurantService->updateImage($restaurant, $request->validated());
+            $restaurants = $this->restaurantService->bulkUpdateImages($request->validated());
 
-            return $this->successResponse('Restaurant image updated successfully', new RestaurantResource($restaurant));
+            return $this->successResponse(
+                'Restaurant images updated successfully in bulk',
+                RestaurantResource::collection($restaurants)
+            );
         } catch (Exception $exception) {
             return $this->errorResponse(
                 $exception->getMessage(),
