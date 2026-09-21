@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Exceptions\Address\AddressLimitExceededException;
-use App\Exceptions\Address\DefaultAddressCannotBeUnsetException;
 use App\Exceptions\Address\DuplicateAddressException;
 use App\Exceptions\Address\LastAddressCannotBeDeletedException;
 use App\Models\Address;
@@ -82,10 +81,6 @@ class AddressService
         $this->ensureCustomer($user);
 
         $this->authorize($address, $user);
-
-        /*  if (array_key_exists('is_default', $data) && $data['is_default'] === false && $address->is_default) {
-            throw new DefaultAddressCannotBeUnsetException();
-        } */
 
         $updatedData = array_merge(
             [
