@@ -2,10 +2,12 @@
 
 namespace App\Mcp\Tools;
 
+use App\Exceptions\Mcp\McpException;
+use App\Exceptions\Mcp\OrderNotFoundException;
+use App\Http\Resources\OrderResource;
 use App\Models\Order;
 use App\Services\OrderService;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use Illuminate\JsonSchema\Types\Type;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
@@ -16,25 +18,26 @@ use Laravel\Mcp\Server\Tool;
 class GetOrderTool extends Tool
 {
     public function __construct(private OrderService $orderService) {}
-    /**
-     * Handle the tool request.
-     */
-    public function handle(Request $request): ResponseFactory
+
+    public function handle(Request $request): ResponseFactory|Response
     {
-        $orderId = $request->integer('order_id');
+        try {
+            $orderId = $request->integer('order_id');
 
-        $order = Order::findOrFail($orderId);
+            $order = Order::find($orderId);
 
-        $order = $this->orderService->show($order);
+            if (!$order) {
+                throw new OrderNotFoundException($orderId);
+            }
 
-        return Response::structured($order->toArray());
+            $order = $this->orderService->show($order);
+
+            return Response::structured(new OrderResource($order)->resolve());
+        } catch (McpException $exception) {
+            return Response::error($exception->getMessage());
+        }
     }
 
-    /**
-     * Get the tool's input schema.
-     *
-     * @return array<string, Type>
-     */
     public function schema(JsonSchema $schema): array
     {
         return [
