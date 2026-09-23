@@ -1,10 +1,12 @@
 'use client';
 import { LOCATION_SVG } from '@/assets/icons';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { formatDate } from '@/lib/utils';
 import ReviewModal from '../review/ReviewModal';
 
 export default function OrderCard({ order }) {
+   const router = useRouter();
    const visibleItems = order.order_items.slice(0, 2);
    const remainingItems = order.order_items.length - 2;
 
@@ -20,21 +22,33 @@ export default function OrderCard({ order }) {
       return status.replaceAll('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase());
    }
 
+   const handleCardClick = (e) => {
+      if (e.target.closest('button') || e.target.closest('[role="dialog"]')) {
+         return;
+      }
+      router.push(`/orders/${order.id}`);
+   };
+
    return (
-      <article className="rounded-2xl border border-[#E9E9E9] bg-white shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
+      <article
+         onClick={handleCardClick}
+         className="group cursor-pointer rounded-2xl border border-[#E9E9E9] bg-white shadow-[0_4px_20px_rgba(0,0,0,0.04)] transition-all duration-200 hover:border-gray-300 hover:shadow-[0_4px_25px_rgba(0,0,0,0.08)]"
+      >
          <div className="flex items-center gap-5 p-6">
             <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full">
                <img
                   src={order.restaurant?.image_url || '/assets/default-restaurant.jpg'}
                   alt={order.restaurant?.name || 'Restaurant'}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   draggable={false}
                />
             </div>
 
             <div className="min-w-0 flex-1">
                <div className="flex items-center justify-between gap-4">
-                  <h2 className="truncate text-xl font-semibold text-[#02060C]">{order.restaurant?.name}</h2>
+                  <h2 className="truncate text-xl font-semibold text-[#02060C] transition-colors group-hover:text-[#E56A77]">
+                     {order.restaurant?.name}
+                  </h2>
 
                   <p className="shrink-0 text-sm font-medium text-gray-500">#{order.id}</p>
                </div>
@@ -106,8 +120,11 @@ export default function OrderCard({ order }) {
                ) : (
                   <button
                      type="button"
-                     onClick={() => setReviewModalOpen(true)}
-                     className="rounded-xl bg-[#D95765] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#C74655]"
+                     onClick={(e) => {
+                        e.stopPropagation();
+                        setReviewModalOpen(true);
+                     }}
+                     className="rounded-xl bg-[#D95765] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#C74655] cursor-pointer"
                   >
                      Write a Review
                   </button>

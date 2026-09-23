@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 
 import ConfirmDeleteModal from '@/components/common/ConfirmDeleteModal';
 import BillSummaryCard from '@/components/orders/BillSummaryCard';
@@ -16,6 +17,7 @@ import Script from 'next/script';
 
 export default function OrderDetailsPage() {
    const params = useParams();
+   const router = useRouter();
    const { order, loading, error, cancelOrder } = useOrder(params.id);
    const { openRazorpayCheckout } = useRazorpay();
    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
@@ -31,8 +33,19 @@ export default function OrderDetailsPage() {
 
    if (error && !order) {
       return (
-         <main className="flex min-h-screen items-center justify-center bg-[#fafafa]">
-            <p className="text-sm text-red-500">{error}</p>
+         <main className="flex min-h-screen flex-col items-center justify-center bg-[#fafafa] px-4">
+            <div className="w-full max-w-md rounded-2xl border border-red-200 bg-red-50 p-6 text-center">
+               <p className="text-sm font-semibold text-red-600">{error}</p>
+
+               <button
+                  type="button"
+                  onClick={() => router.push('/orders')}
+                  className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#D95765] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#C74655] cursor-pointer"
+               >
+                  <ArrowLeft size={16} />
+                  Back to Orders
+               </button>
+            </div>
          </main>
       );
    }

@@ -17,7 +17,7 @@ export default function OrderHeader({ order }) {
          <button
             type="button"
             onClick={() => router.push('/orders')}
-            className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-[#02060C] transition hover:text-[#E56A77]"
+            className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-[#02060C] transition hover:text-[#E56A77] cursor-pointer"
          >
             <ArrowLeft size={18} />
             Back to Orders
