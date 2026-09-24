@@ -4,7 +4,7 @@ namespace App\Mcp\Tools;
 
 use App\Exceptions\Mcp\McpException;
 use App\Exceptions\Mcp\OrderNotFoundException;
-use App\Http\Resources\OrderResource;
+use App\Http\Resources\Mcp\OrderResource;
 use App\Models\Order;
 use App\Services\OrderService;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
