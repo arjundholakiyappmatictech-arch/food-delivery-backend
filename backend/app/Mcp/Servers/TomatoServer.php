@@ -5,6 +5,8 @@ namespace App\Mcp\Servers;
 use App\Mcp\Resources\RestaurantMenuResource;
 use App\Mcp\Tools\GetOrderTool;
 use App\Mcp\Tools\GetRestaurantMenuTool;
+use App\Mcp\Tools\SearchRestaurantMenuTool;
+use App\Mcp\Tools\SearchRestaurantsTool;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -15,7 +17,12 @@ use Laravel\Mcp\Server\Attributes\Version;
 #[Instructions('Instructions describing how to use the server and its features.')]
 class TomatoServer extends Server
 {
-    protected array $tools = [GetOrderTool::class, GetRestaurantMenuTool::class];
+    protected array $tools = [
+        GetOrderTool::class,
+        GetRestaurantMenuTool::class,
+        SearchRestaurantMenuTool::class,
+        SearchRestaurantsTool::class,
+    ];
 
     protected array $resources = [RestaurantMenuResource::class];
 
