@@ -225,7 +225,9 @@ export function AddressForm({ defaultValues, onSubmit, submitting, submitLabel, 
 
          <div className="rounded-xl border border-[#E9E9E9] bg-[#FAFAFA] p-2.5">
             <div className="mb-1 flex items-center justify-between">
-               <span className="text-[11px] font-semibold text-[#02060C]">Coordinates</span>
+               <span className="text-[11px] font-semibold text-[#02060C]">
+                  Coordinates <span className="text-[#E56A77]">*</span>
+               </span>
                <span className="text-[10px] text-[#595959]">Required for delivery check</span>
             </div>
 

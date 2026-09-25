@@ -41,7 +41,12 @@ export default function ReviewModal({ isOpen, onClose, order, onReviewSubmitted 
    };
 
    return (
-      <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
+      <div
+         role="dialog"
+         aria-modal="true"
+         onClick={(e) => e.stopPropagation()}
+         className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm"
+      >
          <div className="relative w-full max-w-[500px] rounded-2xl bg-white p-6 shadow-[0_20px_60px_rgba(0,0,0,0.18)]">
             <button
                type="button"
@@ -69,8 +74,9 @@ export default function ReviewModal({ isOpen, onClose, order, onReviewSubmitted 
                         type="button"
                         disabled={loading}
                         onClick={() => setRating(star)}
-                        className={`text-4xl leading-none transition-transform hover:scale-110 ${star <= rating ? 'text-[#E56A77]' : 'text-[#D9D9D9]'
-                           }`}
+                        className={`text-4xl leading-none transition-transform hover:scale-110 ${
+                           star <= rating ? 'text-[#E56A77]' : 'text-[#D9D9D9]'
+                        }`}
                      >
                         ★
                      </button>
@@ -116,10 +122,11 @@ export default function ReviewModal({ isOpen, onClose, order, onReviewSubmitted 
                   type="button"
                   onClick={handleSubmit}
                   disabled={!rating || loading}
-                  className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition ${rating && !loading
+                  className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition ${
+                     rating && !loading
                         ? 'bg-[#D95765] text-white hover:bg-[#C74655]'
                         : 'cursor-not-allowed bg-[#F1F1F1] text-[#999999]'
-                     }`}
+                  }`}
                >
                   {loading ? 'Submitting...' : 'Submit Review'}
                </button>
