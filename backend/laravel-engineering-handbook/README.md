@@ -98,11 +98,12 @@ laravel-engineering-handbook/
 2. **Reviewing Pull Requests:** Use [`02-application-architecture/01-layer-responsibilities.md`](02-application-architecture/01-layer-responsibilities.md) and [`01-fundamentals/02-solid-in-laravel.md`](01-fundamentals/02-solid-in-laravel.md) as objective evaluation rubrics.
 3. **Architecture Decisions:** Consult [`12-research/README.md`](12-research/README.md) to review ratified ADRs.
 
-### For AI Coding Assistants (Antigravity, Claude Code, Cursor)
-1. **Mandatory First Read:** Always read [`GUIDELINES.md`](GUIDELINES.md) first to load organizational guardrails into memory.
-2. **Inspect Before Changing:** Read the target project's `composer.json` to identify exact Laravel and PHP versions.
-3. **No Speculation:** Never invent classes, methods, or database columns not already defined in the codebase.
-4. **Clean Decoupling:** Keep business logic pure; never couple domain service classes to global HTTP request or session state.
+### For AI Coding Assistants (Antigravity, Claude Code, Cursor, Codex)
+1. **Entry Point:** Ingest root [`AGENTS.md`](../../AGENTS.md), which serves as the canonical pointer to [`GUIDELINES.md`](GUIDELINES.md).
+2. **Mandatory First Read:** Always read [`GUIDELINES.md`](GUIDELINES.md) first to load organizational guardrails into memory.
+3. **Inspect Before Changing:** Read the target project's `composer.json` to identify exact Laravel and PHP versions.
+4. **No Speculation:** Never invent classes, methods, or database columns not already defined in the codebase.
+5. **Clean Decoupling:** Keep business logic pure; never couple domain service classes to global HTTP request or session state.
 
 ---
 

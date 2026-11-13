@@ -1,6 +1,6 @@
 # Global Laravel Engineering Guidelines
 
-> **The canonical reference document for backend developers and AI coding agents. Read this file before creating, modifying, refactoring, or reviewing code in any Laravel application.**
+> **The canonical reference document for backend developers and AI coding agents. Read this file before creating, modifying, refactoring, or reviewing code in any Laravel application. Auto-loaded via root [`AGENTS.md`](../../AGENTS.md).**
 
 ---
 
