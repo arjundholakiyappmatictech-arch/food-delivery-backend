@@ -2,7 +2,7 @@
 ## Source Project: Food Delivery Application (`backend/`)
 
 > **Document ID:** RES-001  
-> **Source Codebase:** `E:\food-delivery-backend\backend`  
+> **Source Codebase:** `backend/`  
 > **Target Framework:** Laravel 13.16.1 on PHP 8.4.23  
 > **Audit Date:** 2026-11-07  
 > **Status:** Completed & Preserved
@@ -24,7 +24,7 @@ The goal was to:
 ## 2. Complete Finding Inventory
 
 ### Finding 1: RPC Verb Suffixes in RESTful Route URIs
-* **Location:** [`backend/routes/api.php`](file:///e:/food-delivery-backend/backend/routes/api.php)
+* **Location:** `backend/routes/api.php`
 * **Existing Approach:**
   ```php
   Route::post('addresses/store', 'store');
@@ -45,8 +45,8 @@ The goal was to:
 
 ### Finding 2: Inconsistent JSON Response Envelopes
 * **Location:**
-  * Exception Handler: [`backend/bootstrap/app.php`](file:///e:/food-delivery-backend/backend/bootstrap/app.php)
-  * Base Controller: [`backend/app/Http/Controllers/Controller.php`](file:///e:/food-delivery-backend/backend/app/Http/Controllers/Controller.php)
+  * Exception Handler: `backend/bootstrap/app.php`
+  * Base Controller: `backend/app/Http/Controllers/Controller.php`
 * **Existing Approach:**
   * Global exceptions return: `{"status": false, "message": "...", "data": null}`
   * Controller errors return: `{"success": false, "message": "...", "errors": null}`
@@ -62,8 +62,8 @@ The goal was to:
 
 ### Finding 3: Catching Generic `\Exception` in Controllers with `$e->getCode()`
 * **Location:** 
-  * [`backend/app/Http/Controllers/AddressController.php`](file:///e:/food-delivery-backend/backend/app/Http/Controllers/AddressController.php)
-  * [`backend/app/Http/Controllers/OrderController.php`](file:///e:/food-delivery-backend/backend/app/Http/Controllers/OrderController.php)
+  * `backend/app/Http/Controllers/AddressController.php`
+  * `backend/app/Http/Controllers/OrderController.php`
 * **Existing Approach:**
   ```php
   try {
@@ -83,7 +83,7 @@ The goal was to:
 ---
 
 ### Finding 4: Blanket `QueryException` Masking in Exception Handler
-* **Location:** [`backend/bootstrap/app.php`](file:///e:/food-delivery-backend/backend/bootstrap/app.php)
+* **Location:** `backend/bootstrap/app.php`
 * **Existing Approach:**
   ```php
   $exceptions->render(function (QueryException $e, $request) {
@@ -102,8 +102,8 @@ The goal was to:
 
 ### Finding 5: Validation Rule Inconsistencies (Pipe vs Array)
 * **Location:**
-  * [`backend/app/Http/Requests/RegisterRequest.php`](file:///e:/food-delivery-backend/backend/app/Http/Requests/RegisterRequest.php) (Pipe string)
-  * [`backend/app/Http/Requests/PlaceOrderRequest.php`](file:///e:/food-delivery-backend/backend/app/Http/Requests/PlaceOrderRequest.php) (Array)
+  * `backend/app/Http/Requests/RegisterRequest.php` (Pipe string)
+  * `backend/app/Http/Requests/PlaceOrderRequest.php` (Array)
 * **Existing Approach:** Some Form Requests use `'required|string|max:255'` while others use `['required', 'exists:addresses,id']`.
 * **Assessment:** Pipe strings fail when validation rules require parameters containing colons or regex pipes. Arrays are safer, static-analysis friendly, and allow fluent `Rule::` objects.
 * **Recommended Approach:** Standardize exclusively on array validation rules across all Form Requests.
@@ -113,8 +113,8 @@ The goal was to:
 
 ### Finding 6: Exemplary Relationship Loading via `whenLoaded`
 * **Location:**
-  * [`backend/app/Http/Resources/OrderResource.php`](file:///e:/food-delivery-backend/backend/app/Http/Resources/OrderResource.php)
-  * [`backend/app/Http/Resources/RestaurantResource.php`](file:///e:/food-delivery-backend/backend/app/Http/Resources/RestaurantResource.php)
+  * `backend/app/Http/Resources/OrderResource.php`
+  * `backend/app/Http/Resources/RestaurantResource.php`
 * **Existing Approach:**
   ```php
   'customer' => new UserResource($this->whenLoaded('user')),
@@ -129,8 +129,8 @@ The goal was to:
 
 ### Finding 7: Coupling Services to Global Auth State (`Auth::user()`)
 * **Location:**
-  * [`backend/app/Services/OrderService.php`](file:///e:/food-delivery-backend/backend/app/Services/OrderService.php)
-  * [`backend/app/Services/RestaurantService.php`](file:///e:/food-delivery-backend/backend/app/Services/RestaurantService.php)
+  * `backend/app/Services/OrderService.php`
+  * `backend/app/Services/RestaurantService.php`
 * **Existing Approach:** Services call `Auth::user()` internally to fetch the authenticated user and perform role checks (`$user->type !== 'customer'`).
 * **Assessment:** Tightly couples domain services to HTTP sessions. When a background queue job, scheduled console command, or AI tool calls `OrderService`, `Auth::user()` is `null`, throwing unhandled exceptions.
 * **Recommended Approach:** Pass the acting `User` model explicitly into service methods (`public function store(User $customer, array $data): Order`). Move role and permission checks into Laravel Policies.
@@ -140,8 +140,8 @@ The goal was to:
 
 ### Finding 8: External API Calls Inside vs. Outside DB Transactions
 * **Location:**
-  * Inside transaction: [`backend/app/Services/PaymentService.php`](file:///e:/food-delivery-backend/backend/app/Services/PaymentService.php)
-  * Outside transaction: [`backend/app/Services/OrderService.php`](file:///e:/food-delivery-backend/backend/app/Services/OrderService.php)
+  * Inside transaction: `backend/app/Services/PaymentService.php`
+  * Outside transaction: `backend/app/Services/OrderService.php`
 * **Existing Approach:**
   * In `PaymentService`: Razorpay `createOrder` API call is executed inside `DB::transaction(...)`.
   * In `OrderService`: Razorpay `refundPayment` API call is executed before `DB::transaction(...)`.
@@ -152,7 +152,7 @@ The goal was to:
 ---
 
 ### Finding 9: Queue Jobs Dispatched Inside Transactions Without `afterCommit`
-* **Location:** [`backend/app/Services/PaymentService.php#L51`](file:///e:/food-delivery-backend/backend/app/Services/PaymentService.php#L51)
+* **Location:** `backend/app/Services/PaymentService.php#L51`
 * **Existing Approach:**
   ```php
   DB::transaction(function () use ($order) {
@@ -169,9 +169,9 @@ The goal was to:
 
 ### Finding 10: Untyped Model Relationships
 * **Location:**
-  * [`backend/app/Models/User.php`](file:///e:/food-delivery-backend/backend/app/Models/User.php)
-  * [`backend/app/Models/Order.php`](file:///e:/food-delivery-backend/backend/app/Models/Order.php)
-  * [`backend/app/Models/Address.php`](file:///e:/food-delivery-backend/backend/app/Models/Address.php)
+  * `backend/app/Models/User.php`
+  * `backend/app/Models/Order.php`
+  * `backend/app/Models/Address.php`
 * **Existing Approach:**
   ```php
   public function user() { return $this->belongsTo(User::class); }
@@ -185,7 +185,7 @@ The goal was to:
 
 ### Finding 11: Migration Hygiene & Reversibility
 * **Location:**
-  * [`backend/database/migrations/2026_08_13_060526_add_restaurant_id_to_orders_table.php`](file:///e:/food-delivery-backend/backend/database/migrations/2026_08_13_060526_add_restaurant_id_to_orders_table.php)
+  * `backend/database/migrations/2026_08_13_060526_add_restaurant_id_to_orders_table.php`
 * **Existing Approach:**
   * `down()` is empty (`//`).
   * `cascadeOnDelete()` was added to `orders.restaurant_id`.
@@ -200,7 +200,7 @@ The goal was to:
 ---
 
 ### Finding 12: Double Queuing Anti-Pattern in Event Listeners
-* **Location:** [`backend/app/Listeners/SendWelcomeEmailListener.php`](file:///e:/food-delivery-backend/backend/app/Listeners/SendWelcomeEmailListener.php)
+* **Location:** `backend/app/Listeners/SendWelcomeEmailListener.php`
 * **Existing Approach:**
   ```php
   class SendWelcomeEmailListener implements ShouldQueue
@@ -219,9 +219,9 @@ The goal was to:
 
 ### Finding 13: Native Laravel MCP Server Implementation
 * **Location:**
-  * [`backend/routes/ai.php`](file:///e:/food-delivery-backend/backend/routes/ai.php)
-  * [`backend/app/Mcp/Servers/TomatoServer.php`](file:///e:/food-delivery-backend/backend/app/Mcp/Servers/TomatoServer.php)
-  * [`backend/app/Mcp/Tools/SearchRestaurantsTool.php`](file:///e:/food-delivery-backend/backend/app/Mcp/Tools/SearchRestaurantsTool.php)
+  * `backend/routes/ai.php`
+  * `backend/app/Mcp/Servers/TomatoServer.php`
+  * `backend/app/Mcp/Tools/SearchRestaurantsTool.php`
 * **Existing Approach:** The project integrates `laravel/mcp` (v1.0.0) exposing an authenticated MCP endpoint (`/mcp/tomato`) with custom AI tools (`GetOrderTool`, `SearchRestaurantsTool`).
 * **Assessment:** Forward-thinking foundation for AI development. However, `SearchRestaurantsTool` hardcodes `where('name', 'ILIKE', ...)` which breaks when running SQLite in tests.
 * **Recommended Approach:** Standardize AI agent tool building using `laravel/mcp` and `laravel/boost`. Make tools database-driver agnostic.
@@ -231,8 +231,8 @@ The goal was to:
 
 ### Finding 14: Zero Domain Test Coverage
 * **Location:**
-  * [`backend/tests/Pest.php`](file:///e:/food-delivery-backend/backend/tests/Pest.php)
-  * [`backend/tests/Feature/ExampleTest.php`](file:///e:/food-delivery-backend/backend/tests/Feature/ExampleTest.php)
+  * `backend/tests/Pest.php`
+  * `backend/tests/Feature/ExampleTest.php`
 * **Existing Approach:** Pest 4.7 is configured, but `RefreshDatabase` is commented out. Only default boilerplate tests exist; zero tests cover Auth, Orders, Payments, or Deliveries.
 * **Assessment:** Operating without automated tests prevents confident refactoring and exposes the app to regressions.
 * **Recommended Approach:** Require Pest-based Feature tests for every endpoint following the "Arrange, Act, Assert" standard.

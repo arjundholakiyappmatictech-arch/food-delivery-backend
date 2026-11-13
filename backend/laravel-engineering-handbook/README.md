@@ -74,19 +74,19 @@ laravel-engineering-handbook/
 ├── CHANGELOG.md                        # Semantic version history of standards
 ├── CONTRIBUTING.md                     # Process for proposing changes & ADRs
 │
-├── 01-fundamentals/                    # PHP 8.4 types, Laravel core concepts, SOLID
-├── 02-application-architecture/        # Directory organization, dependency injection, layers
-├── 03-api-engineering/                 # REST URIs, versioning, Form Requests, Resources
-├── 04-business-logic/                  # Decoupled Services, Actions, DTOs, custom exceptions
-├── 05-database-engineering/            # Migrations, Eloquent relations, indexing, transactions
-├── 06-code-quality/                    # Pint styling, Larastan analysis, code review rubric
-├── 07-security-performance/            # Sanctum auth, Policies, webhooks, caching, secrets
-├── 08-testing-quality-assurance/       # Pest testing, feature tests, service mocks
-├── 09-ai-engineering/                  # AI development workflow, Laravel Boost, MCP tools
-├── 10-reusable-templates/              # Production-ready stubs (Controllers, Requests, Tests)
-├── 11-references/                      # Official Laravel docs, ecosystem links, tooling
-├── 12-research/                        # Codebase discovery reports, ADRs, version research
-└── 13-project-integration/             # Adopting the handbook across other Laravel projects
+├── 01-fundamentals/                    # [ACTIVE] PHP 8.4 types, SOLID, language baselines
+├── 02-application-architecture/        # [ACTIVE] Layer boundaries, DI, exact project directory map
+├── 03-api-engineering/                 # [ACTIVE] 2-verb routing, Form Requests, API Resources
+├── 04-business-logic/                  # [ROADMAP] Decoupled Services, Actions, AppException hierarchy
+├── 05-database-engineering/            # [ROADMAP] Migrations, Eloquent relations, indexing, transactions
+├── 06-code-quality/                    # [ROADMAP] Pint styling, Larastan analysis, code review rubric
+├── 07-security-performance/            # [ROADMAP] Sanctum auth, Policies, webhooks, caching, secrets
+├── 08-testing-quality-assurance/       # [ROADMAP] Pest testing, feature tests, service mocks
+├── 09-ai-engineering/                  # [ROADMAP] AI development workflow, Laravel Boost, MCP tools
+├── 10-reusable-templates/              # [ROADMAP] Reference templates & stubs (Markdown specs)
+├── 11-references/                      # [ROADMAP] Official Laravel docs, ecosystem links, tooling
+├── 12-research/                        # [ACTIVE] Codebase discovery reports (RES-001) & ADRs (ADR-001)
+└── 13-project-integration/             # [ROADMAP] Adopting the handbook across other Laravel projects
 ```
 
 ---
@@ -94,9 +94,9 @@ laravel-engineering-handbook/
 ## 5. How to Use This Handbook
 
 ### For Human Developers
-1. **Starting a New Feature:** Read the relevant section in `03-api-engineering/` or `04-business-logic/` before writing controllers or service classes.
-2. **Reviewing Pull Requests:** Use `06-code-quality/03-code-review-checklist.md` as an objective evaluation checklist.
-3. **Database Schema Changes:** Review `05-database-engineering/02-database-design-migrations.md` to guarantee safe foreign keys, reversible migrations, and performance indexing.
+1. **Starting a New Feature:** Read the relevant section in [`02-application-architecture/`](02-application-architecture/README.md) or [`03-api-engineering/`](03-api-engineering/README.md) before writing controllers or service classes.
+2. **Reviewing Pull Requests:** Use [`02-application-architecture/01-layer-responsibilities.md`](02-application-architecture/01-layer-responsibilities.md) and [`01-fundamentals/02-solid-in-laravel.md`](01-fundamentals/02-solid-in-laravel.md) as objective evaluation rubrics.
+3. **Architecture Decisions:** Consult [`12-research/README.md`](12-research/README.md) to review ratified ADRs.
 
 ### For AI Coding Assistants (Antigravity, Claude Code, Cursor)
 1. **Mandatory First Read:** Always read [`GUIDELINES.md`](GUIDELINES.md) first to load organizational guardrails into memory.
@@ -108,8 +108,8 @@ laravel-engineering-handbook/
 
 ## 6. Maintenance & Governance
 
-* **Canonical Location:** `E:\food-delivery-backend\backend\laravel-engineering-handbook`
-* **Current Version:** `v1.0.0-draft`
-* **Maintainer:** Senior Laravel Engineering Lead
+* **Location:** `backend/laravel-engineering-handbook`
+* **Current Version:** `v1.0.1-draft`
+* **Maintainer:** Senior Laravel Engineering Team
 * **License:** Internal Engineering Standard
 

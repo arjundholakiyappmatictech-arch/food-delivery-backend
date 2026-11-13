@@ -274,15 +274,18 @@ When working as an AI developer in any Laravel repository:
 
 For in-depth explanations, trade-offs, and complete code samples, consult the handbook topic modules:
 
+### Active Modules
 * [01 - Fundamentals](01-fundamentals/README.md)
 * [02 - Application Architecture](02-application-architecture/README.md)
 * [03 - API Engineering](03-api-engineering/README.md)
-* [04 - Business Logic](04-business-logic/README.md)
-* [05 - Database Engineering](05-database-engineering/README.md)
-* [06 - Code Quality & Static Analysis](06-code-quality/README.md)
-* [07 - Security & Performance](07-security-performance/README.md)
-* [08 - Testing & Quality Assurance](08-testing-quality-assurance/README.md)
-* [09 - AI Engineering & Laravel Boost](09-ai-engineering/README.md)
-* [10 - Reusable Stubs & Templates](10-reusable-templates/README.md)
-* [12 - Research & Codebase Audits](12-research/README.md)
+* [12 - Research, Discovery Reports & ADRs](12-research/README.md)
+
+### Upcoming Roadmap Modules
+* `04 - Business Logic` (Services, Actions, Domain Exceptions)
+* `05 - Database Engineering` (Transactions, Migrations, Eloquent Relations)
+* `06 - Code Quality & Static Analysis` (Pint styling, Larastan Level 8)
+* `07 - Security & Performance` (Sanctum auth, Policies, Webhooks)
+* `08 - Testing & Quality Assurance` (Pest feature tests, Mocking)
+* `09 - AI Engineering` (Laravel MCP Server, AI developer workflows)
+* `10 - Reusable Templates` (Production-ready Markdown specs)
 
