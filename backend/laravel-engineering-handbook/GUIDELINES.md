@@ -22,7 +22,7 @@
 | **API Versioning** | Mandatory `v1` URL prefix (`/api/v1/...`). Route `name()` attribute is not required. | Unversioned routes (`/api/orders`). |
 | **Validation** | Array validation syntax (`['required', 'string', 'max:255']`) | Mixing pipe strings (`'required\|string'`) with arrays |
 | **Form Requests** | Enforce authorization via policies or documented gates | Leaving `authorize(): bool { return true; }` as unhandled dead code |
-| **Responses** | Company standard JSON envelope: `"is_error": false`, `"data": ...`, `"message": "..."`. On failure: `"is_error": true`, `"data": null`, `"message": "..."`. | Inconsistent keys (e.g. using `status` or `success` instead of `is_error`, omitting `message`). |
+| **Responses** | Company standard JSON envelope (ADR-001): `"is_error": false`, `"message": "..."`, `"data": ...`. On failure: `"is_error": true`, `"message": "..."`, `"data": null`. On 422: include `"errors": { ... }`. | Inconsistent keys (`status` or `success` instead of `is_error`); returning `"data": []` on error (schema type mutation); omitting `"message"` on validation errors. |
 | **Exception Handling** | Explicit controller-level `try / catch (Throwable $e)` delegating to Base Controller `handleException($e)`. Domain exceptions extend base `AppException`. Zero logic in `bootstrap/app.php`. | Passing unvalidated `$e->getCode()` directly to response (HTTP 0 crashes); leaking raw SQL queries from `QueryException`; duplicating identical catch blocks across controllers. |
 | **Service Context**| Always pass acting User entity explicitly as `User $user` parameter into service methods | Relying on `Auth::user()` inside domain services |
 | **Transactions** | Execute external HTTP calls (e.g. Razorpay, Stripe) **before** opening DB transactions | Calling external APIs inside `DB::transaction()` blocks |
@@ -114,32 +114,60 @@
   ```
 * Validate ownership constraints (e.g., verifying `address_id` belongs to the requesting user) in the validation rule using `Rule::exists()` rather than querying manually inside a service class.
 
-### C. Standardized API Response Envelopes
-All API responses—successes, validation failures, client errors, and uncaught exceptions—must conform to our company's single predictable schema using `"is_error"`, `"data"`, and `"message"`:
+### C. Standardized API Response Envelopes (ADR-001)
+All API responses—successes, validation failures, client errors, and uncaught exceptions—must conform to our company's single predictable schema using `"is_error"`, `"message"`, `"data"`, and optional `"errors"` / `"pagination"`:
 
+#### 1. Success Response (HTTP 200 / 201)
+* `data` contains the resource object or array of resources.
+* `errors` is omitted or `null`.
 ```json
-// Success Response (HTTP 200 / 201)
 {
   "is_error": false,
+  "message": "Resource created successfully.",
   "data": {
     "id": 82,
     "user_id": 32,
     "created_at": "2026-07-01T12:00:00.000000Z",
     "updated_at": "2026-10-29T07:12:38.000000Z"
-  },
-  "message": "Resource created successfully."
-}
-
-// Error Response (HTTP 4xx / 5xx)
-{
-  "is_error": true,
-  "data": null,
-  "message": "The given data was invalid.",
-  "errors": {
-    "email": ["The email has already been taken."]
   }
 }
 ```
+
+#### 2. General / Client / Server Error (HTTP 400, 401, 403, 404, 500)
+* `data` is strictly `null` (never `[]`).
+* `message` explains what went wrong.
+```json
+{
+  "is_error": true,
+  "message": "Failed to update user profile: Disk named `s3` cannot be accessed",
+  "data": null
+}
+```
+
+#### 3. Validation Error (HTTP 422 Unprocessable Entity)
+* `data` is strictly `null` (never `[]`).
+* `message` is a mandatory top-level summary string (e.g. `"The given data was invalid."`).
+* `errors` is an associative map where keys are field names and values are arrays of string error messages.
+```json
+{
+  "is_error": true,
+  "message": "The given data was invalid.",
+  "data": null,
+  "errors": {
+    "email": [
+      "The email has already been taken."
+    ],
+    "display_name": [
+      "Display name already been taken."
+    ]
+  }
+}
+```
+
+#### Invariant Envelope Rules:
+1. **`data` MUST be `null` on error:** Whenever `is_error` is `true`, `data` must evaluate to `null`. It is strictly forbidden to serialize empty arrays `[]`, booleans `false`, or empty strings `""`, as this introduces schema type collisions (array vs. object).
+2. **`message` is NEVER optional:** Every API response without exception must include a non-empty string in `message`.
+3. **`errors` structure:** On 422 validation failures, `errors` is always an associative map (`array<string, array<string>>`). Do not serialize flat strings or unkeyed arrays for `errors`.
 
 ### D. Services & Business Logic
 * **No Global State Coupling:**
