@@ -6,11 +6,9 @@
 
 ## 1. Core Engineering Pillars
 
-1. **Explicit Over Implicit:** Write strictly typed code. Declare return types, parameter types, and model casts explicitly.
-2. **Thin Controllers, Rich Domain:** Controllers coordinate HTTP requests; they do not calculate prices, format distances, or execute queries directly.
-3. **Decoupled Business Logic:** Domain services and action classes must be callable from HTTP, Console commands, Queue jobs, and AI MCP tools without depending on global HTTP or session state.
-4. **Data Integrity Above All:** Database operations involving multiple mutations must be wrapped in atomic transactions with zero external HTTP latency inside transaction boundaries.
-5. **No Speculation:** Never invent methods, attributes, database columns, or relations. Always inspect the codebase first.
+1. **Thin Controllers, Rich Domain:** Controllers coordinate HTTP requests; they do not calculate prices, format distances, or execute queries directly.
+2. **Decoupled Business Logic:** Domain services must be callable from HTTP, Console commands, Queue jobs, and AI MCP tools without depending on global HTTP or session state.
+3. **Data Integrity Above All:** Database operations involving multiple mutations must be wrapped in atomic transactions with zero external HTTP latency inside transaction boundaries.
 
 ---
 
@@ -21,265 +19,145 @@
 | **HTTP Routing Methods** | Strict 2-verb model: `GET` for fetching (`index`, `show`); `POST` for mutations. **CRUD operations MUST use standard suffixes (`/store`, `/{id}/update`, `/{id}/destroy`). Custom operations use descriptive custom names (e.g. `/{id}/cancel`, `/{id}/verify`).** | Using `PUT`, `PATCH`, or `DELETE` methods; performing mutations inside `GET` routes; using inconsistent CRUD suffixes. |
 | **API Versioning** | Mandatory `v1` URL prefix (`/api/v1/...`). Route `name()` attribute is not required. | Unversioned routes (`/api/orders`). |
 | **Validation** | Array validation syntax (`['required', 'string', 'max:255']`) | Mixing pipe strings (`'required\|string'`) with arrays |
-| **Form Requests** | Enforce authorization via policies or documented gates | Leaving `authorize(): bool { return true; }` as unhandled dead code |
 | **Responses** | Company standard JSON envelope (ADR-001): `"is_error": false`, `"message": "..."`, `"data": ...`. On failure: `"is_error": true`, `"message": "..."`, `"data": null`. On 422: include `"errors": { ... }`. | Inconsistent keys (`status` or `success` instead of `is_error`); returning `"data": []` on error (schema type mutation); omitting `"message"` on validation errors. |
 | **Exception Handling** | Explicit controller-level single `try / catch (Throwable $e)` delegating to Base Controller `handleException($e)`. Domain exceptions extend PHP's native `Exception` directly with predefined HTTP status codes via `parent::__construct(message: ..., code: ...)`. Zero logic in `bootstrap/app.php`. | Multiple catch blocks in controllers; passing unvalidated `$e->getCode()` directly to response (HTTP 0 crashes); leaking raw SQL queries from `QueryException`. |
 | **Service Context**| Always pass acting User entity explicitly as `User $user` parameter into service methods | Relying on `Auth::user()` inside domain services |
 | **Transactions** | Execute external HTTP calls (e.g. Razorpay, Stripe) **before** opening DB transactions | Calling external APIs inside `DB::transaction()` blocks |
 | **Queue Dispatch**| Dispatch transactional jobs using `->afterCommit()` or outside transaction block | Dispatching queue jobs inside transactions without commit hooks |
-| **Eloquent Typing**| Strict return types on all relations (`BelongsTo`, `HasMany`, `HasOne`) | Untyped relation methods (`public function user()`) |
 | **Model Casting** | Use method-based `protected function casts(): array` for dates, decimals, booleans, hashes | Leaving booleans, decimals, and dates uncast |
-| **Migrations** | Complete, reversible `down()` methods in every migration | Empty `down()` methods (`//`) or irreversible alterations |
 | **Foreign Keys** | Use `restrictOnDelete()` or soft deletes for financial and historical data | `cascadeOnDelete()` on orders, payments, or ledger records |
-| **Listeners** | Synchronous listener dispatching a Job OR queued listener handling logic directly | Queuing a listener solely to dispatch another queue job |
 
 ---
 
-## 3. Detailed Standards by Layer
+## 3. Approved Implementation Signatures
 
-### A. Routing & Controllers
-* **Controller Responsibilities:**
-  1. Authorize the action (via Policy or Form Request).
-  2. Extract validated data from the Form Request.
-  3. Invoke a dedicated Service, Action, or Query.
-  4. Transform the result into an API Resource.
-  5. Return a standardized JSON response.
-* **Controller Exception Handling Standard (Explicit Controller-Level try/catch):**
-  * Every controller method wraps execution in a `try / catch (Throwable $e)` block that delegates to Base Controller `return $this->handleException($e);`.
-  * `bootstrap/app.php` remains completely untouched (zero custom exception logic).
-  * **Single Catch Block Standard:** Controllers must have exactly one catch block (`catch (Throwable $e)`) delegating directly to `return $this->handleException($e);`. Multiple catch blocks are strictly forbidden.
-  * **Custom Domain Exceptions:** Extend PHP's native `Exception` directly with predefined HTTP status codes and messages via `parent::__construct(message: ..., code: ...)`.
-  * **Predefined / Framework Exceptions:** Safely mapped in Base Controller `handleException()` (`ModelNotFoundException` → 404, `AuthorizationException` → 403, `AuthenticationException` → 401, `QueryException` → 500 with SQL logging, Generic errors → 500 without leaking sensitive trace).
-  * **Controller Implementation Pattern:**
-    ```php
-    public function store(StoreAddressRequest $request): JsonResponse
-    {
-        try {
-            $address = $this->addressService->store($request->user(), $request->validated());
+### A. Controller Pattern (Ultra-Thin <15 lines with Single Catch Block)
+Every controller action coordinates input, delegates to a Service, and catches all errors into `BaseController::handleException($e)`. `bootstrap/app.php` remains completely untouched.
+```php
+public function store(StoreAddressRequest $request): JsonResponse
+{
+    try {
+        $address = $this->addressService->store($request->user(), $request->validated());
 
-            return $this->successResponse('Address created successfully', new AddressResource($address), 201);
-        } catch (Throwable $e) {
-            return $this->handleException($e);
-        }
+        return $this->successResponse('Address created successfully', new AddressResource($address), 201);
+    } catch (Throwable $e) {
+        return $this->handleException($e);
     }
-    ```
-* **Approved Routing & Action Conventions (2-Verb POST/GET Model):**
-  * **HTTP Methods:** Use only `GET` and `POST`. Never use `PUT`, `PATCH`, or `DELETE`.
-  * **Route Naming:** Route `name()` attributes are **not required**.
-  * **API Versioning:** All routes must be enclosed within a `v1` prefix group.
-  * **Method & URI Mapping Standards:**
-    * **CRUD Operations (Mandatory Suffixes):**
-      * **`index`** (`GET /resource`): Fetch paginated list or collection of resources.
-      * **`show`** (`GET /resource/{id}`): Fetch single resource by ID.
-      * **`store`** (`POST /resource/store`): Create and persist a new resource.
-      * **`update`** (`POST /resource/{id}/update`): Update an existing resource.
-      * **`destroy`** (`POST /resource/{id}/destroy`): Delete or remove a resource.
-    * **Custom Operations (Descriptive Custom Names):**
-      * Use dedicated, descriptive action names directly instead of forcing CRUD suffixes.
-      * Custom mutations: `POST /resource/{id}/{custom-action}` (e.g. `POST orders/{order}/cancel`, `POST orders/{order}/payment/verify`, `POST deliveries/{delivery}/pickup`).
-      * Custom queries: `GET /resource/{id}/{custom-action}` or `GET /resource/{custom-action}` (e.g. `GET orders/{order}/invoice`, `GET restaurants/nearby`).
-  ```php
-  // APPROVED STANDARD (Versioned 2-Verb Model without name attributes)
-  Route::prefix('v1')->group(function () {
-      // 1. Fetching data (GET)
-      Route::get('orders', [OrderController::class, 'index']);                           // CRUD: index
-      Route::get('orders/{order}', [OrderController::class, 'show']);                     // CRUD: show
-      Route::get('orders/{order}/invoice', [OrderController::class, 'generateInvoice']);   // Custom Query: descriptive name
-
-      // 2. Mutations (POST)
-      Route::post('orders/store', [OrderController::class, 'store']);                     // CRUD: store suffix
-      Route::post('orders/{order}/update', [OrderController::class, 'update']);           // CRUD: update suffix
-      Route::post('orders/{order}/destroy', [OrderController::class, 'destroy']);         // CRUD: destroy suffix
-      Route::post('orders/{order}/cancel', [OrderController::class, 'cancel']);           // Custom Mutation: descriptive name
-  });
-
-  // FORBIDDEN ANTI-PATTERNS
-  // ❌ Using PUT, PATCH, or DELETE methods
-  Route::put('orders/{order}/update', [OrderController::class, 'update']);
-  Route::delete('orders/{order}/destroy', [OrderController::class, 'destroy']);
-
-  // ❌ Unversioned routes
-  Route::post('orders/store', [OrderController::class, 'store']);
-  ```
-
-### B. Form Requests & Validation
-* Always use array syntax for validation rules to ensure static analysis compatibility and prevent delimiter collision:
-  ```php
-  public function rules(): array
-  {
-      return [
-          'address_id' => ['required', 'integer', Rule::exists('addresses', 'id')->where('user_id', $this->user()?->id)],
-          'delivery_instructions' => ['nullable', 'string', 'max:500'],
-      ];
-  }
-  ```
-* Validate ownership constraints (e.g., verifying `address_id` belongs to the requesting user) in the validation rule using `Rule::exists()` rather than querying manually inside a service class.
-
-### C. Standardized API Response Envelopes (ADR-001)
-All API responses—successes, validation failures, client errors, and uncaught exceptions—must conform to our company's single predictable schema using `"is_error"`, `"message"`, `"data"`, and optional `"errors"` / `"pagination"`:
-
-#### 1. Success Response (HTTP 200 / 201)
-* `data` contains the resource object or array of resources.
-* `errors` is omitted or `null`.
-```json
-{
-  "is_error": false,
-  "message": "Resource created successfully.",
-  "data": {
-    "id": 82,
-    "user_id": 32,
-    "created_at": "2026-07-01T12:00:00.000000Z",
-    "updated_at": "2026-10-29T07:12:38.000000Z"
-  }
 }
 ```
 
-#### 2. General / Client / Server Error (HTTP 400, 401, 403, 404, 500)
-* `data` is strictly `null` (never `[]`).
-* `message` explains what went wrong.
+### B. Routing Pattern (Strict 2-Verb Model with Explicit Suffixes)
+Only `GET` (fetch) and `POST` (mutations) are allowed. `PUT`, `PATCH`, and `DELETE` are strictly forbidden.
+```php
+Route::prefix('v1')->group(function () {
+    Route::get('orders', [OrderController::class, 'index']);
+    Route::get('orders/{order}', [OrderController::class, 'show']);
+    Route::post('orders/store', [OrderController::class, 'store']);
+    Route::post('orders/{order}/update', [OrderController::class, 'update']);
+    Route::post('orders/{order}/destroy', [OrderController::class, 'destroy']);
+    Route::post('orders/{order}/cancel', [OrderController::class, 'cancel']);
+});
+```
+
+### C. ADR-001 Unified Response Envelope
+Every API response strictly conforms to this schema. On error, `data` is strictly `null` (never `[]`).
 ```json
+// 1. Success (HTTP 200/201):
+{ "is_error": false, "message": "Resource created.", "data": { "id": 1 } }
+
+// 2. Client/Server Error (HTTP 400, 401, 403, 404, 500):
+{ "is_error": true, "message": "Order cannot be cancelled.", "data": null }
+
+// 3. Validation Failure (HTTP 422):
+{ "is_error": true, "message": "The given data was invalid.", "data": null, "errors": { "field": ["Error"] } }
+```
+
+### D. Service & Transaction Safety Boundaries
+Always pass `User $user` explicitly into services (never call `Auth::user()`). External HTTP APIs must be called outside `DB::transaction()`. Queue jobs inside transactions must use `->afterCommit()`.
+```php
+public function processOrderPayment(User $user, Order $order): Payment
 {
-  "is_error": true,
-  "message": "Failed to update user profile: Disk named `s3` cannot be accessed",
-  "data": null
+    // 1. Call external HTTP gateway BEFORE opening DB transaction
+    $gatewayOrder = $this->paymentGateway->createOrder($order->total);
+
+    // 2. Open DB transaction strictly for atomic persistence
+    return DB::transaction(function () use ($user, $order, $gatewayOrder) {
+        $payment = Payment::create([
+            'user_id' => $user->id,
+            'order_id' => $order->id,
+            'gateway_id' => $gatewayOrder['id'],
+            'status' => 'pending',
+        ]);
+
+        // 3. Dispatch queue jobs using ->afterCommit()
+        SendReceiptJob::dispatch($payment)->afterCommit();
+
+        return $payment;
+    });
 }
 ```
 
-#### 3. Validation Error (HTTP 422 Unprocessable Entity)
-* `data` is strictly `null` (never `[]`).
-* `message` is a mandatory top-level summary string (e.g. `"The given data was invalid."`).
-* `errors` is an associative map where keys are field names and values are arrays of string error messages.
-```json
+### E. Model Casting & Eloquent Relations
+Use method-based `casts(): array` and wrap relationships in `$this->whenLoaded()` in API Resources to prevent lazy-loading N+1 queries.
+```php
+protected function casts(): array
 {
-  "is_error": true,
-  "message": "The given data was invalid.",
-  "data": null,
-  "errors": {
-    "email": [
-      "The email has already been taken."
-    ],
-    "display_name": [
-      "Display name already been taken."
-    ]
-  }
+    return [
+        'total' => 'decimal:2',
+        'is_active' => 'boolean',
+        'delivered_at' => 'datetime',
+    ];
 }
-```
-
-#### Invariant Envelope Rules:
-1. **`data` MUST be `null` on error:** Whenever `is_error` is `true`, `data` must evaluate to `null`. It is strictly forbidden to serialize empty arrays `[]`, booleans `false`, or empty strings `""`, as this introduces schema type collisions (array vs. object).
-2. **`message` is NEVER optional:** Every API response without exception must include a non-empty string in `message`.
-3. **`errors` structure:** On 422 validation failures, `errors` is always an associative map (`array<string, array<string>>`). Do not serialize flat strings or unkeyed arrays for `errors`.
-
-### D. Services & Business Logic
-* **No Global State Coupling:**
-  ```php
-  // CORRECT: Explicit, testable, callable from CLI / Queue / MCP
-  public function createOrder(User $user, array $data): Order
-  {
-      // ...
-  }
-
-  // INCORRECT: Tightly coupled to HTTP session
-  public function createOrder(array $data): Order
-  {
-      $user = Auth::user(); // Fails when called from a background queue job or scheduler
-  }
-  ```
-* **No Presentation Logic in Services:**
-  Do not mutate Eloquent models with human-formatted presentation strings (e.g. converting numeric kilometers into `"500 m"` inside a service). Pass numeric values to API Resources and let the Resource format the output.
-
-### E. Database Transactions & Concurrency
-* **Zero External Network Latency in DB Transactions:**
-  Never call external payment gateways (Razorpay, Stripe, PayPal), third-party notification APIs, or geocoding services inside a `DB::transaction()` closure.
-  ```php
-  // 1. Perform external API call outside transaction
-  $razorpayOrder = $this->razorpayService->createOrder($amount, $orderId);
-
-  // 2. Open DB transaction only for database persistence
-  return DB::transaction(function () use ($orderId, $razorpayOrder) {
-      return Payment::create([
-          'order_id' => $orderId,
-          'razorpay_order_id' => $razorpayOrder['id'],
-          'payment_status' => 'pending',
-      ]);
-  });
-  ```
-* **Queue Jobs & Transactions:**
-  Always use `->afterCommit()` when dispatching queue jobs inside database transactions to prevent race conditions where a worker processes the job before the commit finishes.
-
-### F. Eloquent Models & Types
-* Declare strict return types on all Eloquent relationships:
-  ```php
-  public function user(): BelongsTo
-  {
-      return $this->belongsTo(User::class);
-  }
-
-  public function items(): HasMany
-  {
-      return $this->hasMany(OrderItem::class);
-  }
-  ```
-* Use method-based `casts()` instead of property `$casts`:
-  ```php
-  protected function casts(): array
-  {
-      return [
-          'total' => 'decimal:2',
-          'delivery_fee' => 'decimal:2',
-          'is_default' => 'boolean',
-          'delivered_at' => 'datetime',
-          'cancelled_at' => 'datetime',
-      ];
-  }
-  ```
-* In API Resources, always wrap relationships in `$this->whenLoaded(...)` to prevent lazy-loading N+1 queries.
-
-### G. Database Migrations
-* Every migration must be bi-directional. The `down()` method must cleanly undo every change made in `up()`.
-* Never apply `cascadeOnDelete()` to orders, invoices, payments, or audit logs. Use `restrictOnDelete()` or soft deletes (`SoftDeletes`) to preserve financial and historical data.
-
----
-
-## 4. AI-Assisted Engineering Workflow
-
-When working as an AI developer in any Laravel repository:
-
-```
-┌────────────────────────────────────────────────────────┐
-│ Phase 1: Inspect                                       │
-│ • Read composer.json (PHP, Laravel, ecosystem packages)│
-│ • Inspect existing models, migrations, and routes     │
-│ • Check for Laravel Boost and MCP servers              │
-├────────────────────────────────────────────────────────┤
-│ Phase 2: Plan                                          │
-│ • Identify impacted layers (Route -> Request ->        │
-│   Controller -> Service -> Model -> Resource)          │
-│ • Check against this GUIDELINES.md rulebook            │
-├────────────────────────────────────────────────────────┤
-│ Phase 3: Implement                                     │
-│ • Apply strict types and array validation rules        │
-│ • Protect transaction boundaries                       │
-│ • Use existing naming conventions                      │
-├────────────────────────────────────────────────────────┤
-│ Phase 4: Verify                                        │
-│ • Run Laravel Pint on modified files                   │
-│ • Run Pest / PHPUnit tests                             │
-│ • Confirm zero introduced N+1 queries                  │
-└────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 5. Topic Modules Directory
+## 4. Topic Modules Directory
 
 For in-depth explanations, trade-offs, and complete code samples, consult the handbook topic modules:
 
 ### Active Modules
-* [01 - Fundamentals](01-fundamentals/README.md)
-* [02 - Application Architecture](02-application-architecture/README.md)
-* [03 - API Engineering](03-api-engineering/README.md)
-* [04 - Business Logic & Domain Architecture](04-business-logic/README.md)
+
+#### [01 - Fundamentals & Language Standards](01-fundamentals/README.md)
+* **What it Does:** Enforces modern PHP 8.4 syntax, backed enums, type safety, and pragmatic SOLID boundaries across all backend domain code.
+* **Child Specifications:** [01 - Modern PHP Syntax & Enums](01-fundamentals/01-php-typing-and-modern-syntax.md) | [02 - Pragmatic SOLID Principles](01-fundamentals/02-solid-in-laravel.md)
+* **Actionable Directives for AI Agents:**
+  * **Backed Enums:** Never use magic strings or integer flags for statuses. Always use string-backed Enums with TitleCase keys (`OrderStatus::Pending = 'pending'`) and register them in model `casts(): array`.
+  * **Conditionals:** Always use exhaustive `match()` expressions for state transitions and mappings; never use `switch` statements or nested `if/else` ladders.
+  * **Strict Identity:** Always use strict comparison (`===`, `!==`). Use nullsafe `?->` and null coalescing `??` for safe relation and array traversal.
+  * **Single Responsibility (SRP):** Enforce strict 5-tier pipeline: `FormRequest` (validation/auth) $\rightarrow$ `Controller` (<15 lines delegation) $\rightarrow$ `Domain Service` (business logic/transactions) $\rightarrow$ `API Resource` (response) $\rightarrow$ `Queue Job` (async latency).
+  * **Domain Exceptions (LSP):** Custom domain exceptions must extend PHP's native `Exception` directly and pass explicit HTTP status codes via `parent::__construct(message: ..., code: ...)`.
+  * **Dependency Inversion (DIP — Optional):** Speculative single-implementation interfaces (`*Interface.php`) are strictly optional / deferred. Inject concrete classes directly (e.g. `RazorpayService`) to preserve 1-click `Ctrl+Click` IDE navigation. Only introduce interfaces when multiple production drivers run concurrently.
+
+#### [02 - Application Architecture & Layer Boundaries](02-application-architecture/README.md)
+* **What it Does:** Defines directory layout, layer boundary contracts, dependency injection conventions, and the strict unidirectional request lifecycle.
+* **Child Specifications:** [01 - Layer Responsibilities](02-application-architecture/01-layer-responsibilities.md) | [02 - Dependency Injection & Container](02-application-architecture/02-dependency-injection-and-container.md) | [03 - Directory Structure & Organization](02-application-architecture/03-directory-structure-and-organization.md)
+* **Actionable Directives for AI Agents:**
+  * **Ultra-Thin Controllers:** Controllers must not exceed 15 lines. Extract `$request->validated()`, pass `User $user` to services, catch single `Throwable $e` to `handleException($e)`, and return API Resources.
+  * **Directory Placement:** Business logic lives flat under `app/Services/`. Domain exceptions live in domain folders under `app/Exceptions/<Domain>/`. AI MCP tools live under `app/Mcp/`.
+  * **Forbidden Directories:** Never introduce `app/Repositories/`, `app/DTOs/`, `app/Actions/`, or procedural `app/Helpers/`.
+  * **Facade Discipline:** Never use `Auth::user()`, `Request::`, or `Session::` inside domain services. Only stateless utilities (`DB::transaction()`, `Log::`, `Config::`) are permitted.
+
+#### [03 - API Engineering Standards](03-api-engineering/README.md)
+* **What it Does:** Enforces HTTP routing conventions, request validation boundaries, and Eloquent model transformation into deterministic JSON contracts.
+* **Child Specifications:** [01 - Routing Conventions](03-api-engineering/01-routing-conventions.md) | [02 - Form Requests & Validation](03-api-engineering/02-form-requests-and-validation.md) | [03 - API Resources](03-api-engineering/03-api-resources.md)
+* **Actionable Directives for AI Agents:**
+  * **2-Verb Routing Model:** Use only `GET` (reading) and `POST` (all mutations). `PUT`, `PATCH`, and `DELETE` are strictly forbidden. All routes must be grouped under `Route::prefix('v1')`.
+  * **Deterministic Suffixes:** Standard CRUD mutations must end with `/store`, `/{id}/update`, or `/{id}/destroy`. Custom operations use descriptive action names (e.g. `/{id}/cancel`).
+  * **Validation Syntax:** Always use array syntax `['required', 'string']`. Pipe strings (`'required|string'`) are strictly prohibited.
+  * **Ownership Validation:** Validate relational foreign keys at the HTTP boundary via `Rule::exists('table', 'id')->where('user_id', $this->user()?->id)`.
+  * **Data Extraction:** Controllers must only pass `$request->validated()` into domain services (never pass raw `$request->all()`).
+  * **Guarded Resources:** Wrap every relationship in API Resources with `$this->whenLoaded()` to prevent N+1 query loops. Format timestamps to ISO 8601 (`toIso8601String()`).
+
+#### [04 - Business Logic & Domain Architecture](04-business-logic/README.md)
+* **What it Does:** Defines domain service design, transaction latency boundaries, queue commit hooks, and typed domain exception handling.
+* **Child Specifications:** [01 - Service Layer Design](04-business-logic/01-service-layer-design.md) | [02 - Exception Architecture](04-business-logic/02-exception-architecture.md)
+* **Actionable Directives for AI Agents:**
+  * **Actor Context:** Never call `Auth::user()` or `request()` inside services. Always accept the acting user as an explicit `User $user` parameter.
+  * **Zero Latency in Transactions:** Execute external HTTP calls (e.g. Razorpay, Stripe) **before** opening a `DB::transaction()` block.
+  * **Queue Dispatching:** Always append `->afterCommit()` when dispatching queue jobs or events inside transactions.
+  * **Concrete DI (DIP Optional):** Inject concrete services directly (`RazorpayService`) to maintain 1-click IDE navigation. Speculative interfaces are strictly optional / deferred.
+  * **Domain Exceptions:** Throw typed exceptions from `app/Exceptions/<Domain>/` extending native `Exception` with explicit HTTP status codes.
 * [12 - Research, Discovery Reports & ADRs](12-research/README.md)
 
 ### Upcoming Roadmap Modules

@@ -1,8 +1,4 @@
-# Chapter 03.2: Form Requests & Validation Architecture
-
-> **Module:** `03-api-engineering`  
-> **Classification:** Approved Engineering Standard (Our Organization)  
-> **Status:** Active  
+# Form Requests & Validation Architecture
 
 ---
 
@@ -10,33 +6,27 @@
 
 Validation is the backend's first line of defense. The primary responsibility of validation is to guarantee that **no malformed, unauthorized, or structurally invalid payload ever reaches the domain service layer**.
 
-In our architecture:
-1. **Validation is isolated in dedicated Form Request classes:** Controllers must never call `$request->validate()` inline.
-2. **Array rule definitions are mandatory:** Pipe-delimited string validation rules are prohibited.
-3. **Domain boundary protection:** The service layer expects clean, pre-sanitized arrays sourced strictly from `$request->validated()`.
+### Core Invariants:
+1. **Isolated in Dedicated Form Requests:** Controllers must never execute inline `$request->validate()`.
+2. **Mandatory Array Syntax:** Pipe-delimited string rules (`'required|string'`) are strictly prohibited.
+3. **Domain Boundary Protection:** Services only receive pre-sanitized payloads sourced strictly from `$request->validated()`.
 
 ---
 
-## 2. Mandatory Validation Standards
+## 2. Mandatory Validation Invariants
 
 ### A. Strict Array Syntax
-All validation rules must be written as arrays containing string primitives or fluent `Illuminate\Validation\Rule` instances.
+All validation rules must be written as arrays containing string primitives or fluent `Rule` objects:
 
-| Standard Rule Syntax | Forbidden Anti-Pattern | Reason |
+| Approved Array Syntax | Forbidden Anti-Pattern | Reason |
 | :--- | :--- | :--- |
-| `['required', 'string', 'max:255']` | `'required\|string\|max:255'` | Pipe strings fail when parameters contain regex patterns or delimiter colons; arrays support static analysis. |
-| `['required', Rule::exists('addresses', 'id')]` | `'required\|exists:addresses,id'` | Fluent rule objects allow compile-time analysis, query scoping, and dynamic parameter injection. |
-
----
+| `['required', 'string', 'max:255']` | `'required\|string\|max:255'` | Pipe strings break with regex/colons; arrays support static analysis. |
+| `['required', Rule::exists('addresses', 'id')]` | `'required\|exists:addresses,id'` | Fluent rule objects allow query scoping and dynamic parameter injection. |
 
 ### B. Authorization Within Form Requests
-Every Form Request contains an `authorize(): bool` method. This method must either:
-1. Enforce policy-based authorization using `$this->user()->can(...)`.
-2. Return `true` **only if** the endpoint is public or authorization is completely delegated to an explicit controller policy call.
-3. Never leave `authorize()` as unreviewed boilerplate.
+Every Form Request defines an `authorize(): bool` method that enforces access before validation runs:
 
 ```php
-// ✅ APPROVED: Policy-governed Form Request authorization
 public function authorize(): bool
 {
     $order = $this->route('order');
@@ -45,42 +35,14 @@ public function authorize(): bool
 }
 ```
 
----
-
-### C. Contextual & Scoped Existence Validation
-Ownership verification for relational foreign keys should be performed at the validation layer rather than manually queried inside services:
-
-```php
-// ✅ APPROVED: Context-aware existence check scoped to the requesting user
-public function rules(): array
-{
-    return [
-        'address_id' => [
-            'required',
-            'integer',
-            Rule::exists('addresses', 'id')->where(fn ($query) => 
-                $query->where('user_id', $this->user()?->id)
-                      ->whereNull('deleted_at')
-            ),
-        ],
-        'items' => ['required', 'array', 'min:1'],
-        'items.*.menu_item_id' => [
-            'required',
-            'integer',
-            Rule::exists('menu_items', 'id')->where('is_available', true),
-        ],
-        'items.*.quantity' => ['required', 'integer', 'min:1', 'max:50'],
-    ];
-}
-```
-
----
+### C. Contextual & Scoped Ownership Validation
+Foreign key ownership must be validated at the HTTP boundary using `Rule::exists()->where('user_id', $this->user()?->id)` rather than querying manually inside domain services (see implementation below in Section 3).
 
 ### D. Strict Extraction via `$request->validated()`
-Controllers must **never** pass raw input (`$request->all()`, `$request->input()`) to domain services:
+Controllers must **never** pass raw input (`$request->all()`, `$request->input()`) into domain services:
 
 ```php
-// ❌ FORBIDDEN: Raw input injection
+// ❌ FORBIDDEN: Raw unvalidated input injection
 $this->orderService->store($request->user(), $request->all());
 
 // ✅ APPROVED: Only validated fields enter the domain layer
@@ -89,16 +51,12 @@ $this->orderService->store($request->user(), $request->validated());
 
 ---
 
-## 3. Standard Form Request Implementation
+## 3. Canonical Form Request Implementation
 
 ```php
-<?php
-
-declare(strict_types=1);
-
 namespace App\Http\Requests\Orders;
 
-use App\Enums\PaymentMethodEnum;
+use App\Enums\PaymentMethod;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
@@ -134,7 +92,7 @@ class StoreOrderRequest extends FormRequest
             'payment_method' => [
                 'required',
                 'string',
-                new Enum(PaymentMethodEnum::class),
+                new Enum(PaymentMethod::class),
             ],
             'items' => [
                 'required',
@@ -178,30 +136,5 @@ class StoreOrderRequest extends FormRequest
 
 ---
 
-## 4. Alignment with ADR-001 (Response Envelope)
-
-When a Form Request fails validation, Laravel automatically throws `Illuminate\Validation\ValidationException`. 
-
-Under **ADR-001**, the backend serializes all 422 Unprocessable Entity responses into the unified error envelope:
-
-```json
-{
-  "is_error": true,
-  "message": "The given data was invalid.",
-  "data": null,
-  "errors": {
-    "delivery_address_id": [
-      "The selected delivery address is invalid."
-    ],
-    "items.0.quantity": [
-      "The quantity must be at least 1."
-    ]
-  }
-}
-```
-
-### Invariant Rules for Validation Responses:
-1. **`is_error`**: Strictly `true`.
-2. **`message`**: A non-empty summary string (default: `"The given data was invalid."`).
-3. **`data`**: Strictly `null`. Never return `[]`.
-4. **`errors`**: Sourced directly from `$validator->errors()->toArray()`, formatted as an associative map (`array<string, array<string>>`).
+> [!NOTE]
+> When validation fails, the response automatically serializes into the standardized **ADR-001** 422 error envelope (`is_error: true`, `data: null`, `errors: { ... }`). See [GUIDELINES.md Section 3C](../GUIDELINES.md#c-adr-001-unified-response-envelope).

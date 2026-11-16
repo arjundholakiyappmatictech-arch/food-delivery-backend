@@ -1,25 +1,21 @@
 # Module 03: API Engineering Standards
 
-> **A comprehensive guide to routing architectures, validation boundaries, and serialization contracts across our Laravel services.**
+> Architectural specifications for HTTP routing, request validation boundaries, and serialization contracts across our backend services.
 
 ---
 
-## 1. Module Overview
-
-The API layer is responsible for receiving HTTP requests, validating incoming payloads, authorizing actor capabilities, invoking domain operations, and transforming database models into deterministic JSON responses.
-
-This module details our approved conventions:
+## 1. Directory Contents
 
 1. **[01 - Routing & URI Conventions](01-routing-conventions.md):**
-   * The 2-verb (`GET`/`POST`) HTTP routing model.
+   * The strict 2-verb (`GET`/`POST`) HTTP routing model.
    * Standard CRUD URI suffixes (`/store`, `/{id}/update`, `/{id}/destroy`) vs. descriptive domain actions.
-   * Version prefixing (`/api/v1/`) and model route binding.
+   * Mandatory version prefixing (`/api/v1/`) and model route binding.
 
 2. **[02 - Form Requests & Validation Architecture](02-form-requests-and-validation.md):**
    * Mandatory array validation syntax and fluent `Rule::` objects.
-   * Policy-driven `authorize()` methods.
+   * Policy-driven `authorize(): bool` methods.
    * Contextual database foreign key validation scoped to user identity.
-   * Input sanitization via `$request->validated()`.
+   * Strict extraction via `$request->validated()`.
 
 3. **[03 - API Resources & Transformation Layer](03-api-resources.md):**
    * Strict separation between database schemas and external JSON contracts.
@@ -29,38 +25,13 @@ This module details our approved conventions:
 
 ---
 
-## 2. Core Architectural Principles
+## 2. Invariant Summary Matrix
 
-```
-Incoming Request
-      │
-      ▼
-┌───────────────────────────┐
-│   Routing Layer (v1)      │  ── 2-Verb Model (GET / POST with action suffixes)
-└─────────────┬─────────────┘
-              │
-              ▼
-┌───────────────────────────┐
-│   Form Request            │  ── authorize(): bool + array rules + Rule::exists()
-└─────────────┬─────────────┘
-              │ $request->validated()
-              ▼
-┌───────────────────────────┐
-│   Controller (Thin)       │  ── try / catch (Throwable $e) -> handleException($e)
-└─────────────┬─────────────┘
-              │ Invokes domain service with User $user
-              ▼
-┌───────────────────────────┐
-│   Domain Service Layer    │  ── Pure business logic & database transactions
-└─────────────┬─────────────┘
-              │ Returns Eloquent Model / Collection
-              ▼
-┌───────────────────────────┐
-│   API Resource Layer      │  ── Guarded relations (whenLoaded), ISO dates, casting
-└─────────────┬─────────────┘
-              │
-              ▼
-┌───────────────────────────┐
-│   ADR-001 JSON Envelope   │  ── is_error, message, data, errors, pagination
-└───────────────────────────┘
-```
+| Category | Standard Rule | Prohibited Anti-Pattern |
+| :--- | :--- | :--- |
+| **HTTP Verbs** | Strict 2-verb model: `GET` for reads, `POST` for mutations. | Using `PUT`, `PATCH`, or `DELETE`; mutating state inside `GET` routes. |
+| **CRUD URIs** | Explicit suffixes: `/store`, `/{id}/update`, `/{id}/destroy`. | Inconsistent naming (`/create`, `/edit`, `/delete`); missing `v1` prefix. |
+| **Validation Syntax** | Mandatory array syntax: `['required', 'string']`. | Pipe strings (`'required\|string'`); inline `$request->validate()` in controllers. |
+| **Input Extraction** | Pass `$request->validated()` to domain services. | Passing raw `$request->all()` or `$request->input()`. |
+| **Relationship Guards** | Wrap all relationship transformations in `$this->whenLoaded()`. | Unguarded property access (`$this->items`), causing N+1 query loops. |
+| **Response Contract** | Transform models through API Resources conforming to ADR-001. | Returning raw Eloquent models directly from controllers. |

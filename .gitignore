@@ -61,3 +61,6 @@ backend/chartdb-main/
 # Miscellaneous & Backups
 db-backup/local-data.sql
 docs
+
+# Laravel Boost - local MCP configuration
+backend/.agents/mcp_config.json

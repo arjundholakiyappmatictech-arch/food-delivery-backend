@@ -65,14 +65,14 @@ Our architecture enforces a **Strict Unidirectional Request Lifecycle**. Informa
 
 2. **[02 - Dependency Injection & Container Mechanics](02-dependency-injection-and-container.md):**
    * Constructor injection and auto-wiring principles.
-   * Container binding lifecycles (`bind`, `singleton`).
-   * Facades vs. Injected Services: When Facades are appropriate vs. when they introduce hidden global state.
-   * Pragmatic Direct Concrete Injection for single-provider services.
+   * Third-party SDK singleton registration in service providers.
+   * Stateless framework Facades vs. strictly forbidden HTTP transport facades in services.
+   * Direct concrete injection (DIP is Optional).
 
 3. **[03 - Project Directory Structure & Organization](03-directory-structure-and-organization.md):**
    * Real-world project directory map matching our existing application structure.
-   * Strict placement rules for Services, domain-grouped Exceptions, and Mcp tools.
-   * Banning artificial bloat (no repositories, no DTOs, no procedural helpers).
+   * Specialized placement rules for flat Services, domain-grouped Exceptions, and Mcp tools.
+   * Banning artificial bloat (no repositories, no DTOs, no actions, no procedural helpers).
 
 ---
 
