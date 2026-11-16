@@ -77,7 +77,7 @@ laravel-engineering-handbook/
 ├── 01-fundamentals/                    # [ACTIVE] PHP 8.4 types, SOLID, language baselines
 ├── 02-application-architecture/        # [ACTIVE] Layer boundaries, DI, exact project directory map
 ├── 03-api-engineering/                 # [ACTIVE] 2-verb routing, Form Requests, API Resources
-├── 04-business-logic/                  # [ROADMAP] Decoupled Services, Actions, AppException hierarchy
+├── 04-business-logic/                  # [ACTIVE] Decoupled Services, domain exceptions, transaction boundaries
 ├── 05-database-engineering/            # [ROADMAP] Migrations, Eloquent relations, indexing, transactions
 ├── 06-code-quality/                    # [ROADMAP] Pint styling, Larastan analysis, code review rubric
 ├── 07-security-performance/            # [ROADMAP] Sanctum auth, Policies, webhooks, caching, secrets
@@ -110,7 +110,7 @@ laravel-engineering-handbook/
 ## 6. Maintenance & Governance
 
 * **Location:** `backend/laravel-engineering-handbook`
-* **Current Version:** `v1.0.1-draft`
+* **Current Version:** `v1.0.2-draft`
 * **Maintainer:** Senior Laravel Engineering Team
 * **License:** Internal Engineering Standard
 

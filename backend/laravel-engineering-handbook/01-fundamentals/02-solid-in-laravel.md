@@ -58,30 +58,27 @@ Now, adding `StripeGateway` or `RazorpayGateway` is done by creating a new class
 In Laravel, LSP is critical when defining custom exception hierarchies and abstract base classes.
 
 #### Approved Exception Hierarchy:
-All domain exceptions must inherit from a common base `AppException`. A handler catching `AppException` must be able to call `$e->getStatusCode()` without caring which concrete domain exception was thrown:
+All domain exceptions extend PHP's built-in `Exception`, passing their message and HTTP status code directly to `parent::__construct(message: ..., code: ...)`. A controller or base handler catching `Throwable $e` can safely extract `$e->getCode()` and `$e->getMessage()` without caring which concrete domain exception was thrown:
 
 ```php
-// Base domain exception
-abstract class AppException extends Exception
-{
-    public function __construct(
-        string $message,
-        protected int $statusCode = 400,
-        protected ?array $errors = null
-    ) {
-        parent::__construct($message, $statusCode);
-    }
+// Domain exceptions extend Exception with explicit HTTP status codes
+namespace App\Exceptions\Order;
 
-    public function getStatusCode(): int { return $this->statusCode; }
-    public function getErrors(): ?array { return $this->errors; }
+use Exception;
+
+class EmptyCartException extends Exception
+{
+    public function __construct(string $message = 'Cart Is Empty')
+    {
+        parent::__construct(message: $message, code: 400);
+    }
 }
 
-// Subtypes safely substitute the base
-class OrderAlreadyDeliveredException extends AppException
+class OrderAlreadyDeliveredException extends Exception
 {
     public function __construct(string $message = 'Order is already delivered and cannot be modified.')
     {
-        parent::__construct($message, 422);
+        parent::__construct(message: $message, code: 422);
     }
 }
 ```
@@ -170,7 +167,7 @@ Only introduce formal interfaces and container bindings when:
 | :--- | :--- | :--- |
 | **S — Single Responsibility** | **Mandatory** | Move HTTP/Auth out of Services; pass `User $user` explicitly; isolate invoicing. |
 | **O — Open/Closed** | **Mandatory** | Use strategy/driver patterns for extensible business rules without nested `if/else`. |
-| **L — Liskov Substitution** | **Mandatory** | Base `AppException` hierarchy to eliminate HTTP status code 0 crashes. |
+| **L — Liskov Substitution** | **Mandatory** | Standardized `Exception` hierarchy and Base Controller `Throwable` contract to eliminate HTTP status code 0 crashes. |
 | **I — Class Segregation** | **Mandatory** | Break monster "God Services" into focused domain services and single-action classes. |
 | **D — Dependency Inversion** | **Pragmatic (Direct)** | Inject concrete classes directly; preserve 1-click IDE navigation; avoid speculative interfaces. |
 

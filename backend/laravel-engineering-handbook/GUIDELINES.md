@@ -23,7 +23,7 @@
 | **Validation** | Array validation syntax (`['required', 'string', 'max:255']`) | Mixing pipe strings (`'required\|string'`) with arrays |
 | **Form Requests** | Enforce authorization via policies or documented gates | Leaving `authorize(): bool { return true; }` as unhandled dead code |
 | **Responses** | Company standard JSON envelope (ADR-001): `"is_error": false`, `"message": "..."`, `"data": ...`. On failure: `"is_error": true`, `"message": "..."`, `"data": null`. On 422: include `"errors": { ... }`. | Inconsistent keys (`status` or `success` instead of `is_error`); returning `"data": []` on error (schema type mutation); omitting `"message"` on validation errors. |
-| **Exception Handling** | Explicit controller-level `try / catch (Throwable $e)` delegating to Base Controller `handleException($e)`. Domain exceptions extend base `AppException`. Zero logic in `bootstrap/app.php`. | Passing unvalidated `$e->getCode()` directly to response (HTTP 0 crashes); leaking raw SQL queries from `QueryException`; duplicating identical catch blocks across controllers. |
+| **Exception Handling** | Explicit controller-level single `try / catch (Throwable $e)` delegating to Base Controller `handleException($e)`. Domain exceptions extend PHP's native `Exception` directly with predefined HTTP status codes via `parent::__construct(message: ..., code: ...)`. Zero logic in `bootstrap/app.php`. | Multiple catch blocks in controllers; passing unvalidated `$e->getCode()` directly to response (HTTP 0 crashes); leaking raw SQL queries from `QueryException`. |
 | **Service Context**| Always pass acting User entity explicitly as `User $user` parameter into service methods | Relying on `Auth::user()` inside domain services |
 | **Transactions** | Execute external HTTP calls (e.g. Razorpay, Stripe) **before** opening DB transactions | Calling external APIs inside `DB::transaction()` blocks |
 | **Queue Dispatch**| Dispatch transactional jobs using `->afterCommit()` or outside transaction block | Dispatching queue jobs inside transactions without commit hooks |
@@ -47,7 +47,8 @@
 * **Controller Exception Handling Standard (Explicit Controller-Level try/catch):**
   * Every controller method wraps execution in a `try / catch (Throwable $e)` block that delegates to Base Controller `return $this->handleException($e);`.
   * `bootstrap/app.php` remains completely untouched (zero custom exception logic).
-  * **Custom Domain Exceptions:** Extend a base `AppException` with predefined HTTP status codes (e.g. 422, 400).
+  * **Single Catch Block Standard:** Controllers must have exactly one catch block (`catch (Throwable $e)`) delegating directly to `return $this->handleException($e);`. Multiple catch blocks are strictly forbidden.
+  * **Custom Domain Exceptions:** Extend PHP's native `Exception` directly with predefined HTTP status codes and messages via `parent::__construct(message: ..., code: ...)`.
   * **Predefined / Framework Exceptions:** Safely mapped in Base Controller `handleException()` (`ModelNotFoundException` → 404, `AuthorizationException` → 403, `AuthenticationException` → 401, `QueryException` → 500 with SQL logging, Generic errors → 500 without leaking sensitive trace).
   * **Controller Implementation Pattern:**
     ```php
@@ -278,10 +279,10 @@ For in-depth explanations, trade-offs, and complete code samples, consult the ha
 * [01 - Fundamentals](01-fundamentals/README.md)
 * [02 - Application Architecture](02-application-architecture/README.md)
 * [03 - API Engineering](03-api-engineering/README.md)
+* [04 - Business Logic & Domain Architecture](04-business-logic/README.md)
 * [12 - Research, Discovery Reports & ADRs](12-research/README.md)
 
 ### Upcoming Roadmap Modules
-* `04 - Business Logic` (Services, Actions, Domain Exceptions)
 * `05 - Database Engineering` (Transactions, Migrations, Eloquent Relations)
 * `06 - Code Quality & Static Analysis` (Pint styling, Larastan Level 8)
 * `07 - Security & Performance` (Sanctum auth, Policies, Webhooks)

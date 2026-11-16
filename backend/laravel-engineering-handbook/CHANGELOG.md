@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.2-draft] - 2026-11-16
+
+### Added
+- **Module 04 (Business Logic & Domain Architecture):**
+  - Authored `04-business-logic/README.md` defining domain execution lifecycle, transaction flow, and exception design.
+  - Authored `04-business-logic/01-service-layer-design.md` codifying pure `app/Services/` boundaries, explicit actor injection (`User $user`), concrete DI, zero-HTTP-latency database transaction boundaries, and queue `afterCommit` hooks.
+  - Authored `04-business-logic/02-exception-architecture.md` standardizing domain exceptions in `app/Exceptions/<Domain>/`, status code mapping (400, 403, 404, 409, 422), controller-level `try/catch` delegation to `BaseController::handleException()`, and database `QueryException` sanitization.
+
+---
+
 ## [1.0.1-draft] - 2026-11-12
 
 ### Added
@@ -61,7 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated Section 2 and Section 3.C of `GUIDELINES.md` to enforce the company's JSON envelope standard: `"is_error": false|true`, `"data": ...`, `"message": "..."`.
 - **Exception Handling Alignment (Team Standard):**
   - Updated Section 2 and Section 3.A of `GUIDELINES.md` to enforce the controller-level `try / catch (Throwable $e)` pattern delegating to Base Controller `handleException($e)`.
-  - Established the separation between custom domain exceptions (extending `AppException`) and predefined system exceptions (`ModelNotFoundException`, `QueryException`, `AuthorizationException`), keeping `bootstrap/app.php` completely untouched.
+  - Established the separation between custom domain exceptions (extending PHP's native `Exception` directly with predefined status codes) and predefined system exceptions (`ModelNotFoundException`, `QueryException`, `AuthorizationException`), keeping `bootstrap/app.php` completely untouched.
 - **Service Context Alignment (Team Standard):**
   - Updated Section 2 and Section 3.D of `GUIDELINES.md` to require explicitly passing the acting user as `User $user` to all service methods, avoiding global `Auth::user()` coupling and enforcing `$user` parameter naming.
 - **Database & Queue Integrity Standards:**

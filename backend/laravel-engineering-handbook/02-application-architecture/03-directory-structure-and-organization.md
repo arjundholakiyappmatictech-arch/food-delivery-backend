@@ -29,7 +29,6 @@ backend/
 │   ├── Events/                  # Domain event classes (e.g. OrderPlaced, UserRegistered)
 │   │
 │   ├── Exceptions/              # Domain-grouped custom exceptions
-│   │   ├── AppException.php     # Base exception enforcing getStatusCode()
 │   │   ├── Address/             # (AddressLimitExceededException.php)
 │   │   ├── Carts/               # (EmptyCartException.php, MenuItemUnavailableException.php)
 │   │   ├── Deliveries/          # (DeliveryAgentAlreadyAssignedException.php)
@@ -79,11 +78,11 @@ backend/
 
 ### `app/Services/` (Business Logic)
 * **What goes here:** All domain business logic, fee calculations, multi-table transactions, and third-party SDK calls (e.g. `OrderService.php`, `PaymentService.php`, `RazorpayService.php`).
-* **Rule:** Kept as a flat, single-level directory. Never nest deep subdirectories unless a domain has multiple dedicated driver strategies (e.g. `Services/Payments/`).
+* **Rule:** Kept strictly as a flat, single-level directory directly under `app/Services/` (e.g. `OrderService.php`, `PaymentService.php`, `RazorpayService.php`). Never nest subdirectories inside `app/Services/`.
 
 ### `app/Exceptions/` (Domain-Grouped Exceptions)
 * **What goes here:** All domain exceptions organized into subdirectories named after their business entity (`Order/`, `Payment/`, `Restaurant/`, `Address/`, `Carts/`).
-* **Rule:** Every domain exception must inherit from base `AppException`.
+* **Rule:** Every domain exception directly extends PHP's native `Exception`, defining its default message and HTTP status code via `parent::__construct(message: ..., code: ...)`.
 
 ### `app/Http/Controllers/` (Thin HTTP Dispatchers)
 * **What goes here:** Controllers coordinating requests and responses (`OrderController.php`).
