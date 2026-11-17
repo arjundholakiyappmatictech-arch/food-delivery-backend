@@ -10,7 +10,7 @@ The goal was to:
 1. Identify actual working patterns and conventions.
 2. Uncover friction points, technical debt, and architectural anti-patterns.
 3. Separate **reusable company engineering standards** from **application-specific domain logic**.
-4. Formalize the architectural decisions now codified in [GUIDELINES.md](../../GUIDELINES.md).
+4. Formalize the architectural decisions now codified in [GUIDELINES.md](../GUIDELINES.md).
 
 ---
 
@@ -64,7 +64,7 @@ The goal was to:
 
 ### Finding 8: External API Calls Inside vs. Outside DB Transactions
 * **Audit Observation:** `PaymentService` called the Razorpay `createOrder` API inside `DB::transaction()`, holding row locks and exhausting connection pools during network latency.
-* **Codified Standard:** Core Pillar 3 in [GUIDELINES.md](../../GUIDELINES.md). External HTTP calls must always be executed **before** opening a `DB::transaction()`.
+* **Codified Standard:** Core Pillar 3 in [GUIDELINES.md](../GUIDELINES.md). External HTTP calls must always be executed **before** opening a `DB::transaction()`.
 
 ---
 
@@ -74,15 +74,15 @@ The goal was to:
 
 ---
 
-### Finding 10: Model Type Hints & Method-Based Casts
-* **Audit Observation:** Relationships in models lacked return types (`public function user()`), and model casts used legacy property syntax.
-* **Codified Standard:** Codified in [01-fundamentals/01-php-typing-and-modern-syntax.md](../01-fundamentals/01-php-typing-and-modern-syntax.md). All relationships must declare return types (`BelongsTo`, `HasMany`), and models must use method-based `protected function casts(): array`.
+### Finding 10: Model Attribute Casting via `casts(): array`
+* **Audit Observation:** Model attribute casts used legacy property syntax (`protected $casts = [...]`) with uncast numeric and boolean values.
+* **Codified Standard:** Codified in [01-fundamentals/01-php-typing-and-modern-syntax.md](../01-fundamentals/01-php-typing-and-modern-syntax.md) and [05-database-engineering/README.md](../05-database-engineering/README.md). Models must use method-based `protected function casts(): array` with backed Enums, `decimal:2`, `boolean`, and `datetime`.
 
 ---
 
-### Finding 11: Migration Safety & Foreign Key Constraints
-* **Audit Observation:** Migrations contained empty `down()` methods, and `cascadeOnDelete()` was applied to `orders.restaurant_id`, risking accidental deletion of financial records.
-* **Codified Standard:** Financial, order, and ledger tables must use `restrictOnDelete()` or soft deletes. All migrations must define clean, reversible `down()` methods.
+### Finding 11: Foreign Key Protection on Ledger Tables
+* **Audit Observation:** `cascadeOnDelete()` was applied to `orders.restaurant_id`, risking accidental cascade deletion of financial and transactional records.
+* **Codified Standard:** Codified in [05-database-engineering/README.md](../05-database-engineering/README.md). Financial, order, and ledger tables must use `restrictOnDelete()` or soft deletes; `cascadeOnDelete()` is strictly forbidden.
 
 ---
 
@@ -93,8 +93,8 @@ The goal was to:
 ---
 
 ### Finding 13: Native Laravel MCP Server Integration
-* **Audit Observation:** The application integrated `laravel/mcp` (`TomatoServer.php`) for AI-assisted tooling, but contained driver-specific SQL (`ILIKE`) that broke SQLite testing.
-* **Codified Standard:** AI MCP tools reside in `app/Mcp/` and must remain database-driver agnostic.
+* **Audit Observation:** The application integrated `laravel/mcp` (`TomatoServer.php`) for AI-assisted developer tooling.
+* **Codified Standard:** AI MCP tools reside in `app/Mcp/` for safe AI model inspection.
 
 ---
 
@@ -106,11 +106,11 @@ The goal was to:
 
 ## 3. Classification: Global Standard vs. Domain Logic
 
-| Category | Reusable Global Standard ([GUIDELINES.md](../../GUIDELINES.md)) | Application-Specific Domain Logic |
+| Category | Reusable Global Standard ([GUIDELINES.md](../GUIDELINES.md)) | Application-Specific Domain Logic |
 | :--- | :--- | :--- |
 | **Routing** | Strict 2-verb model (`GET`/`POST`), `/api/v1/`, explicit suffixes | Specific endpoints (`/restaurants/nearby`, `/cart`) |
 | **Responses** | ADR-001 JSON Envelope (`is_error`, `message`, `data: null` on error) | Specific payload keys (`delivery_fee`, `order_items`) |
 | **Services** | Flat `app/Services/`, explicit `User $user` parameter, zero HTTP latency in transactions | Specific business calculations (delivery fees, 5-min cancel rule) |
 | **Exceptions** | Single controller catch, `handleException($e)`, `app/Exceptions/<Domain>/` | Domain exceptions (`EmptyCartException`, `RestaurantClosedException`) |
-| **Persistence** | Reversible migrations, `restrictOnDelete()` on ledgers, method `casts(): array` | Food-delivery schema tables (`menus`, `order_items`, `restaurants`) |
-| **AI Tooling** | Driver-agnostic MCP tools in `app/Mcp/` | Custom tools (`SearchRestaurantsTool`, `GetOrderTool`) |
+| **Persistence** | Foreign key protection (`restrictOnDelete`), method `casts(): array` | Food-delivery schema tables (`menus`, `order_items`, `restaurants`) |
+| **AI Tooling** | Custom MCP tools in `app/Mcp/` | Custom tools (`SearchRestaurantsTool`, `GetOrderTool`) |

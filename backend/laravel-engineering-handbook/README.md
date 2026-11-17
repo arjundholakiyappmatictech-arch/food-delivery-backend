@@ -12,8 +12,8 @@ Modern Laravel applications move quickly. Without a shared engineering foundatio
 
 This handbook establishes:
 * **Engineering Consistency:** Uniform folder structure, API contracts, controller responsibilities, and service boundaries.
-* **Production Reliability:** Strict database transactions, concurrency guards, reversible migrations, and zero silent failures.
-* **Type Safety & Maintainability:** Strict PHP 8.4 typing, Eloquent relationship signatures, and automated static analysis.
+* **Production Reliability:** Strict database transactions, zero-HTTP-latency boundaries, foreign key protection, and zero silent failures.
+* **Type Safety & Maintainability:** Strict PHP 8.4 typing, method-based attribute casting, and automated static analysis.
 * **AI-Assisted Precision:** Standardized instructions and Model Context Protocol (MCP) workflows enabling AI assistants (such as Antigravity, Claude Code, and Cursor) to write accurate, idiomatic code without hallucinating patterns.
 
 ---
@@ -78,15 +78,12 @@ laravel-engineering-handbook/
 ├── 02-application-architecture/        # [ACTIVE] Layer boundaries, DI, exact project directory map
 ├── 03-api-engineering/                 # [ACTIVE] 2-verb routing, Form Requests, API Resources
 ├── 04-business-logic/                  # [ACTIVE] Decoupled Services, domain exceptions, transaction boundaries
-├── 05-database-engineering/            # [ROADMAP] Migrations, Eloquent relations, indexing, transactions
-├── 06-code-quality/                    # [ROADMAP] Pint styling, Larastan analysis, code review rubric
-├── 07-security-performance/            # [ROADMAP] Sanctum auth, Policies, webhooks, caching, secrets
-├── 08-testing-quality-assurance/       # [ROADMAP] Pest testing, feature tests, service mocks
-├── 09-ai-engineering/                  # [ROADMAP] AI development workflow, Laravel Boost, MCP tools
-├── 10-reusable-templates/              # [ROADMAP] Reference templates & stubs (Markdown specs)
-├── 11-references/                      # [ROADMAP] Official Laravel docs, ecosystem links, tooling
-├── 12-research/                        # [ACTIVE] Codebase discovery reports (RES-001) & ADRs (ADR-001)
-└── 13-project-integration/             # [ROADMAP] Adopting the handbook across other Laravel projects
+├── 05-database-engineering/            # [ACTIVE] Foreign key safety, model casts(): array, transaction latency
+├── 06-code-quality/                    # [ACTIVE] Pint styling, Larastan Level 8, 5-point rubric
+├── 07-security-and-performance/        # [ACTIVE] Webhook signatures, cache afterCommit, auth decoupling
+├── 08-testing-and-quality-assurance/   # [ACTIVE] Pest feature tests, strict 2-verb assertions, ADR-001 checks
+├── 09-ai-engineering/                  # [ACTIVE] Laravel MCP server, service delegation, AI safety
+└── 10-research/                        # [ACTIVE] Codebase discovery reports (RES-001) & ADRs (ADR-001)
 ```
 
 ---
@@ -96,7 +93,7 @@ laravel-engineering-handbook/
 ### For Human Developers
 1. **Starting a New Feature:** Read the relevant section in [`02-application-architecture/`](02-application-architecture/README.md) or [`03-api-engineering/`](03-api-engineering/README.md) before writing controllers or service classes.
 2. **Reviewing Pull Requests:** Use [`02-application-architecture/01-layer-responsibilities.md`](02-application-architecture/01-layer-responsibilities.md) and [`01-fundamentals/02-solid-in-laravel.md`](01-fundamentals/02-solid-in-laravel.md) as objective evaluation rubrics.
-3. **Architecture Decisions:** Consult [`12-research/README.md`](12-research/README.md) to review ratified ADRs.
+3. **Architecture Decisions:** Consult [`10-research/README.md`](10-research/README.md) to review ratified ADRs.
 
 ### For AI Coding Assistants (Antigravity, Claude Code, Cursor, Codex)
 1. **Entry Point:** Ingest root [`AGENTS.md`](../../AGENTS.md), which serves as the canonical pointer to [`GUIDELINES.md`](GUIDELINES.md).

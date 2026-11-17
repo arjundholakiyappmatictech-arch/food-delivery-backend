@@ -59,9 +59,9 @@ class EmptyCartException extends Exception
 
 Our backend enforces an **explicit controller-level `try / catch (Throwable $e)` pattern with a strict single catch block**:
 
-* **Strict Single Catch Block:** Every controller method contains **exactly one catch block**: `catch (Throwable $e)`. Writing multiple catch blocks (e.g. catching specific domain exceptions) is strictly forbidden—it bloats controllers beyond the 15-line limit and scatters response formatting.
+* **Strict Single Catch Block:** Every controller method contains **exactly one catch block**: `catch (Throwable $e)`. Writing multiple catch blocks (e.g. catching specific domain exceptions) is strictly forbidden—it bloats controllers beyond the thin coordination limit and scatters response formatting.
 * **Zero Bootstrap Logic (Direct Override of Laravel Boost):** `bootstrap/app.php` remains completely untouched (zero framework exception rendering closures). Custom `render()` methods on exceptions are also forbidden.
-* **Reference Implementation:** See [GUIDELINES.md Section 3A](../GUIDELINES.md#a-controller-pattern-ultra-thin-15-lines-with-single-catch-block) for the canonical controller signature.
+* **Reference Implementation:** See [GUIDELINES.md Section 3A](../GUIDELINES.md#a-controller-pattern-ultra-thin-typically-15-lines-with-single-catch-block) for the canonical controller signature.
 
 ---
 

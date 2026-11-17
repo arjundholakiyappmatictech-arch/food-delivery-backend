@@ -76,9 +76,10 @@ Our architecture enforces a **Strict Unidirectional Request Lifecycle**. Informa
 
 ---
 
-## 3. The 3 Invariant Architectural Rules
+## 3. The 4 Invariant Architectural Rules
 
-1. **Controllers Must Be Thin:** A controller method should rarely exceed 15 lines of code. It only validates, calls a service, transforms the result, and delegates exceptions.
+1. **Controllers Must Be Thin:** Controller actions must remain ultra-thin (typically <15 lines for mutations; up to ~20 lines for paginated queries purely for coordination; zero business logic permitted). They only coordinate validated input, call domain services, transform results via API Resources, and delegate exceptions.
 2. **Services Must Be Pure:** Services must never touch `request()`, `session()`, or `Auth::user()`. All context (the acting user, input parameters) must enter through explicit method arguments.
 3. **Data Access Must Be Guarded:** External database serialization must always pass through API Resources with `$this->whenLoaded()` to prevent N+1 queries.
+4. **Versioning Stays at Transport Layer:** Breaking API version changes (`v2`) are strictly confined to the HTTP transport layer (`Controllers/V2/`, `Requests/V2/`, `Resources/V2/`). Domain services (`app/Services/`) are strictly singular, flat, and version-agnostic (`Services/V2/` is strictly forbidden).
 

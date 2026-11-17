@@ -11,23 +11,23 @@ Every PHP class in the application belongs to a **single designated architectura
 ## 2. The 6 Architectural Layers
 
 ### Layer 1: Routing & Middleware (`routes/api.php`, `app/Http/Middleware/`)
-* **Mandatory:** Strict 2-verb model (`GET` for fetching, `POST` for mutations), mandatory `v1` URL prefix, Sanctum authentication guards, and route rate limiting.
+* **Mandatory:** Strict 2-verb model (`GET` for fetching, `POST` for mutations), URL version prefixing (`/api/v1/`, `/api/v2/`), Sanctum authentication guards, and route rate limiting.
 * **Strictly Forbidden:** Executing business logic, writing queries, mutating database records, using `PUT`/`PATCH`/`DELETE`.
 
 ### Layer 2: Form Requests (`app/Http/Requests/`)
-* **Mandatory:** Input sanitization, array validation syntax (`['required', 'string']`), contextual ownership validation (`Rule::exists()->where(...)`), and policy authorization in `authorize(): bool`.
+* **Mandatory:** Input sanitization, versioned request schemas (`V1/`, `V2/`), array validation syntax (`['required', 'string']`), contextual ownership validation (`Rule::exists()->where(...)`), and policy authorization in `authorize(): bool`.
 * **Strictly Forbidden:** Calculating totals, mutating models, calling third-party APIs.
 
 ### Layer 3: Thin HTTP Controllers (`app/Http/Controllers/`)
-* **Mandatory:** Ultra-thin (<15 lines). Extract `$request->validated()`, pass `User $user` explicitly to domain services, wrap execution in a single `try / catch (Throwable $e)` delegating to `handleException($e)`, and return API Resources (see [GUIDELINES.md Section 3A](../GUIDELINES.md#a-controller-pattern-ultra-thin-15-lines-with-single-catch-block)).
+* **Mandatory:** Ultra-thin (typically <15 lines for mutations, up to ~20 lines for paginated query coordination; zero business logic), organized under versioned namespaces (`V1\`, `V2\`). Extract `$request->validated()`, pass `User $user` explicitly to domain services, wrap execution in a single `try / catch (Throwable $e)` delegating to `handleException($e)`, and return API Resources (see [GUIDELINES.md Section 3A](../GUIDELINES.md#a-controller-pattern-ultra-thin-typically-15-lines-with-single-catch-block)).
 * **Strictly Forbidden:** Direct SQL or Eloquent mutations (`Order::create()`), transaction blocks, `Auth::user()` calls, multiple catch blocks.
 
 ### Layer 4: Domain Services (`app/Services/`)
-* **Mandatory:** Located strictly in a flat directory (`app/Services/`). Business logic, status workflows, and atomic mutations wrapped in `DB::transaction()`. External HTTP calls (e.g. payment SDKs) must be executed **before** opening transactions. Always pass acting `User $user` explicitly.
-* **Strictly Forbidden:** Calling `request()`, `session()`, or `Auth::user()`; creating nested service directories; formatting JSON responses; introducing artificial `app/Actions/` folders.
+* **Mandatory:** Located strictly in a flat, version-agnostic directory (`app/Services/`). Business logic, status workflows, and atomic mutations wrapped in `DB::transaction()`. External HTTP calls (e.g. payment SDKs) must be executed **before** opening transactions. Always pass acting `User $user` explicitly. Both `V1` and `V2` controllers inject the same underlying services.
+* **Strictly Forbidden:** Calling `request()`, `session()`, or `Auth::user()`; creating versioned service subdirectories (`Services/V2/`); formatting JSON responses; introducing artificial `app/Actions/` folders.
 
 ### Layer 5: Data & Eloquent Models (`app/Models/`)
-* **Mandatory:** Explicit return types on relationships (`BelongsTo`, `HasMany`, `HasOne`), method-based attribute casting via `protected function casts(): array`, and `restrictOnDelete()` for financial or historical records.
+* **Mandatory:** Method-based attribute casting via `protected function casts(): array`, and `restrictOnDelete()` for financial or historical records.
 * **Strictly Forbidden:** Calling third-party APIs, handling HTTP request logic, complex multi-model business workflows.
 
 ### Layer 6: Presentation / API Resources (`app/Http/Resources/`)
@@ -40,7 +40,7 @@ Every PHP class in the application belongs to a **single designated architectura
 
 Before committing or approving any pull request, verify:
 
-1. [ ] **Controller:** Is the controller method under 15 lines and free of direct database writes (`Model::create`, `DB::table`)?
+1. [ ] **Controller:** Is the controller method ultra-thin (typically <15 lines for mutations, up to ~20 lines for query coordination) and free of direct database writes (`Model::create`, `DB::table`)?
 2. [ ] **Service:** Does the service accept `User $user` explicitly without calling `Auth::user()`, `request()`, or `session()`?
 3. [ ] **Transaction:** Are all external HTTP API calls executed outside `DB::transaction()` boundaries?
 4. [ ] **Resource:** Are all relationships in API Resources guarded with `$this->whenLoaded()`?

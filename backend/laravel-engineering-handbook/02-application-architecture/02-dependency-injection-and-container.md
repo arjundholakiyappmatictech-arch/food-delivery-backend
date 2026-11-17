@@ -93,4 +93,4 @@ class OrderService
 ---
 
 > [!NOTE]
-> For our pragmatic Dependency Inversion rules (banning speculative interfaces, direct concrete injection, and mocking via `$this->mock()`), see [01-fundamentals/02-solid-in-laravel.md](../01-fundamentals/02-solid-in-laravel.md#d--dependency-inversion-principle-dip--optional--pragmatic-standard).
+> For our pragmatic Dependency Inversion rules (banning speculative interfaces, direct concrete injection, and mocking via `$this->mock()`), see [01-fundamentals/02-solid-in-laravel.md](../01-fundamentals/02-solid-in-laravel.md).

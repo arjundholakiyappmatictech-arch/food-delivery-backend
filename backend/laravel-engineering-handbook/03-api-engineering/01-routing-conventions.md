@@ -75,3 +75,19 @@ Route::prefix('v1')->group(function (): void {
 
 * **Implicit Binding:** Type-hint Eloquent models in controller methods (`show(Order $order)`) matching route placeholders (`{order}`).
 * **Explicit Keys & Scoping:** Specify alternate keys in route parameters (e.g. `{order:uuid}`) and append `->scopeBindings()` for nested child relationships to enforce parent ownership automatically.
+
+---
+
+## 5. API Versioning Standards (Transport vs. Domain Separation)
+
+When managing multiple API versions (e.g. `v1` and `v2`):
+
+1. **Versioned Transport Layer:**
+   * **Route Groups:** Group routes explicitly under `Route::prefix('v1')` and `Route::prefix('v2')`.
+   * **Controllers (`app/Http/Controllers/V2/`):** Coordinate v2 inputs and invoke domain services.
+   * **Form Requests (`app/Http/Requests/V2/`):** Validate breaking payload changes without breaking legacy v1 clients.
+   * **API Resources (`app/Http/Resources/V2/`):** Transform models into updated v2 JSON response contracts.
+
+2. **Version-Agnostic Domain Layer:**
+   * **Services (`app/Services/`):** Must **never** be versioned (`app/Services/V2/` is strictly forbidden). Business logic, inventory rules, and database transactions are singular. Both `V1` and `V2` controllers inject the exact same underlying domain services.
+   * **Models & Migrations:** Single, version-agnostic database schema.

@@ -21,7 +21,7 @@ When proposing a change:
 Any significant change to our approved standards (e.g., altering the JSON response envelope, changing routing conventions, introducing new queue protocols) must be proposed via an **Architecture Decision Record (ADR)**.
 
 ### ADR Format
-Create a new file in `12-research/adr/` named `ADR-XXX-short-title.md` using this template matching [`ADR-001`](12-research/adr/ADR-001-unified-api-response-envelope.md):
+Create a new file in `10-research/adr/` named `ADR-XXX-short-title.md` using this template matching [`ADR-001`](10-research/adr/ADR-001-unified-api-response-envelope.md):
 
 ```markdown
 # ADR-XXX: Title of Decision

@@ -1,4 +1,4 @@
-# Module 12: Research, Discovery Reports & ADRs
+# Module 10: Research, Discovery Reports & ADRs
 
 > Historical codebase audits, architectural discovery findings, and Architecture Decision Records (ADRs) that substantiate our global engineering guidelines.
 
@@ -22,7 +22,7 @@
 | Finding ID | Research Area | Codified Company Standard | Canonical Specification |
 | :--- | :--- | :--- | :--- |
 | **RES-001 § 1** | Routing URIs & Verbs | Strict 2-verb model (`GET`/`POST`) with explicit CRUD suffixes | [03-api-engineering/01-routing-conventions.md](../03-api-engineering/01-routing-conventions.md) |
-| **RES-001 § 2** | JSON Responses | ADR-001 Unified Response Envelope (`is_error: bool`, `data: null` on error) | [12-research/adr/ADR-001](adr/ADR-001-unified-api-response-envelope.md) |
+| **RES-001 § 2** | JSON Responses | ADR-001 Unified Response Envelope (`is_error: bool`, `data: null` on error) | [10-research/adr/ADR-001](adr/ADR-001-unified-api-response-envelope.md) |
 | **RES-001 § 3** | Controller Exceptions | Single `catch (Throwable $e)` delegating to `handleException($e)` | [04-business-logic/02-exception-architecture.md](../04-business-logic/02-exception-architecture.md) |
 | **RES-001 § 4** | Database Errors | Mask SQL details from clients; private server-side query logging | [04-business-logic/02-exception-architecture.md](../04-business-logic/02-exception-architecture.md) |
 | **RES-001 § 5** | Validation Syntax | Mandatory array validation syntax in Form Requests | [03-api-engineering/02-form-requests-and-validation.md](../03-api-engineering/02-form-requests-and-validation.md) |
@@ -30,6 +30,6 @@
 | **RES-001 § 7** | Service Coupling | Inject `User $user` explicitly; strictly ban `Auth::user()` in services | [04-business-logic/01-service-layer-design.md](../04-business-logic/01-service-layer-design.md) |
 | **RES-001 § 8** | Transaction Latency | Call external HTTP APIs before opening `DB::transaction()` | [04-business-logic/01-service-layer-design.md](../04-business-logic/01-service-layer-design.md) |
 | **RES-001 § 9** | Queue Race Conditions | Dispatch jobs inside transactions using `->afterCommit()` | [04-business-logic/01-service-layer-design.md](../04-business-logic/01-service-layer-design.md) |
-| **RES-001 § 10** | Eloquent Typing | Explicit relation return types and method-based `casts(): array` | [01-fundamentals/01-php-typing-and-modern-syntax.md](../01-fundamentals/01-php-typing-and-modern-syntax.md) |
-| **RES-001 § 11** | Foreign Keys | `restrictOnDelete()` on financial records; reversible `down()` migrations | [GUIDELINES.md Section 2](../../GUIDELINES.md#2-mandatory-standards-vs-forbidden-anti-patterns) |
-| **RES-001 § 13** | AI MCP Integration | Driver-agnostic MCP tools located in `app/Mcp/` | [02-application-architecture/03-directory-structure-and-organization.md](../02-application-architecture/03-directory-structure-and-organization.md) |
+| **RES-001 § 10** | Attribute Casting | Method-based `protected function casts(): array` with backed Enums | [05-database-engineering/README.md](../05-database-engineering/README.md) |
+| **RES-001 § 11** | Foreign Key Safety | `restrictOnDelete()` on financial/ledger records; ban `cascadeOnDelete()` | [05-database-engineering/README.md](../05-database-engineering/README.md) |
+| **RES-001 § 13** | AI MCP Integration | Custom MCP tools located in `app/Mcp/` | [02-application-architecture/03-directory-structure-and-organization.md](../02-application-architecture/03-directory-structure-and-organization.md) |

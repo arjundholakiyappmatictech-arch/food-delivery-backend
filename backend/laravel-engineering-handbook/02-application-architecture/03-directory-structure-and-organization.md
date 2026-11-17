@@ -32,9 +32,15 @@ backend/
 │   │   ├── Restaurant/          # (DuplicateRestaurantException.php)
 │   │   └── Reviews/             # (ReviewOnlyDeliveredOrderException.php)
 │   ├── Http/
-│   │   ├── Controllers/         # Thin HTTP Controllers (<15 lines, single handleException catch)
+│   │   ├── Controllers/         # Thin HTTP Controllers (<15-20 lines coordination, single handleException catch)
+│   │   │   ├── V1/              # API V1 Controllers
+│   │   │   └── V2/              # API V2 Controllers
 │   │   ├── Requests/            # Form Requests enforcing array validation rules
+│   │   │   ├── V1/              # V1 payload validation schemas
+│   │   │   └── V2/              # V2 payload validation schemas
 │   │   └── Resources/           # API Resources transforming models (ADR-001 envelope)
+│   │       ├── V1/              # V1 JSON presentation schemas
+│   │       └── V2/              # V2 JSON presentation schemas
 │   ├── Jobs/                    # Asynchronous Queue Jobs (dispatched with ->afterCommit())
 │   ├── Listeners/               # Event Listeners
 │   ├── Mail/                    # Mailable notification classes
@@ -44,7 +50,7 @@ backend/
 │   │   └── Tools/               # AI callable tools (GetOrderTool.php, SearchRestaurantsTool.php)
 │   ├── Models/                  # Eloquent models with strict relation types & casts(): array
 │   ├── Providers/               # Core bootstrap providers (AppServiceProvider.php)
-│   └── Services/                # Pure domain business logic & transactions (strictly flat)
+│   └── Services/                # Pure domain business logic & transactions (strictly flat & version-agnostic; no V1/V2 folders)
 │
 ├── database/
 │   ├── factories/               # Model factories for testing
@@ -64,9 +70,13 @@ backend/
 
 For the responsibilities of standard HTTP, Model, and Resource layers, see [01-layer-responsibilities.md](01-layer-responsibilities.md). The rules below govern our organization-specific directories:
 
-### `app/Services/` (Flat Domain Logic)
+### `app/Services/` (Flat & Version-Agnostic Domain Logic)
 * **What goes here:** All domain business logic, fee calculations, multi-table transactions, and third-party SDK calls (e.g. `OrderService.php`, `PaymentService.php`, `RazorpayService.php`).
-* **Rule:** Must remain a **strictly flat, single-level directory**. Never nest subdirectories inside `app/Services/`.
+* **Rule:** Must remain a **strictly flat, single-level directory**. Never nest subdirectories or version folders (`app/Services/V2/` is strictly forbidden). Business logic is singular; both `V1` and `V2` controllers inject the exact same service layer.
+
+### `app/Http/` Versioning Alignment (`Controllers/`, `Requests/`, `Resources/`)
+* **What goes here:** All transport-level presentation and validation artifacts isolated by API version (`V1/`, `V2/`).
+* **Rule:** Breaking API changes (payload shape, route parameters, JSON output) must be isolated strictly inside `Controllers/V{X}/`, `Requests/V{X}/`, and `Resources/V{X}/`. Legacy clients continue functioning on `V1` without touching backend domain services.
 
 ### `app/Exceptions/` (Domain-Grouped Exceptions)
 * **What goes here:** Domain exceptions organized into subdirectories named after their business entity (`Order/`, `Payment/`, `Restaurant/`, `Address/`, `Carts/`).

@@ -10,13 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.3-draft] - 2026-11-17
 
 ### Changed
+- **API Versioning Invariant (Transport vs. Domain Separation):**
+  - Codified the architectural rule across `AGENTS.md`, `GUIDELINES.md`, Module 02, and Module 03: versioning is strictly isolated to the HTTP transport layer (`Controllers/V{X}/`, `Requests/V{X}/`, `Resources/V{X}/`); domain services (`app/Services/`) remain strictly flat, singular, and version-agnostic (`Services/V2/` is strictly forbidden).
+- **Pragmatic Controller Size Standard Refinement:**
+  - Refined controller length invariant across `AGENTS.md`, `GUIDELINES.md`, and Modules 02, 04, and 06: from dogmatic `<15 lines` to a pragmatic standard (typically `<15 lines` for mutations; up to `~20 lines` for paginated queries or filter coordination purely for HTTP coordination; zero business logic permitted).
 - **Synchronized Handbook with Laravel Boost:**
   - Integrated Laravel Boost framework guidelines (`backend/.agents/skills/laravel-best-practices/`) as baseline conventions while preserving 100% of company-specific architectural rules and constitutional overrides.
-  - Trimmed generic framework boilerplate, duplicate controller implementations, and redundant language explanations across Modules 01, 02, 03, 04, and 12.
+  - Trimmed generic framework boilerplate, duplicate controller implementations, and redundant language explanations across Modules 01 through 10.
   - Cleaned out all occurrences of deprecated `declare(strict_types=1);` and old enum naming suffixes across all markdown specifications.
 - **Enriched Global Guidelines (`GUIDELINES.md`):**
   - Streamlined `GUIDELINES.md` from 292 to 179 lines (~39% leaner and faster for AI agent context ingestion).
-  - Added structured **Executive Module Summary Cards** for Modules 01, 02, 03, 04, and 12 with direct actionable directives for AI coding agents (Antigravity, Cursor, Claude Code).
+  - Added structured **Executive Module Summary Cards** for Modules 01 through 10 with direct actionable directives for AI coding agents (Antigravity, Cursor, Claude Code).
 - **Module 01 (Fundamentals & Language Standards):**
   - Consolidated specifications for backed enums, model `casts(): array`, exhaustive `match()`, and pragmatic SOLID principles.
   - Confirmed Pragmatic DIP is Optional (concrete injection, zero speculative interfaces).
@@ -30,9 +34,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Standardized service invariants: flat `app/Services/`, mandatory explicit `User $user` injection (ban on `Auth::user()`), zero-HTTP-latency transaction boundaries, and queue `->afterCommit()` hooks.
   - Streamlined `04-business-logic/02-exception-architecture.md`: single controller catch `handleException($e)`, HTTP `100–599` status code sanitization (preventing HTTP 0 crashes), and masking SQL `QueryException` schema leaks.
   - Updated `04-business-logic/README.md` with an authoritative Invariant Summary Matrix.
-- **Module 12 (Research, Discovery Reports & ADRs):**
-  - Streamlined `12-research/adr/ADR-001-unified-api-response-envelope.md`: removed obsolete migration plan, sanitized leaky infrastructure error messages, and preserved the formal JSON Schema and 3 core invariants.
-  - Synchronized `12-research/01-food-delivery-discovery.md` (RES-001): replaced legacy auditor proposals with codified company standards, establishing a clean research traceability matrix in `12-research/README.md`.
+- **Module 05 (Database Engineering & Persistence Standards):**
+  - Established lean `05-database-engineering/README.md` defining company invariants: strict ban on `cascadeOnDelete()` on financial/order records, mandatory method-based `casts(): array` with backed Enums, and zero-HTTP-latency transaction boundaries with `->afterCommit()`.
+  - Pruned duplicate generic framework tutorials covered by Laravel Boost (`down()` rollbacks, relation return types, and driver portability).
+- **Module 06 (Code Quality & Static Analysis):**
+  - Authored lean `06-code-quality/README.md` specifying automated quality gates (Laravel Pint formatting, Larastan Level 8 analysis) and the consolidated 5-point Invariant Review Rubric.
+- **Module 07 (Security & Performance Invariants):**
+  - Authored ultra-lean `07-security-and-performance/README.md` codifying mandatory cryptographic webhook signature verification (`hash_equals()`, HMAC SHA256) with idempotency checks, transaction-safe cache invalidation (`DB::afterCommit()`), and strict Sanctum-to-Domain actor decoupling (`User $user` injection).
+  - Excluded redundant generic security and caching tutorials natively covered in Laravel Boost (`.agents/skills/laravel-best-practices/rules/security.md` and `caching.md`).
+- **Module 08 (Testing & Quality Assurance Invariants):**
+  - Authored ultra-lean `08-testing-and-quality-assurance/README.md` codifying mandatory ADR-001 envelope assertions (`is_error`, `message`, `data: null` on failure), strict 2-verb `postJson()` state mutations (banning `putJson`, `patchJson`, `deleteJson`), and external-only gateway mocking (`Http::fake()`).
+  - Pruned generic testing syntax, AAA patterns, model factory tutorials, and queue/event faking natively documented in Laravel Boost (`.agents/skills/testing-best-practices/`).
+- **Module 09 (AI Engineering & MCP Standards):**
+  - Authored ultra-lean `09-ai-engineering/README.md` codifying MCP Tool service delegation boundaries (injecting flat `app/Services/`), explicit `User $user` actor injection, and exception shielding via `Response::error()`.
+  - Excluded framework artisan generators and route registration tutorials natively documented in Laravel Boost (`.agents/skills/mcp-development/`).
+- **Module 10 (Research, Discovery Reports & ADRs):**
+  - Renumbered from legacy `12-research/` to `10-research/` to establish a seamless, continuous 10-module handbook sequence (`01` through `10`).
+  - Streamlined `10-research/adr/ADR-001-unified-api-response-envelope.md`: removed obsolete migration plan, sanitized leaky infrastructure error messages, and preserved the formal JSON Schema and 3 core invariants.
+  - Synchronized `10-research/01-food-delivery-discovery.md` (RES-001): replaced legacy auditor proposals with codified company standards, establishing a clean research traceability matrix in `10-research/README.md`.
   - Stripped redundant corporate metadata headers from research documents for consistent handbook structure.
 
 ---

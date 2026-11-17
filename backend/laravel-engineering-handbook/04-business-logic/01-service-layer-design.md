@@ -45,7 +45,7 @@ Services must remain completely decoupled from HTTP transport state so they are 
 
 ## 3. Approved Service Implementation Signature
 
-Aligned with [GUIDELINES.md Section 3D](../GUIDELINES.md#d-service--transaction-safety-boundaries):
+Aligned with [GUIDELINES.md Section 3D](../GUIDELINES.md#d-service-and-transaction-safety-boundaries):
 
 ```php
 namespace App\Services;

@@ -35,3 +35,4 @@
 | **Input Extraction** | Pass `$request->validated()` to domain services. | Passing raw `$request->all()` or `$request->input()`. |
 | **Relationship Guards** | Wrap all relationship transformations in `$this->whenLoaded()`. | Unguarded property access (`$this->items`), causing N+1 query loops. |
 | **Response Contract** | Transform models through API Resources conforming to ADR-001. | Returning raw Eloquent models directly from controllers. |
+| **API Versioning** | Version strictly at HTTP layer (`Controllers/V{X}/`, `Requests/V{X}/`, `Resources/V{X}/`). Services remain flat and version-agnostic. | Creating versioned service subdirectories (`Services/V2/`) or duplicating business logic across API versions. |
