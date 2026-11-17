@@ -18,18 +18,15 @@ When proposing a change:
 
 ## 2. Architecture Decision Records (ADRs)
 
-Any significant change to our approved standards (e.g., adopting a new DTO library, altering the JSON response envelope, introducing modular monolith directories) must be proposed via an **Architecture Decision Record (ADR)**.
+Any significant change to our approved standards (e.g., altering the JSON response envelope, changing routing conventions, introducing new queue protocols) must be proposed via an **Architecture Decision Record (ADR)**.
 
 ### ADR Format
-Create a new file in `12-research/adr/` named `ADR-XXX-short-title.md` using this template:
+Create a new file in `12-research/adr/` named `ADR-XXX-short-title.md` using this template matching [`ADR-001`](12-research/adr/ADR-001-unified-api-response-envelope.md):
 
 ```markdown
 # ADR-XXX: Title of Decision
 
-* **Status:** Proposed | Accepted | Deprecated | Superseded
-* **Date:** YYYY-MM-DD
-* **Author:** Name / Role
-* **Deciders:** Engineering Lead, Backend Team
+---
 
 ## 1. Context and Problem Statement
 What technical problem or architectural tension are we addressing?
@@ -40,19 +37,13 @@ What technical problem or architectural tension are we addressing?
 * Option 3: ...
 
 ## 3. Decision Outcome
-Chosen option and justification.
+Chosen option, formal JSON schema, and concrete code/response signatures.
 
-### Positive Consequences
-* ...
+## 4. Backend Invariant Rules (Strictly Enforced)
+List of non-negotiable rules and prohibited anti-patterns.
 
-### Negative Consequences / Trade-offs
-* ...
-
-## 4. Pros and Cons of Options
-Detailed comparison matrix.
-
-## 5. Implementation & Migration Plan
-How existing projects adopt this decision without breaking regressions.
+## 5. Architectural Benefits
+Measurable benefits to schema integrity, performance, and developer experience.
 ```
 
 ---

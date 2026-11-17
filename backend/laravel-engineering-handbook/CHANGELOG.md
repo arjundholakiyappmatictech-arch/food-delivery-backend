@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.3-draft] - 2026-11-17
+
+### Changed
+- **Synchronized Handbook with Laravel Boost:**
+  - Integrated Laravel Boost framework guidelines (`backend/.agents/skills/laravel-best-practices/`) as baseline conventions while preserving 100% of company-specific architectural rules and constitutional overrides.
+  - Trimmed generic framework boilerplate, duplicate controller implementations, and redundant language explanations across Modules 01, 02, 03, 04, and 12.
+  - Cleaned out all occurrences of deprecated `declare(strict_types=1);` and old enum naming suffixes across all markdown specifications.
+- **Enriched Global Guidelines (`GUIDELINES.md`):**
+  - Streamlined `GUIDELINES.md` from 292 to 179 lines (~39% leaner and faster for AI agent context ingestion).
+  - Added structured **Executive Module Summary Cards** for Modules 01, 02, 03, 04, and 12 with direct actionable directives for AI coding agents (Antigravity, Cursor, Claude Code).
+- **Module 01 (Fundamentals & Language Standards):**
+  - Consolidated specifications for backed enums, model `casts(): array`, exhaustive `match()`, and pragmatic SOLID principles.
+  - Confirmed Pragmatic DIP is Optional (concrete injection, zero speculative interfaces).
+- **Module 02 (Application Architecture & Layer Boundaries):**
+  - Re-enforced the 6 backend layers, unidirectional request flow, and flat `app/Services/`.
+  - Re-asserted Cardinal Rule 1 strictly banning `Repositories/`, `DTOs/`, `Actions/`, and `Helpers/`.
+- **Module 03 (API Engineering):**
+  - Standardized the strict 2-verb model (`GET`/`POST`), explicit CRUD suffixes (`/store`, `/{id}/update`, `/{id}/destroy`), and array validation syntax.
+  - Enforced `$this->whenLoaded()` relation guards and ADR-001 pagination helper integration.
+- **Module 04 (Business Logic & Domain Architecture):**
+  - Standardized service invariants: flat `app/Services/`, mandatory explicit `User $user` injection (ban on `Auth::user()`), zero-HTTP-latency transaction boundaries, and queue `->afterCommit()` hooks.
+  - Streamlined `04-business-logic/02-exception-architecture.md`: single controller catch `handleException($e)`, HTTP `100–599` status code sanitization (preventing HTTP 0 crashes), and masking SQL `QueryException` schema leaks.
+  - Updated `04-business-logic/README.md` with an authoritative Invariant Summary Matrix.
+- **Module 12 (Research, Discovery Reports & ADRs):**
+  - Streamlined `12-research/adr/ADR-001-unified-api-response-envelope.md`: removed obsolete migration plan, sanitized leaky infrastructure error messages, and preserved the formal JSON Schema and 3 core invariants.
+  - Synchronized `12-research/01-food-delivery-discovery.md` (RES-001): replaced legacy auditor proposals with codified company standards, establishing a clean research traceability matrix in `12-research/README.md`.
+  - Stripped redundant corporate metadata headers from research documents for consistent handbook structure.
+
+---
+
 ## [1.0.2-draft] - 2026-11-16
 
 ### Added

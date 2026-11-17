@@ -153,12 +153,21 @@ For in-depth explanations, trade-offs, and complete code samples, consult the ha
 * **What it Does:** Defines domain service design, transaction latency boundaries, queue commit hooks, and typed domain exception handling.
 * **Child Specifications:** [01 - Service Layer Design](04-business-logic/01-service-layer-design.md) | [02 - Exception Architecture](04-business-logic/02-exception-architecture.md)
 * **Actionable Directives for AI Agents:**
+  * **Flat Placement & Zero Bloat:** Domain services reside flat in `app/Services/`. Never introduce `app/Repositories/`, `app/DTOs/`, or `app/Actions/`.
   * **Actor Context:** Never call `Auth::user()` or `request()` inside services. Always accept the acting user as an explicit `User $user` parameter.
   * **Zero Latency in Transactions:** Execute external HTTP calls (e.g. Razorpay, Stripe) **before** opening a `DB::transaction()` block.
   * **Queue Dispatching:** Always append `->afterCommit()` when dispatching queue jobs or events inside transactions.
-  * **Concrete DI (DIP Optional):** Inject concrete services directly (`RazorpayService`) to maintain 1-click IDE navigation. Speculative interfaces are strictly optional / deferred.
-  * **Domain Exceptions:** Throw typed exceptions from `app/Exceptions/<Domain>/` extending native `Exception` with explicit HTTP status codes.
-* [12 - Research, Discovery Reports & ADRs](12-research/README.md)
+  * **Typed Domain Returns:** Services must return Eloquent Models, Collections, or Paginators—never `JsonResponse` or HTTP responses.
+  * **Single Catch & Error Delegation:** Controllers catch single `Throwable $e` and delegate to `handleException($e)`. Zero error logic in `bootstrap/app.php`.
+  * **Domain Exceptions:** Throw typed exceptions from `app/Exceptions/<Domain>/` extending native `Exception` with explicit HTTP status codes via `parent::__construct(message: ..., code: ...)`.
+  * **Status & SQL Sanitization:** `handleException()` must sanitize codes to valid HTTP range (`100–599`) to prevent HTTP 0 crashes, and mask `QueryException` schema leakage.
+
+#### [12 - Research, Discovery Reports & ADRs](12-research/README.md)
+* **What it Does:** Documents empirical audits and official Architecture Decision Records (ADRs) that substantiate company engineering invariants.
+* **Child Specifications:** [01 - Codebase Discovery Report (RES-001)](12-research/01-food-delivery-discovery.md) | [ADR-001 - Response Envelope Specification](12-research/adr/ADR-001-unified-api-response-envelope.md)
+* **Actionable Directives for AI Agents:**
+  * **Envelope Invariant (ADR-001):** Strictly serialize all API responses using `"is_error": bool`, `"message": string`, `"data": mixed|null`, `"errors": object|null`, and `"pagination": object|null`. On error, `data` must strictly be `null` (never `[]`).
+  * **Empirical Traceability:** Ensure domain implementations conform to the 14 codified standards established in RES-001.
 
 ### Upcoming Roadmap Modules
 * `05 - Database Engineering` (Transactions, Migrations, Eloquent Relations)

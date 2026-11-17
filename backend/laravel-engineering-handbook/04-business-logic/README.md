@@ -1,17 +1,24 @@
-# Module 04 — Business Logic & Domain Architecture
+# Module 04: Business Logic & Domain Architecture
 
-> **The authoritative standard for designing decoupled domain services, atomic transaction boundaries, and the domain exception hierarchy.**
+> Architectural specifications for designing decoupled domain services, atomic transaction boundaries, and the domain exception hierarchy.
 
 ---
 
-## 1. Module Overview
+## 1. Directory Contents
 
-The business logic layer is the core of any enterprise Laravel application. While controllers coordinate HTTP transport and Eloquent models handle data persistence, **the service layer owns business invariants, domain calculations, transactional boundaries, and external provider orchestration**.
+1. **[01 - Service Layer Design & Domain Boundaries](01-service-layer-design.md):**
+   * Flat service placement in `app/Services/` with direct Eloquent model interaction.
+   * Explicit actor injection (`User $user`) and strict prohibition of `Auth::user()`.
+   * Zero-HTTP-latency database transaction boundaries.
+   * Queue job and domain event dispatching using `->afterCommit()`.
+   * Strongly typed domain return contracts (Models, Collections, Paginators).
 
-This module establishes strict structural rules to ensure domain logic remains:
-1. **Decoupled:** Callable from HTTP controllers, Artisan CLI commands, Queue workers, and AI MCP endpoints without HTTP or session dependencies.
-2. **Atomic:** Multi-table mutations are wrapped in database transactions with zero external network latency inside transaction blocks.
-3. **Resilient:** Errors are communicated via structured, typed domain exceptions that map cleanly to HTTP status codes without leaking internal database details.
+2. **[02 - Exception Architecture & Error Handling](02-exception-architecture.md):**
+   * Domain-grouped exception categorization under `app/Exceptions/<Domain>/`.
+   * Extending native `Exception` with predefined HTTP status codes via `parent::__construct()`.
+   * Controller-level single `try / catch (Throwable $e)` delegating to `BaseController::handleException()`.
+   * Zero custom logic in `bootstrap/app.php` and prohibition of custom `render()` methods.
+   * Preventing HTTP `0` crashes and masking database `QueryException` schema leakage.
 
 ---
 
@@ -50,7 +57,7 @@ sequenceDiagram
     alt Success
         Svc-->>Ctrl: Order Model
         Ctrl-->>Client: 201 Created (ADR-001 Envelope)
-    else Domain Exception (e.g., EmptyCartException)
+    else Domain Exception (e.g. EmptyCartException)
         Svc-->>Ctrl: throw new EmptyCartException()
         Ctrl->>Base: handleException($e)
         Base-->>Client: 400 Bad Request ({ is_error: true, message, data: null })
@@ -59,16 +66,14 @@ sequenceDiagram
 
 ---
 
-## 3. Module Index
+## 3. Invariant Summary Matrix
 
-| Document | Purpose | Key Standards |
+| Category | Standard Rule | Prohibited Anti-Pattern |
 | :--- | :--- | :--- |
-| **[`01-service-layer-design.md`](01-service-layer-design.md)** | Service class architecture | Pure `app/Services/`, explicit `User $user` injection, concrete DI, atomic transactions, external latency boundaries, and queue `afterCommit` hooks. |
-| **[`02-exception-architecture.md`](02-exception-architecture.md)** | Domain exception hierarchy | Categorized exceptions in `app/Exceptions/<Domain>/`, status code inheritance, controller-level `try/catch` delegation to `BaseController::handleException()`, and database sanitization. |
-
----
-
-## 4. Architectural Boundaries at a Glance
-
-* **Allowed in Services:** Database transactions, business calculations, dispatching events with `->afterCommit()`, throwing domain exceptions, calling external API clients via injected concrete services.
-* **Strictly Forbidden in Services:** Calling `Auth::user()` directly (always accept `User $user` parameter), accessing `request()` or session helpers, making external HTTP calls *inside* `DB::transaction()`, and returning `JsonResponse` objects (services must return Models, Collections, or DTO-arrays).
+| **Service Placement** | Flat directory directly under `app/Services/`. | Introducing `Repositories/`, `DTOs/`, or `Actions/` folders. |
+| **Actor Context** | Always pass acting user explicitly as `User $user` parameter. | Calling `Auth::user()`, `auth()->user()`, or `request()` inside services. |
+| **Transaction Boundary** | Execute external HTTP calls (Razorpay, Stripe) **before** `DB::transaction()`. | Invoking external HTTP APIs inside database transaction blocks. |
+| **Queue Dispatching** | Always append `->afterCommit()` when dispatching inside transactions. | Dispatching queue jobs inside transactions without commit hooks. |
+| **Return Contracts** | Return Models, Collections, or Paginators. | Returning `JsonResponse` or HTTP responses directly from services. |
+| **Controller Catch Contract** | Single `catch (Throwable $e)` delegating to `BaseController::handleException()`. | Multiple catch blocks in controllers; custom error rendering in `bootstrap/app.php`. |
+| **Exception Sanitization** | Sanitize codes to HTTP range (`100–599`); mask database `QueryException`. | Passing unvalidated `$e->getCode()` (HTTP 0 crash); leaking SQL in API responses. |

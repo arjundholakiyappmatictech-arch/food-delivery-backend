@@ -51,7 +51,7 @@ Every recommendation throughout this handbook is strictly categorized into one o
 │    Mandatory conventions we enforce across all our repositories.       │
 ├────────────────────────────────────────────────────────────────────────┤
 │ 4. Optional Architectural Pattern                                      │
-│    Patterns (e.g. Repositories, DTOs, CQRS) with explicit trade-offs.  │
+│    Patterns (e.g. Event Sourcing, Domain Events, Multi-Tenancy) with trade-offs.│
 ├────────────────────────────────────────────────────────────────────────┤
 │ 5. Project-Specific Conventions                                        │
 │    Domain logic belonging solely to an individual application.         │
@@ -110,7 +110,7 @@ laravel-engineering-handbook/
 ## 6. Maintenance & Governance
 
 * **Location:** `backend/laravel-engineering-handbook`
-* **Current Version:** `v1.0.2-draft`
+* **Current Version:** `v1.0.3-draft`
 * **Maintainer:** Senior Laravel Engineering Team
 * **License:** Internal Engineering Standard
 

@@ -1,14 +1,12 @@
 # Exception Architecture & Error Handling
 
-> **The definitive standard for organizing domain exceptions in `app/Exceptions/`, mapping HTTP status codes safely, and enforcing the Base Controller exception delegation contract.**
-
 ---
 
 ## 1. Architectural Philosophy
 
-In enterprise Laravel backends, errors fall into two distinct categories:
-1. **Domain Rule Violations:** Predictable business failures (e.g., cart is empty, item unavailable, order already cancelled). These are represented by **Typed Domain Exceptions** and map directly to 4xx HTTP client errors.
-2. **Infrastructure Failures:** Unpredicted technical failures (e.g., database connection loss, syntax error, payment gateway timeout). These represent 5xx server errors and must be sanitized to protect internal database schemas.
+Errors in backend services are strictly partitioned into two categories:
+1. **Domain Rule Violations:** Predictable business failures (e.g. empty cart, item unavailable). Represented by **Typed Domain Exceptions** extending native `Exception` with 4xx status codes.
+2. **Infrastructure Failures:** Technical failures (e.g. database disconnect, PDO failure). Sanitized to generic 500 errors to prevent schema leakage.
 
 ---
 
@@ -18,31 +16,20 @@ Domain exceptions reside in **`app/Exceptions/`** grouped into domain subdirecto
 
 ```text
 app/Exceptions/
-├── Address/
-│   ├── AddressLimitExceededException.php
-│   ├── DuplicateAddressException.php
-│   └── LastAddressCannotBeDeletedException.php
-├── Carts/
-│   ├── CartMenuItemMissingException.php
-│   ├── MenuItemUnavailableException.php
-│   └── RestaurantClosedException.php
-├── Order/
-│   ├── EmptyCartException.php
-│   ├── OrderAlreadyCancelledException.php
-│   └── OrderCannotBeCancelledException.php
-└── Payment/
-    ├── OrderAlreadyDeliveredExceptions.php
-    └── PaymentAlreadyExistsExceptions.php
+├── Address/             # (AddressLimitExceededException.php)
+├── Carts/               # (EmptyCartException.php, MenuItemUnavailableException.php)
+├── Deliveries/          # (DeliveryAgentAlreadyAssignedException.php)
+├── Mcp/                 # (OrderNotFoundException.php)
+├── Order/               # (OrderAlreadyCancelledException.php)
+├── Payment/             # (PaymentAlreadyExistsException.php)
+├── Restaurant/          # (DuplicateRestaurantException.php)
+└── Reviews/             # (ReviewOnlyDeliveredOrderException.php)
 ```
 
 ### Domain Exception Structure
-Every domain exception must define a meaningful default message and an appropriate HTTP status code:
+Every domain exception directly extends PHP's native `Exception`, defining a meaningful default message and predefined HTTP status code via `parent::__construct()`:
 
 ```php
-<?php
-
-declare(strict_types=1);
-
 namespace App\Exceptions\Order;
 
 use Exception;
@@ -56,29 +43,11 @@ class EmptyCartException extends Exception
 }
 ```
 
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace App\Exceptions\Order;
-
-use Exception;
-
-class OrderCannotBeCancelledException extends Exception
-{
-    public function __construct(string $message = 'This order cannot be cancelled in its current state.')
-    {
-        parent::__construct(message: $message, code: 422);
-    }
-}
-```
-
 ### Standard HTTP Status Mapping for Domain Exceptions
 
 | Status Code | Meaning | When to Use | Example Exception |
 | :--- | :--- | :--- | :--- |
-| **`400 Bad Request`** | Malformed state | Action cannot proceed due to invalid business state | `EmptyCartException` |
+| **`400 Bad Request`** | Malformed domain state | Action cannot proceed due to invalid business state | `EmptyCartException` |
 | **`403 Forbidden`** | Unauthorized domain access | Entity does not belong to acting user | `AddressDoesNotBelongToUserException` |
 | **`404 Not Found`** | Missing domain entity | Resource not found in domain context | `RestaurantNotFoundException` |
 | **`409 Conflict`** | Duplicate or conflicting state | State collision | `DuplicateAddressException`, `PaymentAlreadyExistsException` |
@@ -86,43 +55,13 @@ class OrderCannotBeCancelledException extends Exception
 
 ---
 
-## 3. The Controller Exception Contract (Explicit try/catch)
+## 3. The Controller Exception Contract (Explicit Single Catch)
 
-Our backend enforces an **explicit controller-level `try / catch (Throwable $e)` pattern with a strict single catch block**.
+Our backend enforces an **explicit controller-level `try / catch (Throwable $e)` pattern with a strict single catch block**:
 
-* **Why Explicit Controller Catching:** It guarantees localized control over method responses, makes the control flow immediately obvious during code review, and delegates all error normalization to the Base Controller.
-* **Strict Single Catch Block Standard:** Every controller method must contain **exactly one catch block**: `catch (Throwable $e)`. Writing multiple catch blocks (e.g., `catch (EmptyCartException)`, `catch (MenuItemUnavailableException)`) is strictly forbidden as it bloats controllers beyond the 15-line limit and duplicates error formatting.
-* **Zero Bootstrap Logic:** `bootstrap/app.php` remains completely untouched (zero framework exception handling closures).
-
-### Standard Controller Implementation:
-
-```php
-namespace App\Http\Controllers;
-
-use App\Http\Requests\PlaceOrderRequest;
-use App\Http\Resources\OrderResource;
-use App\Services\OrderService;
-use Illuminate\Http\JsonResponse;
-use Throwable;
-
-class OrderController extends Controller
-{
-    public function __construct(
-        protected OrderService $orderService,
-    ) {}
-
-    public function store(PlaceOrderRequest $request): JsonResponse
-    {
-        try {
-            $order = $this->orderService->store($request->user(), $request->validated());
-
-            return $this->successResponse('Order placed successfully.', new OrderResource($order), 201);
-        } catch (Throwable $e) {
-            return $this->handleException($e);
-        }
-    }
-}
-```
+* **Strict Single Catch Block:** Every controller method contains **exactly one catch block**: `catch (Throwable $e)`. Writing multiple catch blocks (e.g. catching specific domain exceptions) is strictly forbidden—it bloats controllers beyond the 15-line limit and scatters response formatting.
+* **Zero Bootstrap Logic (Direct Override of Laravel Boost):** `bootstrap/app.php` remains completely untouched (zero framework exception rendering closures). Custom `render()` methods on exceptions are also forbidden.
+* **Reference Implementation:** See [GUIDELINES.md Section 3A](../GUIDELINES.md#a-controller-pattern-ultra-thin-15-lines-with-single-catch-block) for the canonical controller signature.
 
 ---
 
@@ -130,14 +69,9 @@ class OrderController extends Controller
 
 The Base Controller (`app/Http/Controllers/Controller.php`) owns the normalization of all caught exceptions into the **ADR-001 Unified Response Envelope**:
 
-### Critical Safety Guardrail: Preventing HTTP `0` Crashes
-In PHP, many core exceptions (e.g., PDO/Database exceptions, custom `RuntimeException`) return integer code `0` or string codes (e.g. `'23000'`).
-* Passing `$e->getCode()` directly into `response()->json(..., $e->getCode())` causes Laravel to crash with `InvalidArgumentException: The HTTP status code "0" is not valid.`
-* The Base Controller must sanitize status codes to ensure they fall within the valid HTTP range (`100` to `599`).
-
-### Security Guardrail: Database `QueryException` Sanitization
-* Never leak raw database queries or table schema names in production API responses.
-* `QueryException` messages must be logged privately and replaced with a generic client-safe error message.
+### Critical Safety Guardrails:
+1. **Preventing HTTP `0` Crashes:** PHP PDO and core exceptions often return code `0` or string codes (`'23000'`). Passing `$e->getCode()` directly to `response()->json()` causes fatal framework crashes. Status codes must be sanitized to the valid range (`100`–`599`), falling back to `500`.
+2. **Database `QueryException` Sanitization:** Raw database queries, bindings, and table names must **never** be returned to the client. They must be logged privately and replaced with a generic client-safe error message.
 
 ```php
 namespace App\Http\Controllers;
@@ -155,7 +89,7 @@ abstract class Controller
         $code = (int) $e->getCode();
         $status = ($code >= 100 && $code < 600) ? $code : 500;
 
-        // 2. Handle Database Exceptions Safely
+        // 2. Handle Database Exceptions Safely (Mask SQL & schema details)
         if ($e instanceof QueryException) {
             Log::error('Database Error: ' . $e->getMessage(), [
                 'sql' => $e->getSql(),

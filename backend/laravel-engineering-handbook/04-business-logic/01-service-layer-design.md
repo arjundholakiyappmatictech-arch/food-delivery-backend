@@ -37,11 +37,7 @@ Services must remain completely decoupled from HTTP transport state so they are 
   ```
 * Prevents race conditions where eager queue workers query the database before the database transaction has finished committing.
 
-### Rule 5: Concrete Dependency Injection (DIP is Optional)
-* Inject concrete dependencies directly via constructor property promotion (`protected readonly RazorpayService $razorpayService`).
-* Do NOT create speculative single-implementation interfaces (`*Interface.php`). Preserve 1-click `Ctrl+Click` IDE navigation. Mock concrete classes directly in Pest via `$this->mock()`.
-
-### Rule 6: Strongly Typed Return Contracts
+### Rule 5: Strongly Typed Return Contracts
 * Services must return strongly typed entities: Eloquent Models (`Order`), Collections (`Collection<int, Order>`), or Paginators (`LengthAwarePaginator`).
 * **Services must NEVER return `JsonResponse` or HTTP responses.** HTTP serialization belongs exclusively to Controllers and API Resources.
 
