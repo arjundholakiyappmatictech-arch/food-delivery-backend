@@ -64,13 +64,13 @@ The goal was to:
 
 ### Finding 8: External API Calls Inside vs. Outside DB Transactions
 * **Audit Observation:** `PaymentService` called the Razorpay `createOrder` API inside `DB::transaction()`, holding row locks and exhausting connection pools during network latency.
-* **Codified Standard:** Core Pillar 3 in [GUIDELINES.md](../GUIDELINES.md). External HTTP calls must always be executed **before** opening a `DB::transaction()`.
+* **Codified Standard:** Core Pillar 3 in [GUIDELINES.md](../GUIDELINES.md). External HTTP calls must always be executed outside of database transactions (before `DB::beginTransaction()`).
 
 ---
 
 ### Finding 9: Queue Jobs Dispatched Inside Transactions Without `afterCommit`
 * **Audit Observation:** `PaymentService` dispatched `AssignDeliveryJob` inside a transaction without commit hooks, risking race conditions where queue workers read uncommitted rows.
-* **Codified Standard:** All queue jobs and domain events dispatched inside transactions must use `->afterCommit()`.
+* **Codified Standard:** All queue jobs and domain events dispatched inside transactions must use `->afterCommit()` (or dispatch after `DB::commit()`).
 
 ---
 
@@ -82,7 +82,7 @@ The goal was to:
 
 ### Finding 11: Foreign Key Protection on Ledger Tables
 * **Audit Observation:** `cascadeOnDelete()` was applied to `orders.restaurant_id`, risking accidental cascade deletion of financial and transactional records.
-* **Codified Standard:** Codified in [05-database-engineering/README.md](../05-database-engineering/README.md). Financial, order, and ledger tables must use `restrictOnDelete()` or soft deletes; `cascadeOnDelete()` is strictly forbidden.
+* **Codified Standard:** Codified in [05-database-engineering/README.md](../05-database-engineering/README.md). Financial, order, and ledger tables must use `restrictOnDelete()` or soft deletes; `cascadeOnDelete()` is strictly forbidden. Database constraints must be maintained to protect foundational data integrity.
 
 ---
 
@@ -110,7 +110,7 @@ The goal was to:
 | :--- | :--- | :--- |
 | **Routing** | Strict 2-verb model (`GET`/`POST`), `/api/v1/`, explicit suffixes | Specific endpoints (`/restaurants/nearby`, `/cart`) |
 | **Responses** | ADR-001 JSON Envelope (`is_error`, `message`, `data: null` on error) | Specific payload keys (`delivery_fee`, `order_items`) |
-| **Services** | Flat `app/Services/`, explicit `User $user` parameter, zero HTTP latency in transactions | Specific business calculations (delivery fees, 5-min cancel rule) |
+| **Services** | Flat `app/Services/`, explicit `User $user` parameter, pure business logic, external calls outside transactions | Specific business calculations (delivery fees, 5-min cancel rule) |
 | **Exceptions** | Single controller catch, `handleException($e)`, `app/Exceptions/<Domain>/` | Domain exceptions (`EmptyCartException`, `RestaurantClosedException`) |
 | **Persistence** | Foreign key protection (`restrictOnDelete`), method `casts(): array` | Food-delivery schema tables (`menus`, `order_items`, `restaurants`) |
 | **AI Tooling** | Custom MCP tools in `app/Mcp/` | Custom tools (`SearchRestaurantsTool`, `GetOrderTool`) |

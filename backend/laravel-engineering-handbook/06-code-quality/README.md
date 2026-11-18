@@ -28,6 +28,6 @@ Every pull request and AI-generated feature must satisfy these 5 invariant check
 | :--- | :--- | :--- |
 | **1. Controller Size** | Ultra-thin (typically <15 lines for mutations, up to ~20 lines for paginated coordination); coordinates only. | Direct database writes (`Model::create`, `DB::table`) or business logic in controllers. |
 | **2. Actor Context** | Explicit `User $user` parameter passed to services. | Calling `Auth::user()`, `auth()`, or `request()` inside domain services. |
-| **3. Transaction Latency** | External HTTP calls (Stripe, Razorpay) executed **before** `DB::transaction()`. | Calling external APIs inside database transaction blocks. |
+| **3. Transactions & Concurrency** | Controllers manage transactions (`DB::beginTransaction/commit/rollBack`); external calls outside transactions; `lockForUpdate()` on race-sensitive rows. | Managing transactions inside domain services; calling external APIs inside transactions; unlocked concurrent balance/stock reads. |
 | **4. Guarded Resources** | Relational attributes wrapped in `$this->whenLoaded()`. | Unguarded relationship access triggering N+1 queries during serialization. |
-| **5. Error Handling** | Single `catch (Throwable $e)` delegating to `BaseController::handleException($e)`. | Multiple catch blocks; logic in `bootstrap/app.php`; leaking SQL queries. |
+| **5. Error Handling & Rollback** | Single `catch (Throwable $e)` rolling back via `DB::rollBack()` and delegating to `BaseController::handleException($e)`. | Multiple catch blocks; missing `DB::rollBack()`; logic in `bootstrap/app.php`; leaking SQL queries. |

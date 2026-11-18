@@ -19,15 +19,15 @@ Every PHP class in the application belongs to a **single designated architectura
 * **Strictly Forbidden:** Calculating totals, mutating models, calling third-party APIs.
 
 ### Layer 3: Thin HTTP Controllers (`app/Http/Controllers/`)
-* **Mandatory:** Ultra-thin (typically <15 lines for mutations, up to ~20 lines for paginated query coordination; zero business logic), organized under versioned namespaces (`V1\`, `V2\`). Extract `$request->validated()`, pass `User $user` explicitly to domain services, wrap execution in a single `try / catch (Throwable $e)` delegating to `handleException($e)`, and return API Resources (see [GUIDELINES.md Section 3A](../GUIDELINES.md#a-controller-pattern-ultra-thin-typically-15-lines-with-single-catch-block)).
-* **Strictly Forbidden:** Direct SQL or Eloquent mutations (`Order::create()`), transaction blocks, `Auth::user()` calls, multiple catch blocks.
+* **Mandatory:** Ultra-thin (typically <15 lines for mutations, up to ~20 lines for paginated query coordination; zero business logic), organized under versioned namespaces (`V1\`, `V2\`). For state mutations, manage database transactions via `DB::beginTransaction()`, `DB::commit()`, and `DB::rollBack()` in the single catch block. Extract `$request->validated()`, pass `User $user` explicitly to domain services, delegate caught errors to `handleException($e)`, and return API Resources (see [GUIDELINES.md Section 3A](../GUIDELINES.md#a-controller-pattern-ultra-thin-typically-15-lines-with-single-catch-block)).
+* **Strictly Forbidden:** Direct SQL or Eloquent mutations (`Order::create()`), business logic calculations, `Auth::user()` calls, multiple catch blocks.
 
 ### Layer 4: Domain Services (`app/Services/`)
-* **Mandatory:** Located strictly in a flat, version-agnostic directory (`app/Services/`). Business logic, status workflows, and atomic mutations wrapped in `DB::transaction()`. External HTTP calls (e.g. payment SDKs) must be executed **before** opening transactions. Always pass acting `User $user` explicitly. Both `V1` and `V2` controllers inject the same underlying services.
-* **Strictly Forbidden:** Calling `request()`, `session()`, or `Auth::user()`; creating versioned service subdirectories (`Services/V2/`); formatting JSON responses; introducing artificial `app/Actions/` folders.
+* **Mandatory:** Located strictly in a flat, version-agnostic directory (`app/Services/`). Pure business logic, entity workflows, calculations, and concurrency protection using `lockForUpdate()`. External HTTP calls (e.g. payment SDKs) must be executed **before** transactions. Always pass acting `User $user` explicitly. Both `V1` and `V2` controllers inject the same underlying services.
+* **Strictly Forbidden:** Managing transactions inside services (`DB::beginTransaction()`, `DB::transaction()`); calling `request()`, `session()`, or `Auth::user()`; creating versioned service subdirectories (`Services/V2/`); formatting JSON responses; introducing artificial `app/Actions/` folders.
 
 ### Layer 5: Data & Eloquent Models (`app/Models/`)
-* **Mandatory:** Method-based attribute casting via `protected function casts(): array`, and `restrictOnDelete()` for financial or historical records.
+* **Mandatory:** Method-based attribute casting via `protected function casts(): array`, and database-level constraints (`restrictOnDelete()` for financial or historical records, unique indexes, not-null constraints) to protect data integrity.
 * **Strictly Forbidden:** Calling third-party APIs, handling HTTP request logic, complex multi-model business workflows.
 
 ### Layer 6: Presentation / API Resources (`app/Http/Resources/`)
@@ -40,8 +40,8 @@ Every PHP class in the application belongs to a **single designated architectura
 
 Before committing or approving any pull request, verify:
 
-1. [ ] **Controller:** Is the controller method ultra-thin (typically <15 lines for mutations, up to ~20 lines for query coordination) and free of direct database writes (`Model::create`, `DB::table`)?
-2. [ ] **Service:** Does the service accept `User $user` explicitly without calling `Auth::user()`, `request()`, or `session()`?
-3. [ ] **Transaction:** Are all external HTTP API calls executed outside `DB::transaction()` boundaries?
+1. [ ] **Controller:** Is the controller method ultra-thin (typically <15 lines for mutations) and managing transactions (`DB::beginTransaction()`, `commit()`, `rollBack()`) without direct database writes (`Model::create`, `DB::table`)?
+2. [ ] **Service:** Does the service accept `User $user` explicitly without calling `Auth::user()`, `request()`, `session()`, or managing transactions?
+3. [ ] **Transaction & Concurrency:** Are external HTTP calls executed outside database transactions, and are race-sensitive records locked using `lockForUpdate()`?
 4. [ ] **Resource:** Are all relationships in API Resources guarded with `$this->whenLoaded()`?
-5. [ ] **Exception:** Is the controller catching `Throwable $e` and delegating to `handleException($e)`?
+5. [ ] **Exception:** Is the controller catching `Throwable $e`, rolling back transactions via `DB::rollBack()`, and delegating to `handleException($e)`?

@@ -32,33 +32,37 @@ sequenceDiagram
     participant Req as PlaceOrderRequest
     participant Svc as OrderService
     participant Ext as External Payment API (Razorpay)
-    participant DB as Database (DB::transaction)
+    participant DB as Database
     participant Base as Base Controller (handleException)
 
     Client->>Ctrl: POST /api/v1/orders/store
     Ctrl->>Req: validated()
     Req-->>Ctrl: Validated Array Payload
 
-    Ctrl->>Svc: store(User $user, array $data)
-    
     rect rgb(240, 248, 255)
-        Note over Svc,Ext: External HTTP Pre-flight (Zero DB Connection Lock)
-        Svc->>Ext: Verify Payment / Create Order ID
-        Ext-->>Svc: Payment Token Verified
+        Note over Ctrl,Ext: External HTTP Pre-flight (Zero DB Connection Lock)
+        Ctrl->>Ext: Verify Payment / Create Order ID (outside transaction)
+        Ext-->>Ctrl: Payment Token Verified
     end
 
+    Note over Ctrl,DB: Controller Manages Transaction Lifecycle
+    Ctrl->>DB: DB::beginTransaction()
+    
+    Ctrl->>Svc: store(User $user, array $data)
+
     rect rgb(245, 245, 245)
-        Note over Svc,DB: Atomic Database Boundary
-        Svc->>DB: DB::transaction()
-        DB-->>Svc: Lock rows, deduct inventory, persist Order & OrderItems
+        Note over Svc,DB: Pure Domain Business Logic & Concurrency Control
+        Svc->>DB: Lock rows (lockForUpdate), validate invariants, persist Order
         Svc->>DB: Dispatch OrderPlaced event ->afterCommit()
     end
 
     alt Success
         Svc-->>Ctrl: Order Model
+        Ctrl->>DB: DB::commit()
         Ctrl-->>Client: 201 Created (ADR-001 Envelope)
-    else Domain Exception (e.g. EmptyCartException)
-        Svc-->>Ctrl: throw new EmptyCartException()
+    else Domain Exception (e.g. OutOfStockException)
+        Svc-->>Ctrl: throw new OutOfStockException()
+        Ctrl->>DB: DB::rollBack()
         Ctrl->>Base: handleException($e)
         Base-->>Client: 400 Bad Request ({ is_error: true, message, data: null })
     end
@@ -72,8 +76,10 @@ sequenceDiagram
 | :--- | :--- | :--- |
 | **Service Placement** | Flat directory directly under `app/Services/`. | Introducing `Repositories/`, `DTOs/`, or `Actions/` folders. |
 | **Actor Context** | Always pass acting user explicitly as `User $user` parameter. | Calling `Auth::user()`, `auth()->user()`, or `request()` inside services. |
-| **Transaction Boundary** | Execute external HTTP calls (Razorpay, Stripe) **before** `DB::transaction()`. | Invoking external HTTP APIs inside database transaction blocks. |
-| **Queue Dispatching** | Always append `->afterCommit()` when dispatching inside transactions. | Dispatching queue jobs inside transactions without commit hooks. |
+| **Transaction Boundary** | Managed at Controller level via `DB::beginTransaction()`, `DB::commit()`, and `DB::rollBack()`. Services focus on business logic without transactions. | Managing transactions inside domain services; calling external APIs inside transactions. |
+| **Concurrency Control** | Query race-sensitive models using `lockForUpdate()`. | Unlocked reads for inventory/balances leading to race conditions. |
+| **Data Integrity** | Enforce database constraints (`restrictOnDelete()` on financial tables, unique indexes) as ground-truth integrity barrier. | Relying only on application validation without DB constraints; `cascadeOnDelete()`. |
+| **Queue Dispatching** | Always append `->afterCommit()` when dispatching inside transactions (or dispatch after `DB::commit()`). | Dispatching queue jobs inside transactions without commit hooks. |
 | **Return Contracts** | Return Models, Collections, or Paginators. | Returning `JsonResponse` or HTTP responses directly from services. |
-| **Controller Catch Contract** | Single `catch (Throwable $e)` delegating to `BaseController::handleException()`. | Multiple catch blocks in controllers; custom error rendering in `bootstrap/app.php`. |
+| **Controller Catch Contract** | Single `catch (Throwable $e)` calling `DB::rollBack()` and delegating to `BaseController::handleException()`. | Multiple catch blocks in controllers; custom error rendering in `bootstrap/app.php`. |
 | **Exception Sanitization** | Sanitize codes to HTTP range (`100–599`); mask database `QueryException`. | Passing unvalidated `$e->getCode()` (HTTP 0 crash); leaking SQL in API responses. |

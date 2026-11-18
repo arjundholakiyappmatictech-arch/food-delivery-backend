@@ -28,7 +28,7 @@
 | **RES-001 § 5** | Validation Syntax | Mandatory array validation syntax in Form Requests | [03-api-engineering/02-form-requests-and-validation.md](../03-api-engineering/02-form-requests-and-validation.md) |
 | **RES-001 § 6** | Relation Serialization | Guard all relationships in API Resources with `$this->whenLoaded()` | [03-api-engineering/03-api-resources.md](../03-api-engineering/03-api-resources.md) |
 | **RES-001 § 7** | Service Coupling | Inject `User $user` explicitly; strictly ban `Auth::user()` in services | [04-business-logic/01-service-layer-design.md](../04-business-logic/01-service-layer-design.md) |
-| **RES-001 § 8** | Transaction Latency | Call external HTTP APIs before opening `DB::transaction()` | [04-business-logic/01-service-layer-design.md](../04-business-logic/01-service-layer-design.md) |
+| **RES-001 § 8** | Transaction Latency | Call external HTTP APIs outside transactions (before `DB::beginTransaction()`) | [04-business-logic/01-service-layer-design.md](../04-business-logic/01-service-layer-design.md) |
 | **RES-001 § 9** | Queue Race Conditions | Dispatch jobs inside transactions using `->afterCommit()` | [04-business-logic/01-service-layer-design.md](../04-business-logic/01-service-layer-design.md) |
 | **RES-001 § 10** | Attribute Casting | Method-based `protected function casts(): array` with backed Enums | [05-database-engineering/README.md](../05-database-engineering/README.md) |
 | **RES-001 § 11** | Foreign Key Safety | `restrictOnDelete()` on financial/ledger records; ban `cascadeOnDelete()` | [05-database-engineering/README.md](../05-database-engineering/README.md) |

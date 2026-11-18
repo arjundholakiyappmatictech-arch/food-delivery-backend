@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.3-draft] - 2026-11-17
 
 ### Changed
+- **Transaction Lifecycle, Concurrency & Data Integrity Invariants:**
+  - **Controller-Level Transactions:** Controllers exclusively own database transaction lifecycles for mutations via `DB::beginTransaction()`, `DB::commit()`, and `DB::rollBack()` inside the single `catch (Throwable $e)` block.
+  - **Transaction-Free Services:** Domain services focus purely on business logic, invariant validations, and entity orchestration without managing database transactions.
+  - **Zero HTTP Latency in Transactions:** Third-party external API calls (Razorpay, Stripe) must always execute outside database transactions (prior to `DB::beginTransaction()`).
+  - **Queue Dispatching After Commit:** Asynchronous queue jobs and events must strictly be dispatched using `->afterCommit()` (or after `DB::commit()`).
+  - **Pessimistic Locking via `lockForUpdate()`:** Domain services must query race-sensitive records (inventory, balances, bookings) with `lockForUpdate()` to prevent concurrent modification collisions.
+  - **Database Constraints for Data Integrity:** Mandated database constraints (`restrictOnDelete()` on financial tables, unique indexes, not-null constraints) as the primary data integrity barrier.
 - **API Versioning Invariant (Transport vs. Domain Separation):**
   - Codified the architectural rule across `AGENTS.md`, `GUIDELINES.md`, Module 02, and Module 03: versioning is strictly isolated to the HTTP transport layer (`Controllers/V{X}/`, `Requests/V{X}/`, `Resources/V{X}/`); domain services (`app/Services/`) remain strictly flat, singular, and version-agnostic (`Services/V2/` is strictly forbidden).
 - **Pragmatic Controller Size Standard Refinement:**

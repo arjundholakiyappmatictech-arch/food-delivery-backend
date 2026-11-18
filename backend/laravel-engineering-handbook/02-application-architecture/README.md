@@ -27,12 +27,12 @@ Our architecture enforces a **Strict Unidirectional Request Lifecycle**. Informa
                                       │ $request->validated(), User $user
                                       ▼
                   ┌────────────────────────────────────────┐
-                  │          Thin HTTP Controller          │  ── Coordinates action, delegates to handleException()
+                  │          Thin HTTP Controller          │  ── Coordinates action, manages DB transactions (beginTransaction/commit/rollBack)
                   └───────────────────┬────────────────────┘
                                       │ Calls Service method with explicit parameters
                                       ▼
                   ┌────────────────────────────────────────┐
-                  │          Domain Service Layer          │  ── Pure business logic, DB::transaction(), Gateways
+                  │          Domain Service Layer          │  ── Pure business logic, lockForUpdate(), Gateways
                   └─────────────┬──────────────────────────┘
                                 │
                   ┌─────────────┴─────────────┐
@@ -78,8 +78,8 @@ Our architecture enforces a **Strict Unidirectional Request Lifecycle**. Informa
 
 ## 3. The 4 Invariant Architectural Rules
 
-1. **Controllers Must Be Thin:** Controller actions must remain ultra-thin (typically <15 lines for mutations; up to ~20 lines for paginated queries purely for coordination; zero business logic permitted). They only coordinate validated input, call domain services, transform results via API Resources, and delegate exceptions.
-2. **Services Must Be Pure:** Services must never touch `request()`, `session()`, or `Auth::user()`. All context (the acting user, input parameters) must enter through explicit method arguments.
-3. **Data Access Must Be Guarded:** External database serialization must always pass through API Resources with `$this->whenLoaded()` to prevent N+1 queries.
+1. **Controllers Coordinate & Manage Transactions:** Controller actions remain ultra-thin (typically <15 lines for mutations; up to ~20 lines for paginated queries purely for coordination; zero business logic permitted). For mutations, controllers manage transaction boundaries (`DB::beginTransaction()`, `DB::commit()`, `DB::rollBack()`). They coordinate validated input, call domain services, transform results via API Resources, and delegate exceptions.
+2. **Services Are Pure & Transaction-Free:** Services must never touch `request()`, `session()`, or `Auth::user()`, nor manage database transactions. All business calculations, race-condition prevention (`lockForUpdate()`), and entity mutations belong here.
+3. **Data Access & Constraints Must Be Guarded:** External database serialization must always pass through API Resources with `$this->whenLoaded()`. Database constraints (`restrictOnDelete()` on financial tables, unique indexes) protect foundational data integrity.
 4. **Versioning Stays at Transport Layer:** Breaking API version changes (`v2`) are strictly confined to the HTTP transport layer (`Controllers/V2/`, `Requests/V2/`, `Resources/V2/`). Domain services (`app/Services/`) are strictly singular, flat, and version-agnostic (`Services/V2/` is strictly forbidden).
 

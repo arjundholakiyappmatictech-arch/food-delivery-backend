@@ -1,14 +1,14 @@
 # Global Laravel Engineering Guidelines
 
-> **The canonical reference document for backend developers and AI coding agents. Read this file before creating, modifying, refactoring, or reviewing code in any Laravel application. Auto-loaded via root [`AGENTS.md`](../../AGENTS.md).**
+> **The canonical reference document for backend developers and AI coding agents. Read this file before creating, modifying, refactoring, or reviewing code in any Laravel application. Auto-loaded via [`backend/AGENTS.md`](../AGENTS.md).
 
 ---
 
 ## 1. Core Engineering Pillars
 
-1. **Thin Controllers, Rich Domain:** Controllers coordinate HTTP requests; they do not calculate prices, format distances, or execute queries directly.
-2. **Decoupled Business Logic:** Domain services must be callable from HTTP, Console commands, Queue jobs, and AI MCP tools without depending on global HTTP or session state.
-3. **Data Integrity Above All:** Database operations involving multiple mutations must be wrapped in atomic transactions with zero external HTTP latency inside transaction boundaries.
+1. **Thin Controllers, Rich Domain:** Controllers coordinate HTTP requests and manage database transaction lifecycles; they do not calculate prices, format distances, or execute queries directly.
+2. **Decoupled Business Logic:** Domain services focus purely on business logic without managing transactions, callable from HTTP, Console commands, Queue jobs, and AI MCP tools without depending on global HTTP or session state.
+3. **Data Integrity Above All:** Database operations involving multiple mutations must be managed via explicit controller-level transactions (`DB::beginTransaction()`, `DB::commit()`, `DB::rollBack()`), zero external HTTP latency inside transactions, `lockForUpdate()` concurrency protection, and enforced database constraints.
 
 ---
 
@@ -22,8 +22,10 @@
 | **Responses** | Company standard JSON envelope (ADR-001): `"is_error": false`, `"message": "..."`, `"data": ...`. On failure: `"is_error": true`, `"message": "..."`, `"data": null`. On 422: include `"errors": { ... }`. | Inconsistent keys (`status` or `success` instead of `is_error`); returning `"data": []` on error (schema type mutation); omitting `"message"` on validation errors. |
 | **Exception Handling** | Explicit controller-level single `try / catch (Throwable $e)` delegating to Base Controller `handleException($e)`. Domain exceptions extend PHP's native `Exception` directly with predefined HTTP status codes via `parent::__construct(message: ..., code: ...)`. Zero logic in `bootstrap/app.php`. | Multiple catch blocks in controllers; passing unvalidated `$e->getCode()` directly to response (HTTP 0 crashes); leaking raw SQL queries from `QueryException`. |
 | **Service Context**| Always pass acting User entity explicitly as `User $user` parameter into service methods | Relying on `Auth::user()` inside domain services |
-| **Transactions** | Execute external HTTP calls (e.g. Razorpay, Stripe) **before** opening DB transactions | Calling external APIs inside `DB::transaction()` blocks |
-| **Queue Dispatch**| Dispatch transactional jobs using `->afterCommit()` or outside transaction block | Dispatching queue jobs inside transactions without commit hooks |
+| **Transactions** | Controllers manage transactions via `DB::beginTransaction()`, `DB::commit()`, and `DB::rollBack()` in the single catch block. Services focus purely on business logic without transactions. Execute external HTTP calls **before** `DB::beginTransaction()`. | Managing transactions inside domain services; calling external APIs inside transactions; omitting `DB::rollBack()` on failure. |
+| **Concurrency Control** | Use `lockForUpdate()` in domain services when reading and updating race-sensitive records (inventory, balances, bookings). | Unlocked read-then-write operations vulnerable to race conditions or overselling. |
+| **Database Constraints** | Maintain database-level constraints (foreign keys with `restrictOnDelete()`, unique indexes, check/not-null constraints) as the primary data integrity barrier. | Relying solely on application validation without DB-level constraints; `cascadeOnDelete()` on financial/ledger records. |
+| **Queue Dispatch**| Dispatch transactional jobs using `->afterCommit()` or after `DB::commit()` | Dispatching queue jobs inside transactions without commit hooks |
 | **Model Casting** | Use method-based `protected function casts(): array` for dates, decimals, booleans, hashes | Leaving booleans, decimals, and dates uncast |
 | **Foreign Keys** | Use `restrictOnDelete()` or soft deletes for financial and historical data | `cascadeOnDelete()` on orders, payments, or ledger records |
 
@@ -32,15 +34,19 @@
 ## 3. Approved Implementation Signatures
 
 ### A. Controller Pattern (Ultra-Thin Typically <15 Lines with Single Catch Block)
-Controllers are thin HTTP coordinators (typically <15 lines for mutations; up to ~20 lines for paginated queries or filter coordination; zero business logic permitted). Every controller action coordinates input, delegates to a Service, and catches all errors into `BaseController::handleException($e)`. `bootstrap/app.php` remains completely untouched.
+Controllers are thin HTTP coordinators (typically <15 lines for mutations; up to ~20 lines for paginated queries or filter coordination; zero business logic permitted). Controllers manage the database transaction lifecycle for mutations via `DB::beginTransaction()`, `DB::commit()`, and `DB::rollBack()`, catching all errors into `BaseController::handleException($e)`. `bootstrap/app.php` remains completely untouched.
 ```php
-public function store(StoreAddressRequest $request): JsonResponse
+public function store(StoreOrderRequest $request): JsonResponse
 {
+    DB::beginTransaction();
     try {
-        $address = $this->addressService->store($request->user(), $request->validated());
+        $order = $this->orderService->store($request->user(), $request->validated());
+        DB::commit();
 
-        return $this->successResponse('Address created successfully', new AddressResource($address), 201);
+        return $this->successResponse('Order placed successfully', new OrderResource($order), 201);
     } catch (Throwable $e) {
+        DB::rollBack();
+
         return $this->handleException($e);
     }
 }
@@ -73,27 +79,36 @@ Every API response strictly conforms to this schema. On error, `data` is strictl
 ```
 
 ### D. Service and Transaction Safety Boundaries
-Always pass `User $user` explicitly into services (never call `Auth::user()`). External HTTP APIs must be called outside `DB::transaction()`. Queue jobs inside transactions must use `->afterCommit()`.
+Services focus purely on business logic without managing transactions (controllers manage transactions). External HTTP APIs must be called outside database transactions (prior to `DB::beginTransaction()`). Records subject to race conditions must use `lockForUpdate()`. Queue jobs inside transactions must use `->afterCommit()`.
 ```php
-public function processOrderPayment(User $user, Order $order): Payment
+public function store(User $user, array $data): Order
 {
-    // 1. Call external HTTP gateway BEFORE opening DB transaction
-    $gatewayOrder = $this->paymentGateway->createOrder($order->total);
+    // 1. External API calls executed OUTSIDE transactions (prior or injected)
 
-    // 2. Open DB transaction strictly for atomic persistence
-    return DB::transaction(function () use ($user, $order, $gatewayOrder) {
-        $payment = Payment::create([
-            'user_id' => $user->id,
-            'order_id' => $order->id,
-            'gateway_id' => $gatewayOrder['id'],
-            'status' => 'pending',
-        ]);
+    // 2. Concurrency Control: Lock records subject to race conditions
+    $menuItem = MenuItem::where('id', $data['menu_item_id'])
+        ->lockForUpdate()
+        ->firstOrFail();
 
-        // 3. Dispatch queue jobs using ->afterCommit()
-        SendReceiptJob::dispatch($payment)->afterCommit();
+    // 3. Pure business logic calculations & invariant validation
+    if ($menuItem->stock < $data['quantity']) {
+        throw new OutOfStockException('Item is out of stock.');
+    }
 
-        return $payment;
-    });
+    $menuItem->decrement('stock', $data['quantity']);
+
+    // 4. Persistence relying on database constraints (FKs restrictOnDelete, uniques)
+    $order = Order::create([
+        'user_id' => $user->id,
+        'restaurant_id' => $data['restaurant_id'],
+        'total_amount' => $menuItem->price * $data['quantity'],
+        'status' => OrderStatus::Pending,
+    ]);
+
+    // 5. Dispatch async jobs strictly after database commit
+    ProcessOrderNotification::dispatch($order)->afterCommit();
+
+    return $order;
 }
 ```
 
@@ -125,7 +140,7 @@ For in-depth explanations, trade-offs, and complete code samples, consult the ha
   * **Backed Enums:** Never use magic strings or integer flags for statuses. Always use string-backed Enums with TitleCase keys (`OrderStatus::Pending = 'pending'`) and register them in model `casts(): array`.
   * **Conditionals:** Always use exhaustive `match()` expressions for state transitions and mappings; never use `switch` statements or nested `if/else` ladders.
   * **Strict Identity:** Always use strict comparison (`===`, `!==`). Use nullsafe `?->` and null coalescing `??` for safe relation and array traversal.
-  * **Single Responsibility (SRP):** Enforce strict 5-tier pipeline: `FormRequest` (validation/auth) $\rightarrow$ `Controller` (ultra-thin coordination, typically <15 lines) $\rightarrow$ `Domain Service` (business logic/transactions) $\rightarrow$ `API Resource` (response) $\rightarrow$ `Queue Job` (async latency).
+  * **Single Responsibility (SRP):** Enforce strict 5-tier pipeline: `FormRequest` (validation/auth) $\rightarrow$ `Controller` (ultra-thin coordination & transaction management) $\rightarrow$ `Domain Service` (pure business logic) $\rightarrow$ `API Resource` (response) $\rightarrow$ `Queue Job` (async latency).
   * **Domain Exceptions (LSP):** Custom domain exceptions must extend PHP's native `Exception` directly and pass explicit HTTP status codes via `parent::__construct(message: ..., code: ...)`.
   * **Dependency Inversion (DIP — Optional):** Speculative single-implementation interfaces (`*Interface.php`) are strictly optional / deferred. Inject concrete classes directly (e.g. `RazorpayService`) to preserve 1-click `Ctrl+Click` IDE navigation. Only introduce interfaces when multiple production drivers run concurrently.
 
@@ -133,11 +148,11 @@ For in-depth explanations, trade-offs, and complete code samples, consult the ha
 * **What it Does:** Defines directory layout, layer boundary contracts, dependency injection conventions, and the strict unidirectional request lifecycle.
 * **Child Specifications:** [01 - Layer Responsibilities](02-application-architecture/01-layer-responsibilities.md) | [02 - Dependency Injection & Container](02-application-architecture/02-dependency-injection-and-container.md) | [03 - Directory Structure & Organization](02-application-architecture/03-directory-structure-and-organization.md)
 * **Actionable Directives for AI Agents:**
-  * **Ultra-Thin Controllers:** Controllers must remain ultra-thin (typically <15 lines for mutations; up to ~20 lines for paginated/filtered queries purely for coordination; zero business logic permitted). Extract `$request->validated()`, pass `User $user` to services, catch single `Throwable $e` to `handleException($e)`, and return API Resources.
+  * **Ultra-Thin Controllers & Transactions:** Controllers remain ultra-thin (typically <15 lines for mutations; up to ~20 lines for paginated/filtered queries purely for coordination; zero business logic permitted). For mutations, controllers manage transactions via `DB::beginTransaction()`, `DB::commit()`, and `DB::rollBack()` in the single catch block. Extract `$request->validated()`, pass `User $user` to services, catch single `Throwable $e` to `handleException($e)`, and return API Resources.
   * **Directory Placement:** Business logic lives flat under `app/Services/`. Domain exceptions live in domain folders under `app/Exceptions/<Domain>/`. AI MCP tools live under `app/Mcp/`.
   * **API Versioning Boundary:** When introducing `v2`, version strictly at the HTTP transport layer (`Controllers/V2/`, `Requests/V2/`, `Resources/V2/`). Services in `app/Services/` are strictly version-agnostic and flat (never create `Services/V2/`).
   * **Forbidden Directories:** Never introduce `app/Repositories/`, `app/DTOs/`, `app/Actions/`, or procedural `app/Helpers/`.
-  * **Facade Discipline:** Never use `Auth::user()`, `Request::`, or `Session::` inside domain services. Only stateless utilities (`DB::transaction()`, `Log::`, `Config::`) are permitted.
+  * **Facade Discipline:** Never use `Auth::user()`, `Request::`, or `Session::` inside domain services. Services focus purely on domain rules without managing transactions.
 
 #### [03 - API Engineering Standards](03-api-engineering/README.md)
 * **What it Does:** Enforces HTTP routing conventions, request validation boundaries, and Eloquent model transformation into deterministic JSON contracts.
@@ -154,12 +169,13 @@ For in-depth explanations, trade-offs, and complete code samples, consult the ha
 * **What it Does:** Defines domain service design, transaction latency boundaries, queue commit hooks, and typed domain exception handling.
 * **Child Specifications:** [01 - Service Layer Design](04-business-logic/01-service-layer-design.md) | [02 - Exception Architecture](04-business-logic/02-exception-architecture.md)
 * **Actionable Directives for AI Agents:**
-  * **Flat Placement & Zero Bloat:** Domain services reside flat in `app/Services/`. Never introduce `app/Repositories/`, `app/DTOs/`, or `app/Actions/`.
+  * **Flat Placement & Zero Bloat:** Domain services reside flat in `app/Services/` and focus purely on business logic without managing transactions. Never introduce `app/Repositories/`, `app/DTOs/`, or `app/Actions/`.
   * **Actor Context:** Never call `Auth::user()` or `request()` inside services. Always accept the acting user as an explicit `User $user` parameter.
-  * **Zero Latency in Transactions:** Execute external HTTP calls (e.g. Razorpay, Stripe) **before** opening a `DB::transaction()` block.
-  * **Queue Dispatching:** Always append `->afterCommit()` when dispatching queue jobs or events inside transactions.
+  * **Zero Latency in Transactions:** Execute external HTTP calls (e.g. Razorpay, Stripe) **before** opening a transaction block (`DB::beginTransaction()`).
+  * **Concurrency Protection:** Use `lockForUpdate()` in domain services when reading and updating race-sensitive models (stock, balances, bookings).
+  * **Queue Dispatching:** Always append `->afterCommit()` when dispatching queue jobs or events (or dispatch after `DB::commit()`).
   * **Typed Domain Returns:** Services must return Eloquent Models, Collections, or Paginators—never `JsonResponse` or HTTP responses.
-  * **Single Catch & Error Delegation:** Controllers catch single `Throwable $e` and delegate to `handleException($e)`. Zero error logic in `bootstrap/app.php`.
+  * **Single Catch & Error Delegation:** Controllers catch single `Throwable $e`, execute `DB::rollBack()`, and delegate to `handleException($e)`. Zero error logic in `bootstrap/app.php`.
   * **Domain Exceptions:** Throw typed exceptions from `app/Exceptions/<Domain>/` extending native `Exception` with explicit HTTP status codes via `parent::__construct(message: ..., code: ...)`.
   * **Status & SQL Sanitization:** `handleException()` must sanitize codes to valid HTTP range (`100–599`) to prevent HTTP 0 crashes, and mask `QueryException` schema leakage.
 
@@ -167,9 +183,9 @@ For in-depth explanations, trade-offs, and complete code samples, consult the ha
 * **What it Does:** Defines foreign key safety rules, method-based attribute casting, and transaction latency invariants.
 * **Child Specifications:** [01 - Database Invariants](05-database-engineering/README.md)
 * **Actionable Directives for AI Agents:**
-  * **Foreign Key Protection:** Always use `restrictOnDelete()` or soft deletes on financial, order, payment, booking, and ledger tables. `cascadeOnDelete()` is strictly forbidden.
+  * **Data Integrity Constraints:** Maintain database constraints (foreign keys with `restrictOnDelete()` on financial/ledger tables, unique indexes, not-null constraints) to protect data integrity. `cascadeOnDelete()` is strictly forbidden on financial records.
   * **Method-Based Attribute Casting:** Models must declare `protected function casts(): array` with backed Enums, `decimal:2`, `boolean`, and `datetime`. The legacy `protected $casts = [...]` property is strictly forbidden.
-  * **Zero Latency in Transactions:** External HTTP calls must execute before `DB::transaction()`. Queue jobs inside transactions must use `->afterCommit()`.
+  * **Zero Latency & Concurrency:** External HTTP calls must execute outside database transactions. Queue jobs must use `->afterCommit()`. Use `lockForUpdate()` to prevent concurrent database modifications.
 
 #### [06 - Code Quality & Static Analysis](06-code-quality/README.md)
 * **What it Does:** Defines automated formatting standards, Larastan Level 8 static analysis baselines, and the 5-point invariant review rubric.
@@ -177,7 +193,7 @@ For in-depth explanations, trade-offs, and complete code samples, consult the ha
 * **Actionable Directives for AI Agents:**
   * **Code Formatting:** Code must format cleanly via Laravel Pint (`vendor/bin/pint`).
   * **Static Type Safety:** Declare explicit parameter and return types on all methods to satisfy Larastan Level 8.
-  * **5-Point Rubric:** Verify before completing any task: Controller ultra-thin (<15-20 lines coordination only), `User $user` injection, pre-transaction HTTP calls, `$this->whenLoaded()`, and single `catch (Throwable $e) -> handleException($e)`.
+  * **5-Point Rubric:** Verify before completing any task: Controller ultra-thin (<15-20 lines) with `DB::beginTransaction/commit/rollBack`, `User $user` injection, external calls outside transactions, `$this->whenLoaded()`, and single `catch (Throwable $e) -> handleException($e)`.
 
 #### [07 - Security & Performance Invariants](07-security-and-performance/README.md)
 * **What it Does:** Defines mandatory cryptographic webhook verification, transaction-safe cache invalidation, and decoupled authentication boundaries.
