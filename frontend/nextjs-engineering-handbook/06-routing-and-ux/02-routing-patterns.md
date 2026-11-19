@@ -1,156 +1,87 @@
 # Next.js Official Routing Patterns
 
+> **Practical routing conventions in Next.js 16 App Router: Mandatory daily standards, high-priority layout organization, conditional SEO metadata, and niche catch-all segments.**
+
 ---
 
-## 1. App Router Filesystem Conventions
+## 1. Mandatory Core: `layout.js` & `page.js`
 
-In Next.js 16 App Router, folder hierarchies define routes, while special convention files define UI behaviors:
+In the Next.js App Router, folder hierarchies define routes, while two primary convention files define UI layout and content:
 
-| File Name | Purpose | State Persistence | Re-renders on Route Change |
+| File | Importance | Role | State Behavior |
 | :--- | :--- | :--- | :--- |
-| **`page.js`** | Unique UI for a specific route path; makes the path publicly accessible. | Unmounted on route exit | Yes |
-| **`layout.js`** | Shared UI across a segment and its children (e.g., header, sidebar, footer). | **Preserved** across child navigations | No |
-| **`template.js`** | Specialized layout that mounts a fresh component instance on each navigation. | **Reset** on every navigation | Yes |
-| **`default.js`** | Fallback render view for unmatched parallel route slots. | Slot-dependent | Dependent |
+| **`layout.js`** | 🟢 **Mandatory** | Shared UI across a segment and its children (header, sidebar, footer). | **Preserved** across child route navigations. |
+| **`page.js`** | 🟢 **Mandatory** | Unique UI for a specific route path; makes the route publicly accessible. | Unmounted when navigating away. |
 
 ```
 src/app/
-├── layout.js                 # Root layout (Html, Body, Global Providers)
-├── page.js                   # Home page (/)
-├── (auth)/                   # Route group (omitted from URL)
+├── layout.js                 # Global Root Layout (Html, Body, Providers)
+├── page.js                   # Home Page (/)
+├── (auth)/                   # Route group for auth
 │   ├── layout.js             # Auth-specific layout (minimal centered card)
-│   ├── login/page.js         # /login
-│   └── register/page.js      # /register
-├── items/
-│   ├── layout.js             # Shared items layout (sidebar/filters)
-│   ├── page.js               # /items
-│   ├── [id]/                 # Single dynamic segment (/items/:id)
-│   │   └── page.js
-│   └── search/
-│       └── [...filters]/     # Catch-all segment (/items/search/*)
-│           └── page.js
+│   └── login/page.js         # /login
+└── items/
+    ├── layout.js             # Shared items layout (sidebar / filters)
+    ├── page.js               # /items
+    └── [id]/
+        └── page.js           # /items/:id
 ```
 
 ---
 
-## 2. Dynamic Route Segment Patterns
+## 2. Mandatory Dynamic Routing: Single Segment (`[id]`)
 
-Next.js provides three distinct patterns for matching dynamic URLs:
+Any application with detail records (e.g. orders, users, items) relies on single dynamic segments.
 
-### Pattern A: Single Dynamic Segment (`[slug]` / `[id]`)
-Matches exactly one URL segment:
-
-* **File Location:** `src/app/items/[id]/page.js`
-* **Matches:** `/items/101`, `/items/abc`
-* **Does NOT match:** `/items`, `/items/101/details`
+### The Next.js 16 `await params` Invariant
+In Next.js 16, route parameters and search parameters are asynchronous Promises:
 
 ```javascript
 // src/app/items/[id]/page.js
-export default async function ItemDetailPage({ params }) {
-   // Next.js 16: params is a Promise
+import { FeatureDetailContainer } from '@/components/feature/FeatureDetailContainer';
+
+export default async function ItemDetailPage({ params, searchParams }) {
+   // ✅ Mandatory: Always await dynamic params in Next.js 16:
    const { id } = await params;
+   const query = await searchParams;
 
-   return <FeatureDetailContainer id={id} />;
+   return <FeatureDetailContainer id={id} query={query} />;
 }
 ```
 
-### Pattern B: Catch-All Segment (`[...slug]`)
-Matches one or more nested URL segments:
-
-* **File Location:** `src/app/docs/[...slug]/page.js`
-* **Matches:** `/docs/installation` (`['installation']`), `/docs/components/button` (`['components', 'button']`)
-* **Does NOT match:** `/docs` (returns 404 unless a separate `src/app/docs/page.js` exists)
-
-```javascript
-// src/app/docs/[...slug]/page.js
-export default async function DocPage({ params }) {
-   const { slug } = await params; // Array of strings: e.g. ['components', 'button']
-   const docPath = slug.join('/');
-
-   return <DocViewer path={docPath} />;
-}
-```
-
-### Pattern C: Optional Catch-All Segment (`[[...slug]]`)
-Matches zero, one, or more nested segments:
-
-* **File Location:** `src/app/store/[[...categories]]/page.js`
-* **Matches:** 
-  * `/store` (`categories` is `undefined`)
-  * `/store/electronics` (`categories` is `['electronics']`)
-  * `/store/electronics/phones` (`categories` is `['electronics', 'phones']`)
-
-```javascript
-// src/app/store/[[...categories]]/page.js
-export default async function StorePage({ params }) {
-   const { categories } = await params;
-   const activeCategory = categories?.[0] ?? 'all';
-
-   return <StoreCatalog category={activeCategory} pathSegments={categories ?? []} />;
-}
-```
+* **Matches:** `/items/101`, `/items/abc`
+* **Does NOT match:** `/items` (requires its own `page.js`), or nested `/items/101/subitem`.
 
 ---
 
-## 3. Route Groups (`(folder)`)
+## 3. High-Priority: Route Groups `(folder)`
 
-Route groups allow grouping routes logically without modifying the public URL pathname:
+Route groups allow you to organize routes and apply distinct layouts without altering the browser's public URL pathname:
 
-### Key Use Cases:
-1. **Multiple Root Layouts:** Create completely different layouts for marketing (`(marketing)/layout.js`), authentication (`(auth)/layout.js`), and dashboard (`(dashboard)/layout.js`) without adding `/marketing` or `/auth` prefixes to the URL.
-2. **Team Separation:** Organize code by business domain or ownership.
+### Key Use Case: Multi-Layout Application Shells
+Most applications require at least two distinct layouts:
+1. **Public / Auth Layout (`(auth)/layout.js`):** Centered card, minimal styling, zero navigation bars.
+2. **Dashboard / App Layout (`(main)/layout.js`):** Full persistent sidebar, header, and search controls.
 
 ```
 src/app/
 ├── (auth)/
-│   ├── layout.js             # Auth layout (no header/footer)
-│   └── login/page.js         # Resolves to /login (NOT /auth/login)
+│   ├── layout.js             # Minimal Auth Layout
+│   ├── login/page.js         # Resolves to /login (clean URL)
+│   └── register/page.js      # Resolves to /register (clean URL)
 └── (main)/
-    ├── layout.js             # Main layout (with global navbar)
-    └── items/page.js         # Resolves to /items (NOT /main/items)
+    ├── layout.js             # Main App Layout with Sidebar & Header
+    └── items/page.js         # Resolves to /items (clean URL)
 ```
 
 ---
 
-## 4. Advanced Parallel & Intercepting Routes
+## 4. Conditional: Dynamic Metadata (`generateMetadata`)
 
-For sophisticated modal and split-screen workflows, Next.js provides slots and route interception:
+Used when a page depends on dynamic route parameters to set SEO tags and social sharing cards:
 
-### Parallel Routes (`@slot`)
-Parallel routes allow rendering one or more pages simultaneously within the same layout:
-
-```javascript
-// src/app/layout.js
-export default function RootLayout({ children, modal }) {
-   return (
-      <html lang="en">
-         <body>
-            <Navbar />
-            {children}
-            {modal} {/* Renders the @modal slot */}
-         </body>
-      </html>
-   );
-}
-```
-
-### Intercepting Routes (`(.)`, `(..)`)
-Intercepting routes allow loading a route from another part of the application inside the current layout (e.g. displaying a modal preview) while updating the browser URL.
-
-| Prefix | Match Scope |
-| :--- | :--- |
-| **`(.)`** | Matches segments on the **same level**. |
-| **`(..)`** | Matches segments **one level above**. |
-| **`(..)(..)`** | Matches segments **two levels above**. |
-| **`(...)`** | Matches segments from the root **`app/`** directory. |
-
-* **Modal Feed Pattern:** Clicking an item in `/items` opens `src/app/items/@modal/(.)[id]/page.js` inside an overlay modal and updates URL to `/items/42`. If the user refreshes or shares the URL `/items/42`, Next.js renders the full-page view `src/app/items/[id]/page.js`.
-
----
-
-## 5. Dynamic Metadata Generation (`generateMetadata`)
-
-In Next.js 16, dynamic metadata is generated asynchronously by awaiting `params`:
+* **When it is needed:** Public e-commerce products, public blog posts, or marketing pages where Google SEO and social media previews (WhatsApp, Twitter/X, LinkedIn) are required.
+* **When to skip:** Internal dashboards, admin panels, CRM systems, or pages behind authentication (search engines cannot crawl authenticated routes anyway; use static `export const metadata = { title: 'Dashboard' }`).
 
 ```javascript
 // src/app/items/[id]/page.js
@@ -159,15 +90,37 @@ export async function generateMetadata({ params }) {
 
    return {
       title: `Item #${id} | Application`,
-      description: `View details for item identifier ${id}.`,
+      description: `View details for item #${id}.`,
       openGraph: {
          title: `Item #${id}`,
+         description: `Specs and details for item #${id}.`,
       },
    };
 }
 
-export default async function ItemPage({ params }) {
+export default async function ItemDetailPage({ params }) {
    const { id } = await params;
    return <FeatureDetailContainer id={id} />;
 }
 ```
+
+---
+
+## 5. Niche: Catch-All Segments (`[...slug]`)
+
+Catch-all routes match deep or variable URL paths. 
+
+* **When it is needed:** Documentation directories (`/docs/guides/installation`), CMS page builders, or deeply nested category filters (`/store/apparel/mens/shirts`).
+* **When to skip:** Standard CRUD and REST business applications. Fixed routes (`/items`, `/items/[id]`) cover 99% of business requirements.
+
+```javascript
+// src/app/docs/[...slug]/page.js
+export default async function DocPage({ params }) {
+   const { slug } = await params; // Array of strings: ['guides', 'installation']
+   const docPath = slug.join('/');
+
+   return <DocViewer path={docPath} />;
+}
+```
+
+* **Note:** For optional base matching (e.g. matching `/store` as well as `/store/category/item`), wrap in double brackets: `[[...slug]]`.

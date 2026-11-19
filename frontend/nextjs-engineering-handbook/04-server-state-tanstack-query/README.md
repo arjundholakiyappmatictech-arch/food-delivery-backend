@@ -10,6 +10,7 @@
    * Centralized query key factory structure (`<feature>Keys`).
    * Hierarchical cache keys (`all`, `lists()`, `list(filters)`, `details()`, `detail(id)`).
    * Safe, hierarchical cache invalidation patterns.
+   * Live search and filter input debouncing (300ms delay to prevent network swamping).
 
 2. **[02 - Caching Rules & Mutation Lifecycles](02-caching-rules.md):**
    * Fresh by default invariant (`staleTime: 0`).

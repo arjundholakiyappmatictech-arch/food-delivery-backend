@@ -1,6 +1,6 @@
 # Module 06: Routing, UX & App Router
 
-> **Next.js 16 App Router navigation, dynamic route segments, catch-all patterns, Route Groups, parallel/intercepting routes, and declarative loading/error UX.**
+> **Next.js 16 App Router navigation, dynamic route segments, Route Groups, and declarative loading/error UX.**
 
 ---
 
@@ -13,11 +13,11 @@
    * Programmatic navigation and query parameter management.
 
 2. **[02 - Next.js Official Routing Patterns](02-routing-patterns.md):**
-   * App Router filesystem conventions (`page.js`, `layout.js`, `template.js`, `default.js`).
-   * Dynamic route segments: Single `[id]`, Catch-all `[...slug]`, and Optional Catch-all `[[...slug]]`.
-   * Route Groups `(folder)` for multiple root layouts and organizational cleanliness without URL changes.
-   * Parallel routes (`@slot`) and Intercepting routes (`(.)`, `(..)`, `(...)`) for advanced modal feeds.
-   * Asynchronous dynamic metadata generation (`generateMetadata`).
+   * Mandatory core filesystem conventions (`page.js` and `layout.js`).
+   * Mandatory single dynamic segments (`[id]`) with `await params`.
+   * High-priority Route Groups `(folder)` for clean multi-layout organization.
+   * Conditional dynamic metadata generation (`generateMetadata`).
+   * Niche catch-all segments (`[...slug]`) for documentation and deep trees.
 
 3. **[03 - Loading, Error States & Route Protection](03-loading-error-states.md):**
    * Built-in route segments: `loading.js` (Suspense skeletons) and `error.js` (interactive recovery).
@@ -33,7 +33,7 @@
 | :--- | :--- | :--- |
 | **Page Component** | Root `page.js` is a React Server Component (RSC) without `'use client'`. | Marking root `page.js` with `'use client'`; fetching client data in root. |
 | **Dynamic Params** | Asynchronous `await params` and `await searchParams` (Next.js 15/16). | Accessing `params.id` synchronously (causes runtime warnings/errors). |
-| **Route Segment Matching** | Strict use of `[id]`, `[...slug]`, or `[[...slug]]` per URL contract. | Writing manual regex or client-side URL parsing to detect segments. |
+| **Route Segment Matching** | Strict use of `[id]` for resources and `[...slug]` for deep paths. | Writing manual regex or client-side URL parsing to detect segments. |
 | **Route Groups** | Use `(folder)` to share layouts or organize without affecting URLs. | Hardcoding repetitive URL prefixes to achieve separate layouts. |
 | **Navigation Hooks** | `useRouter`, `usePathname`, `useSearchParams` from `next/navigation`. | Importing router hooks from legacy `next/router` (crashes in App Router). |
 | **Links** | `<Link href="...">` from `next/link` for internal transitions. | Standard HTML `<a href="...">` (triggers full browser page reload). |

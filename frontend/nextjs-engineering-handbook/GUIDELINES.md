@@ -167,6 +167,7 @@ Consult the handbook topic modules for in-depth specifications and architectural
   * **Opt-in Reference Caching:** Only static reference data (Categories, Cuisines, Country lists, Tags) may opt into a `staleTime` (5–10 minutes).
   * **Mutation Invalidation:** Always invalidate query keys (`featureKeys.all` or `featureKeys.lists()`) in `onSuccess`. Never manually mutate cache arrays unless performing a sanctioned optimistic toggle.
   * **Optimistic Update Safeguards:** Optimistic updates are strictly limited to non-destructive boolean toggles (e.g., bookmarks, favorites). Multi-step mutations or deletions must never be optimistic, and rollbacks via `context.previousItem` in `onError` are mandatory.
+  * **Debounced Search Inputs:** Apply a 300ms debounce on live search and filter inputs before passing values to query keys to prevent backend request flooding and race conditions.
 
 #### [05 - Client State & Form Validation](05-client-state-and-forms/README.md)
 * **What it Does:** Enforces strict separation between server state (TanStack) and client UI state (Zustand v5), mandates atomic store selectors to prevent over-renders, and standardizes two-phase form validation with React Hook Form, pure JS Zod v4 schemas, and Laravel 422 error bag mapping.
@@ -179,7 +180,7 @@ Consult the handbook topic modules for in-depth specifications and architectural
   * **Zero `useEffect` for Derived State:** Never use `useEffect` to calculate or copy derived values from props or form state. Compute derived values inline synchronously during render.
 
 #### [06 - Routing, UX & App Router](06-routing-and-ux/README.md)
-* **What it Does:** Defines Server Component (RSC) vs. Client Component boundaries, standardizes official Next.js dynamic routing patterns (`[id]`, `[...slug]`, `[[...slug]]`, Route Groups, Parallel/Intercepting routes), enforces Next.js 16 asynchronous request APIs (`await params`), mandates modern navigation packages (`next/navigation`), and establishes declarative streaming loading/error UX patterns.
+* **What it Does:** Defines Server Component (RSC) vs. Client Component boundaries, standardizes official Next.js dynamic routing patterns (`[id]`, Route Groups, conditional `generateMetadata`, and niche `[...slug]`), enforces Next.js 16 asynchronous request APIs (`await params`), mandates modern navigation packages (`next/navigation`), and establishes declarative streaming loading/error UX patterns.
 * **Child Specifications:** [01 - RSC Boundaries & Next.js 16 Navigation](06-routing-and-ux/01-rsc-boundaries.md) | [02 - Next.js Official Routing Patterns](06-routing-and-ux/02-routing-patterns.md) | [03 - Loading, Error States & Route Protection](06-routing-and-ux/03-loading-error-states.md)
 * **Actionable Directives for AI Agents:**
   * **Keep Root Pages as RSC:** Never mark root `page.js` with `'use client'`. Root pages should remain server components that extract dynamic route parameters and pass them to client leaf feature containers.
@@ -192,14 +193,55 @@ Consult the handbook topic modules for in-depth specifications and architectural
   * **Auth Route Protection:** Wrap private feature containers in client auth guards to verify tokens and redirect without flashing protected UI.
 
 #### [07 - Design System & shadcn/ui](07-styling-and-design-system/README.md)
-* **Child Specifications:** [01 - shadcn Component Patterns](07-styling-and-design-system/01-shadcn-primitives.md) | [02 - Tailwind CSS v4 & Lucide Icons](07-styling-and-design-system/02-tailwind-lucide.md)
+* **What it Does:** Establishes pure JavaScript shadcn/ui patterns in `components/ui/*.jsx`, standardizes class composition via `cn()` (`clsx` + `tailwind-merge`), enforces Tailwind CSS v4 semantic tokens, mandates `lucide-react` for all icons, and defines accessibility invariants.
+* **Child Specifications:** [01 - shadcn Component Patterns & `cn()` Composition](07-styling-and-design-system/01-shadcn-primitives.md) | [02 - Tailwind CSS v4 & Lucide Iconography](07-styling-and-design-system/02-tailwind-lucide.md)
+* **Actionable Directives for AI Agents:**
+  * **Pure JS Primitives:** Implement shadcn components in `components/ui/*.jsx` using pure JavaScript (`.jsx`). Never write TypeScript types, interfaces, or `.tsx` files.
+  * **Class Composition via `cn()`:** Always merge Tailwind classes using `cn(...)`. Never use raw template string concatenation that risks CSS cascade conflicts.
+  * **Variant Modeling:** Use `class-variance-authority` (cva) for component variants and sizes instead of nested JSX conditionals.
+  * **Polymorphic Slots:** Use Radix UI `<Slot>` via `asChild` when rendering links or custom trigger elements inside buttons.
+  * **Dumb UI Separation:** Keep presentational primitives pure: props in, JSX out. Never import Axios services, TanStack hooks, or Zustand stores into `components/ui/`.
+  * **Semantic Tokens Only:** Use Tailwind semantic tokens (`bg-background`, `text-foreground`, `text-destructive`, `border-border`). Hardcoding raw hex values is strictly forbidden.
+  * **Exclusive Lucide Icons:** Import all icons exclusively from `lucide-react`. Mixing icon libraries or pasting raw `<svg>` elements into components is forbidden.
+  * **Accessibility Standards:** Always provide `aria-label` or `<span className="sr-only">` on icon-only buttons, and include `focus-visible:ring-2` focus rings.
 
 #### [08 - Performance & Asset Optimization](08-performance-and-assets/README.md)
-* **Child Specifications:** [01 - Image Optimization & Next/Image](08-performance-and-assets/01-image-optimization.md) | [02 - Dynamic Code Splitting](08-performance-and-assets/02-dynamic-imports.md)
+* **What it Does:** Mandates Next.js image optimization (`<Image />`), eliminates Cumulative Layout Shift (CLS), requires remote domain authorization in `next.config.mjs`, enforces dynamic code splitting for heavy client libraries via `next/dynamic`, and protects bundle tree-shaking by banning barrel files.
+* **Child Specifications:** [01 - Image Optimization & `next/image`](08-performance-and-assets/01-image-optimization.md) | [02 - Dynamic Code Splitting & Bundle Optimization](08-performance-and-assets/02-dynamic-imports.md)
+* **Actionable Directives for AI Agents:**
+  * **`<Image />` Mandate:** Always use `next/image` (`<Image />`). Raw HTML `<img />` tags are strictly forbidden.
+  * **Remote Domains:** Register external API image hosts under `images.remotePatterns` in `next.config.mjs`. Never disable image optimization globally (`unoptimized: true`).
+  * **CLS Elimination:** Always provide explicit dimensions (`width`/`height`) or use `fill` with a `relative` aspect-ratio parent and an accurate `sizes="..."` attribute.
+  * **LCP Prioritization:** Add `priority={true}` to above-the-fold hero banners. Leave below-the-fold list images as default lazy loaded.
+  * **Dynamic Code Splitting:** Lazy load heavy third-party client packages (`jspdf`, charts, editors) using `next/dynamic` with `{ ssr: false }` and skeleton loading fallbacks.
+  * **Modal & Drawer Code Splitting:** Lazy-load heavy multi-tab dialogs and filter drawers on-demand using `next/dynamic` to keep initial bundle sizes lean.
+  * **No Barrel Files:** Always import directly from specific component paths (`@/components/ui/button`). Monolithic `index.js` barrel files are forbidden.
+  * **React 19 Purity:** Maintain idempotent, pure component functions so the React 19 Compiler can optimize renders without manual `useMemo`/`useCallback` boilerplate.
 
 #### [09 - Testing & Quality Assurance](09-testing-and-quality/README.md)
-* **Child Specifications:** [01 - React Testing Library & Vitest](09-testing-and-quality/01-component-testing.md) | [02 - MSW Contract Mocking](09-testing-and-quality/02-msw-mocking.md)
+* **What it Does:** Establishes pure JavaScript testing standards with React Testing Library and Vitest, enforces user-centric accessibility assertions, configures test-isolated `QueryClient` harnesses (`retry: false`), and implements network-level API mocking with Mock Service Worker (MSW) adhering to the Laravel ADR-001 contract.
+* **Child Specifications:** [01 - Component Testing & User-Centric Assertions](09-testing-and-quality/01-component-testing.md) | [02 - MSW Contract Mocking & Laravel Alignment](09-testing-and-quality/02-msw-mocking.md)
+* **Actionable Directives for AI Agents:**
+  * **On-Demand Testing Only:** In initial feature development, focus 100% on building features and UI. Never create test files, test suites, or run tests unless the user explicitly asks to test.
+  * **Pure JS Tests:** Write all tests in pure JavaScript (`*.test.jsx`). Never use TypeScript or `.tsx` in tests.
+  * **Fresh QueryClient:** Wrap tested containers in a fresh `QueryClient` per test with `{ queries: { retry: false } }` to prevent slow retry timeouts on failing assertions.
+  * **User-Centric Queries:** Prioritize `getByRole` and `findByRole` based on accessible names and labels. Querying by CSS selectors or component state is strictly forbidden.
+  * **Async Handling:** Use asynchronous `findBy*` queries to wait for TanStack Query resolution. Never use arbitrary `setTimeout` delays.
+  * **Network Mocking with MSW:** Always mock HTTP communication at the network layer via MSW v2 (`http.get`, `http.post`). Direct Axios module mocking (`vi.mock('axios')`) is forbidden.
+  * **Laravel Contract Emulation:** MSW responses must mirror the ADR-001 envelope (`{ is_error, message, data, errors }`).
+  * **Strict 2-Verb Mock Handlers:** Mock routes must use `http.get` and `http.post` exclusively. `http.put`, `http.patch`, and `http.delete` are forbidden.
+  * **Test Error Handling:** Simulate 422 error bags in tests using `server.use()` to verify that `mapLaravelErrorsToForm` displays inline field errors properly.
 
 #### [10 - Research, ADRs & AI Standards](10-research-and-adrs/README.md)
-* **Child Specifications:** [ADR-001-F - Unified Response Consumer](10-research-and-adrs/adr/ADR-001-F-api-envelope-consumer.md) | [ADR-002-F - Query Key Factory Standard](10-research-and-adrs/adr/ADR-002-F-query-key-factory.md)
+* **What it Does:** Establishes formal Frontend Architecture Decision Records (ADRs) for response envelope consumption and query key factories, and defines inviolable operational guardrails and workflow mandates for autonomous AI coding assistants (Antigravity, Cursor, Claude Code, Codex).
+* **Child Specifications:** [ADR-001-F - Unified Response Consumer](10-research-and-adrs/adr/ADR-001-F-api-envelope-consumer.md) | [ADR-002-F - Query Key Factory Standard](10-research-and-adrs/adr/ADR-002-F-query-key-factory.md) | [01 - AI Agent Rules & Engineering Guardrails](10-research-and-adrs/01-ai-agent-rules.md)
+* **Actionable Directives for AI Agents:**
+  * **Strictly Pure JavaScript:** Write 100% pure JavaScript (`.js`, `.jsx`). Never write TypeScript (`.ts`, `.tsx`), interfaces, or type annotations.
+  * **5-Tier Data Flow:** Adhere to: Page (RSC) $\rightarrow$ Feature Container (Client) $\rightarrow$ shadcn UI $\rightarrow$ TanStack Hook $\rightarrow$ Axios Service. Never call Axios directly inside JSX components.
+  * **Strict 2-Verb Alignment:** Only use `GET` (for queries) and `POST` (for mutations: `/store`, `/{id}/update`, `/{id}/destroy`). `PUT`, `PATCH`, and `DELETE` are forbidden.
+  * **ADR-001 Response Unwrapping:** Always unwrap and return `response.data?.data` in Tier 5 services. Map 422 error bags directly into form fields via `mapLaravelErrorsToForm`.
+  * **TkDodo Query Key Factory:** Every feature must export a centralized `featureKeys` factory (`all`, `lists()`, `list(filters)`, `details()`, `detail(id)`). Hardcoded string arrays are forbidden.
+  * **Atomic Zustand Selectors:** Consume Zustand stores strictly with atomic selector functions (`state => state.property`).
+  * **Zero `useEffect` for Derived State:** Calculate derived values synchronously during render.
+  * **On-Demand Testing Workflow:** In initial and active feature development, focus 100% on building features and UI. Never generate test files, test suites, or execute test commands unless explicitly requested by the user.
 

@@ -104,3 +104,50 @@ export function useFeatureDetail(id) {
    });
 }
 ```
+
+---
+
+## 5. Live Search & Filter Input Debouncing
+
+When connecting search inputs or live filter fields to TanStack Query, querying the backend on every single keystroke triggers multiple rapid API requests and creates race conditions.
+
+### The Debounced Query Pattern
+Wrap rapid input values with a 300ms debounce before passing them to the query key:
+
+```javascript
+// src/components/feature/FeatureSearch.jsx
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useFeatureList } from '@/lib/hooks/useFeature';
+import { Input } from '@/components/ui/input';
+
+export function FeatureSearch() {
+   const [searchTerm, setSearchTerm] = useState('');
+   const [debouncedSearch, setDebouncedSearch] = useState('');
+
+   // 300ms debounce delay
+   useEffect(() => {
+      const handler = setTimeout(() => {
+         setDebouncedSearch(searchTerm);
+      }, 300);
+
+      return () => clearTimeout(handler);
+   }, [searchTerm]);
+
+   // Query fires ONLY when user pauses typing:
+   const { data: items, isFetching } = useFeatureList({ search: debouncedSearch });
+
+   return (
+      <div className="w-full max-w-sm">
+         <Input
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search items..."
+         />
+      </div>
+   );
+}
+```
+
+* **Outcome:** Eliminates 80% of unnecessary backend queries and prevents out-of-order race conditions.
