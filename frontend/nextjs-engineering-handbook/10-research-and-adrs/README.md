@@ -6,10 +6,10 @@
 
 ## 1. Directory Contents
 
-1. **[ADR-001-F: Unified Response Consumer & 2-Verb Alignment](adr/ADR-001-F-api-envelope-consumer.md):**
+1. **[ADR-001-F: Unified Response Consumer & Error Mapping](adr/ADR-001-F-api-envelope-consumer.md):**
    * Formal decision on consuming Laravel ADR-001 response envelope (`is_error`, `message`, `data`, `errors`).
    * Tier 5 service unwrapping standard (`response.data?.data`).
-   * Strict 2-verb HTTP alignment (`GET` and `POST` only; `PUT`, `PATCH`, `DELETE` are forbidden).
+   * Alignment with Laravel backend endpoints.
    * Automated 422 error bag dispatching to React Hook Form.
 
 2. **[ADR-002-F: TkDodo Query Key Factory Standard](adr/ADR-002-F-query-key-factory.md):**
@@ -30,7 +30,7 @@
 | :--- | :--- | :--- |
 | **Language** | 100% Pure JavaScript (`.js`, `.jsx`). | Writing TypeScript (`.ts`, `.tsx`), interfaces, or type annotations. |
 | **Architectural Boundaries** | 5-Tier Data Flow: RSC $\rightarrow$ Container $\rightarrow$ UI $\rightarrow$ Hook $\rightarrow$ Service. | Calling Axios or mutating state directly inside JSX components. |
-| **Backend Integration** | Strict 2-verb HTTP model; unwrap `response.data?.data`. | Using `PUT`, `PATCH`, `DELETE`; leaking envelope metadata to UI. |
+| **Backend Integration** | Consume Laravel endpoints; unwrap `response.data?.data`. | Leaking envelope metadata to UI; inventing unrouted methods. |
 | **Server State** | TanStack Query v5 with TkDodo factories (`featureKeys`). | Hardcoded string keys; duplicating server state in client stores. |
 | **Client State** | Zustand v5 with atomic selectors (`state => state.prop`). | Destructuring entire stores (`const { a, b } = useStore()`). |
 | **Forms & Validation** | React Hook Form + Zod v4 (`.js`); automatic 422 mapping. | Manual `useState` form inputs; showing generic toasts for field errors. |

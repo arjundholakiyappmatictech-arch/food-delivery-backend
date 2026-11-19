@@ -1,19 +1,21 @@
 # JavaScript Standards & Immutability
 
+> **Company language standards, JSDoc autocomplete conventions, and state immutability rules.**
+
 ---
 
-## 1. Strictly JavaScript (No TypeScript)
+## 1. Strictly Pure JavaScript (No TypeScript)
 
-This project is written in **100% standard JavaScript (ESNext / JSX)**. 
+This codebase is 100% standard JavaScript (ESNext / JSX). Next.js official documentation defaults to TypeScript, but our company standard strictly enforces pure JavaScript:
 
-* **Rule:** Never generate `.ts`, `.tsx`, `interface`, `type`, or inline type annotations (`: string`, `: number`, `<T>`).
-* **File Extensions:** Use `.js` for logic/services/stores/hooks/utils; use `.jsx` for components.
+* **Inviolable Rule:** Never generate `.ts`, `.tsx`, `interface`, `type`, generics, or inline type annotations (`: string`, `: number`, `<T>`).
+* **File Extensions:** Use `.js` for logic, services, stores, hooks, and utilities; use `.jsx` for React components.
 
 ---
 
 ## 2. JSDoc for Autocomplete (Zero Build Overhead)
 
-When documenting complex data shapes or service methods, use standard **JSDoc**. This provides full IDE and AI autocomplete without TypeScript build friction:
+To provide IDE and AI agent autocomplete without TypeScript build friction or compilation overhead, document service methods and complex utility parameters using standard **JSDoc**:
 
 ```javascript
 /**
@@ -32,38 +34,18 @@ export async function updateEntity(id, payload, signal) {
 
 ---
 
-## 3. Modern Operators & Strict Equality
+## 3. Immutability & Pure State Transformations
 
-* **Strict Identity:** Always use `===` and `!==`. Never use loose `==` or `!=`.
-* **Optional Chaining (`?.`):** Safe property access on nested objects.
-* **Nullish Coalescing (`??`):** Default fallback only on `null` or `undefined`. Never use `||` for defaults if `0`, `""`, or `false` are valid values.
+Components, hooks, and Zustand stores must **never mutate objects or arrays in-place**. Always return fresh copies using spread (`...`), `.map()`, or `.filter()`:
 
 ```javascript
-// ❌ Forbidden:
-if (user.role == 'admin') ...
-const city = address && address.city ? address.city : '';
-const count = data.count || 10; // Overwrites count if count is 0!
-
-// ✅ Approved:
-if (user?.role === 'admin') ...
-const city = address?.city ?? '';
-const count = data?.count ?? 10;
-```
-
----
-
-## 4. Immutability & State Updates
-
-React components and Zustand stores must **never mutate objects or arrays in-place**. Always return fresh copies using spread (`...`), `.map()`, or `.filter()`.
-
-```javascript
-// ❌ Forbidden (In-place mutation):
-cartItems.push(newItem);
-user.is_verified = true;
+// ❌ Forbidden (In-place mutation risks stale React renders):
+items.push(newItem);
+entity.status = 'active';
 
 // ✅ Approved (Immutable copies):
-const nextCart = [...cartItems, newItem];
-const updatedUser = { ...user, is_verified: true };
+const nextItems = [...items, newItem];
+const updatedEntity = { ...entity, status: 'active' };
 
 // Array updates:
 const updatedList = list.map((item) =>
@@ -73,9 +55,9 @@ const updatedList = list.map((item) =>
 
 ---
 
-## 5. Universal Path Aliasing (`@/`)
+## 4. Universal Path Aliasing (`@/`)
 
-All cross-folder imports must use the `@/` root alias configured in `jsconfig.json`. Deep relative directory traversal is strictly forbidden.
+All cross-folder imports must use the `@/` root alias configured in `jsconfig.json`. Deep relative directory traversal (`../../..`) is strictly forbidden:
 
 ```javascript
 // ❌ Forbidden:

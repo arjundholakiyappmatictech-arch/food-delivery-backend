@@ -47,7 +47,7 @@ export const handlers = [
       });
    }),
 
-   // Create mutation (POST - strict 2-verb model)
+   // Create mutation (POST matching backend)
    http.post(`${API_BASE}/items/store`, async ({ request }) => {
       const payload = await request.json();
       return HttpResponse.json({
@@ -80,9 +80,9 @@ afterAll(() => server.close());
 
 ---
 
-## 3. Strict 2-Verb Alignment in Mock Handlers
+## 3. Mock Handlers Matching Backend Endpoints
 
-Mock route handlers must strictly mirror the Laravel backend 2-verb contract:
+Mock route handlers must strictly mirror the Laravel backend API contract:
 
 | Operation | Approved Mock Verb | Forbidden Mock Verbs |
 | :--- | :--- | :--- |

@@ -21,10 +21,15 @@ Tomato is a full-stack food delivery application that enables customers to brows
 - **Database:** PostgreSQL (Supabase).
 - **Infrastructure:** Docker, Nginx, Vercel (Frontend), Render (Backend).
 
-## Project Structure
+## Project Structure & Engineering Documentation
 
-- `frontend/` - Next.js frontend application containing pages, components, services, and Zustand state stores.
-- `backend/` - Laravel API backend containing controllers, models, services, migrations, and Docker configuration.
+- `frontend/` - Next.js 16 frontend application (React 19, Pure JavaScript, TanStack Query v5, Zustand v5, shadcn/ui).
+- `backend/` - Laravel 12/13 API backend (PHP 8.4, PostgreSQL, Sanctum, 2-verb routing architecture).
+- `AGENTS.md` - Canonical entry point and execution matrix for AI coding assistants.
+- `ARCHITECTURE.md` - Full-stack system contracts, 2-verb API boundary, ADR-001 envelope, and auth flow.
+- `PROJECT_REQUIREMENTS.md` - Product domain specifications, user personas, and feature rules.
+- `frontend/nextjs-engineering-handbook/` - Canonical Next.js frontend rulebook.
+- `backend/laravel-engineering-handbook/` - Canonical Laravel backend rulebook.
 
 ## How It Works
 

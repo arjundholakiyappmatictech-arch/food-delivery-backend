@@ -59,7 +59,7 @@ $$\text{Tier 1: Page (src/app/)} \longrightarrow \text{Tier 2: Container (src/co
 * **Responsibilities:**
   * Wraps the centralized Axios client (`src/lib/api/api.js`).
   * Forwards `signal` from TanStack Query for request cancellation.
-  * Enforces the Laravel 2-verb model (`GET` for fetching, `POST` for mutations).
+  * Calls endpoints exposed by Laravel (`GET` for fetching, `POST` for mutations).
   * Unwraps the Laravel ADR-001 envelope (`return response.data?.data`).
 * **Directory Pattern:** `src/services/<feature>Service.js`
 * **Prohibited:** Never use React hooks or manage UI state inside services.

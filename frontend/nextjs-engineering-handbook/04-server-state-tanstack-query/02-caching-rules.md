@@ -61,7 +61,7 @@ Mutations mutate server state and must synchronize the local cache upon completi
 ```javascript
 // src/lib/hooks/useFeatureMutation.js
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createFeatureItem, updateFeatureItem, deleteFeatureItem } from '@/services/featureService';
+import { createFeatureItem, updateFeatureItem, destroyFeatureItem } from '@/services/featureService';
 import { featureKeys } from '@/lib/hooks/useFeature';
 import { parseApiError } from '@/utils/apiError';
 import { toast } from 'sonner'; // Or custom toast notification
@@ -85,11 +85,11 @@ export function useCreateFeature() {
    });
 }
 
-export function useDeleteFeature() {
+export function useDestroyFeature() {
    const queryClient = useQueryClient();
 
    return useMutation({
-      mutationFn: deleteFeatureItem,
+      mutationFn: destroyFeatureItem,
       onSuccess: () => {
          toast.success('Removed successfully.');
          queryClient.invalidateQueries({ queryKey: featureKeys.all });

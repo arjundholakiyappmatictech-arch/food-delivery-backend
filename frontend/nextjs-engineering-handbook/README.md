@@ -10,25 +10,29 @@ This handbook is a centralized, reusable engineering guide. Instead of reinventi
 
 * **Strictly Pure JavaScript:** 100% pure JavaScript (`.js`, `.jsx`). Zero TypeScript (`.ts`, `.tsx`), interfaces, or type annotations.
 * **5-Tier Clean Architecture:** Deterministic flow from RSC Pages $\rightarrow$ Feature Containers $\rightarrow$ shadcn UI $\rightarrow$ TanStack Hooks $\rightarrow$ Axios Services.
-* **Strict 2-Verb Laravel REST Contract:** Outbound communication is strictly `GET` and `POST`. Consumes the Laravel ADR-001 envelope (`response.data?.data`) and auto-maps 422 error bags.
+* **Deterministic Backend Contract:** Consumes Laravel ADR-001 response envelopes (`response.data?.data`) and auto-maps 422 error bags to React Hook Form.
 * **Dual-Engine State Separation:** Server state exclusively in TanStack Query v5; client UI state in Zustand v5 with atomic selectors (`state => state.property`).
 * **Pragmatic Fresh-by-Default Caching:** Default `staleTime: 0`. Blanket caching is forbidden; transactional data is never cached.
 * **AI-Ready Precision:** Serves as the ground truth for AI coding assistants (Antigravity, Cursor, Claude Code, Codex) to eliminate hallucinations and architectural drift.
 
 ---
 
-## 2. Ten Unbreakable Architectural Invariants
+## 2. How to Use It in Any Project
 
-1. **Strictly JavaScript:** Pure JavaScript (`.js`, `.jsx`) only. Zero TypeScript (`.ts`, `.tsx`), interfaces, or type annotations.
-2. **Frontend Scope:** Next.js 16 is strictly a presentation layer. All business logic and databases live in Laravel.
-3. **5-Tier Data Flow:** Page (RSC) $\rightarrow$ Feature Container (Client) $\rightarrow$ shadcn UI $\rightarrow$ TanStack Hook $\rightarrow$ Axios Service. Never call Axios directly inside JSX.
-4. **State Separation:** Server state exclusively in TanStack Query. Client UI state in Zustand with atomic selectors (`state => state.property`). Forms in React Hook Form + Zod. Zero `useEffect` for data fetching or derived state.
-5. **Fresh by Default (`staleTime: 0`):** No blanket caching. Transactional data (Cart, Orders, Addresses, Checkout, Profile) is never cached. Opt-in caching only for static reference data (categories/tags).
-6. **UI Components & Controls:** shadcn/ui patterns (`components/ui/*.jsx`) with `lucide-react` icons and controls. Class composition using `cn()` utility (`clsx` + `tailwind-merge`).
-7. **2-Verb HTTP & ADR-001:** Strictly `GET` and `POST` (no `PUT`, `PATCH`, `DELETE`). Unwrap `response.data?.data`. Auto-map Laravel 422 errors to form fields via `mapLaravelErrorsToForm()`.
-8. **TkDodo Query Key Factory:** Centralized query key factory per feature (`featureKeys`). Hardcoded string query keys are forbidden.
-9. **React 19 & Compiler:** No manual `useMemo` or `useCallback` boilerplate. Push `'use client'` down to leaves. Keep root pages as React Server Components (RSC).
-10. **Flat & Version-Agnostic Structure:** Keep components, stores, and hooks flat (no `v2/` folders). API version prefixes belong strictly in `NEXT_PUBLIC_API_URL` or isolated in Tier 5 service endpoints.
+### For Developers
+1. **Quick Reference:** Read [GUIDELINES.md](GUIDELINES.md) for approved code signatures (Query Hooks, Services, Zustand Stores, Error Mappers).
+2. **Building Features:** Follow the 5-tier pipeline: `Page (RSC)` $\rightarrow$ `Feature Container (Client)` $\rightarrow$ `shadcn/ui` $\rightarrow$ `TanStack Hook` $\rightarrow$ `Axios Service`.
+3. **Component Colocation:** Place feature-specific UI inside `src/components/<feature>/` and universal primitives inside `src/components/ui/`.
+
+### For AI Coding Assistants
+* Reference [`frontend/AGENTS.md`](../AGENTS.md) (or root [`AGENTS.md`](../../AGENTS.md)) as the canonical entry point.
+* Custom architecture rules sit at the top of `frontend/AGENTS.md` pointing to [GUIDELINES.md](GUIDELINES.md), while preserving official Next.js guidelines (`<!-- BEGIN:nextjs-agent-rules -->`) below.
+* The agent reads [GUIDELINES.md](GUIDELINES.md) first to load company invariants into memory.
+
+### For Adopting in a New Project
+1. **Copy Handbook:** Copy the `nextjs-engineering-handbook/` folder into your repository.
+2. **Configure AGENTS.md:** Add the custom architecture rules to the top of your `frontend/AGENTS.md` pointing to `GUIDELINES.md`, keeping the official Next.js doc block intact.
+3. **Verify Standards:** Verify 100% pure JavaScript, root `@/` aliasing in `jsconfig.json`, and centralized Axios configuration in `src/lib/api/api.js`.
 
 ---
 

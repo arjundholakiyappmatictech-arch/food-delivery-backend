@@ -1,60 +1,55 @@
-# ADR-001 Envelope & 2-Verb Model
+# ADR-001 Response Envelope & Error Mapping
+
+> **Practical integration with Laravel ADR-001 responses: Domain payload unwrapping and automated 422 error bag mapping.**
 
 ---
 
-## 1. The Strict 2-Verb HTTP Model
+## 1. Backend Endpoint Integration
 
-All communication with the Laravel backend strictly adheres to a **2-verb HTTP model**:
+Tier 5 services call the endpoints exposed by the Laravel backend as defined in `ARCHITECTURE.md` and `backend/routes/api.php`:
 
-| Operation Type | Allowed Verb | Endpoint Pattern | Forbidden Verbs |
+| Operation | Method | Endpoint Pattern | Service Example |
 | :--- | :--- | :--- | :--- |
-| **Fetch Collection / Details** | `GET` | `/<feature>` or `/<feature>/{id}` | - |
-| **Create Resource** | `POST` | `/<feature>/store` | `PUT` |
-| **Update Resource** | `POST` | `/<feature>/{id}/update` | `PUT`, `PATCH` |
-| **Delete Resource** | `POST` | `/<feature>/{id}/destroy` | `DELETE` |
-| **Custom Mutation Action** | `POST` | `/<feature>/{id}/<action>` | `PATCH` |
-
-### Why Strict 2-Verb?
-1. **Firewall & Proxy Reliability:** Corporate firewalls, edge CDNs, and older HTTP proxies often strip or block `PUT`, `PATCH`, and `DELETE` requests or their request bodies. `POST` always reaches the server cleanly.
-2. **Eliminates Pre-Flight Quirks:** Standard `POST` requests with JSON bodies avoid inconsistent browser pre-flight cache bugs.
-3. **1:1 Backend Alignment:** Matches the backend Laravel rulebook (`backend/laravel-engineering-handbook/GUIDELINES.md`), eliminating verb mismatch errors between teams.
+| **Fetch Collection / Details** | `GET` | `/<feature>` or `/<feature>/{id}` | `api.get('/items', { params, signal })` |
+| **Create Resource** | `POST` | `/<feature>/store` | `api.post('/items/store', payload, { signal })` |
+| **Update Resource** | `POST` | `/<feature>/{id}/update` | `api.post('/items/${id}/update', payload, { signal })` |
+| **Destroy Resource** | `POST` | `/<feature>/{id}/destroy` | `api.post('/items/${id}/destroy', {}, { signal })` |
+| **Custom Mutation Action** | `POST` | `/<feature>/{id}/<action>` | `api.post('/items/${id}/cancel', {}, { signal })` |
 
 ---
 
 ## 2. Consuming the ADR-001 Response Envelope
 
-The Laravel backend wraps every single response in the standard **ADR-001 envelope**:
+The Laravel backend wraps all API responses in the standard **ADR-001 envelope**:
 
 ```json
+// Success:
 {
   "is_error": false,
   "message": "Resource retrieved successfully.",
-  "data": { ... },
+  "data": { "id": 1, "title": "Sample Item" },
   "errors": {}
 }
-```
 
-On validation failure (`422 Unprocessable Content`) or business rule rejection (`400/500`):
-```json
+// Validation Failure (HTTP 422):
 {
   "is_error": true,
   "message": "The given data was invalid.",
   "data": null,
   "errors": {
-    "name": ["The name field is required."],
-    "code": ["The code has already been taken."]
+    "name": ["The name field is required."]
   }
 }
 ```
 
 ### Unwrapping Rule for Services (Tier 5)
-Every service function **must unwrap and return `response.data?.data`**. Never leak the outer Axios or ADR-001 envelope to hooks or components.
+Every service function **must unwrap and return `response.data?.data`**. Never leak the outer Axios or ADR-001 envelope to React hooks or UI components:
 
 ```javascript
-// ❌ Forbidden (Leaks envelope metadata into UI state):
+// ❌ Forbidden (Leaks envelope metadata into UI state, crashes React .map() loops):
 export async function getFeatureItem(id, signal) {
    const response = await api.get(`/items/${id}`, { signal });
-   return response.data; // Returns { is_error, message, data: { ... } }
+   return response.data; // 💥 Returns { is_error, message, data: [...] }
 }
 
 // ✅ Approved (Clean domain payload unwrapping):
@@ -63,8 +58,8 @@ export async function getFeatureItem(id, signal) {
    return response.data?.data ?? null;
 }
 
-export async function createFeatureItem(payload) {
-   const response = await api.post('/items/store', payload);
+export async function createFeatureItem(payload, signal) {
+   const response = await api.post('/items/store', payload, { signal });
    return response.data?.data ?? null;
 }
 ```
@@ -77,7 +72,7 @@ export async function createFeatureItem(payload) {
 
 Laravel returns validation errors in a keyed error bag: `{ [fieldName]: string[] }`.
 
-Rather than writing repetitive try-catch blocks or showing vague generic toast alerts for form field errors, Tier 5 utility `mapLaravelErrorsToForm` automatically connects backend error keys to React Hook Form field state:
+Rather than writing manual try-catch blocks or showing vague generic alerts, Tier 5 utility `mapLaravelErrorsToForm` automatically connects backend error keys to React Hook Form field state:
 
 ```javascript
 // src/utils/formErrors.js

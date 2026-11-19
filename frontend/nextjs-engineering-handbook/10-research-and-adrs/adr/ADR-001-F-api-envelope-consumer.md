@@ -1,4 +1,4 @@
-# ADR-001-F: Unified Response Consumer & 2-Verb Alignment
+# ADR-001-F: Unified Response Consumer & Error Mapping
 
 * **Status:** Accepted
 * **Context:** Next.js 16 + React 19 Frontend consuming an external Laravel REST API.
@@ -8,10 +8,9 @@
 
 ## 1. Context & Problem Statement
 
-Historically, frontend applications consuming REST APIs suffer from three recurring integration issues:
+Historically, frontend applications consuming REST APIs suffer from two recurring integration issues:
 1. **Envelope Leakage:** Components and state hooks receive varying shapes of responses (e.g. raw Axios objects, HTTP headers, or nested envelope metadata), forcing JSX templates to guess whether to access `data.data.items` or `data.items`.
-2. **HTTP Verb Mismatches:** Using `PUT`, `PATCH`, and `DELETE` frequently triggers CORS preflight failures, proxy stripping, or routing discrepancies against the backend.
-3. **Fragile Form Error Handling:** Server validation failures (`422 Unprocessable Content`) are either ignored, caught generically via toast alerts, or manually mapped input-by-input with boilerplate code.
+2. **Fragile Form Error Handling:** Server validation failures (`422 Unprocessable Content`) are either ignored, caught generically via toast alerts, or manually mapped input-by-input with boilerplate code.
 
 ---
 
@@ -19,15 +18,10 @@ Historically, frontend applications consuming REST APIs suffer from three recurr
 
 We establish three mandatory architectural contracts across the entire frontend application:
 
-### 1. Strict 2-Verb HTTP Model
-Outbound HTTP communication with the Laravel backend is strictly limited to **`GET`** and **`POST`**:
+### 1. Backend Endpoint Alignment
+Outbound HTTP communication with the Laravel backend strictly matches the endpoints exposed by Laravel (as documented in `ARCHITECTURE.md` and `backend/routes/api.php`):
 * **`GET`:** Read-only queries (collection listing, search, single-entity detail).
-* **`POST`:** All state mutations:
-  * Create: `POST /<feature>/store`
-  * Update: `POST /<feature>/{id}/update`
-  * Delete: `POST /<feature>/{id}/destroy`
-  * Custom actions: `POST /<feature>/{id}/<action>`
-* *Invariant:* `PUT`, `PATCH`, and `DELETE` HTTP methods are strictly forbidden.
+* **`POST`:** State mutations (`/<feature>/store`, `/<feature>/{id}/update`, `/<feature>/{id}/destroy`, and custom descriptive actions).
 
 ### 2. Tier 5 Service Unwrapping Standard
 All service functions in `src/services/<feature>Service.js` must unwrap and return **`response.data?.data`**:
@@ -62,8 +56,7 @@ export function mapLaravelErrorsToForm(errors, setError) {
 ## 3. Consequences
 
 ### Positive:
-* **Payload Purity:** UI components and TanStack Query caches deal exclusively with clean domain entities.
-* **Network Reliability:** Eliminates corporate proxy and edge CDN issues with `PUT`/`PATCH`/`DELETE`.
+* **Payload Purity:** UI components and TanStack Query caches deal exclusively with clean domain entities (arrays and objects) without envelope noise.
 * **Zero UI Flash:** Validation errors appear inline under the exact form inputs with zero repetitive try/catch logic.
 
 ### Negative:

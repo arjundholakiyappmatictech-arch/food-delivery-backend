@@ -8,7 +8,6 @@
 
 1. **[01 - JavaScript Standards & Immutability](01-javascript-standards.md):**
    * Pure JavaScript invariants (zero TypeScript).
-   * Modern ESNext operators (`===`, `?.`, `??`).
    * Immutability and state transformation patterns.
    * Universal `@/` path aliasing.
    * JSDoc annotations for IDE autocomplete.
@@ -26,7 +25,7 @@
 | Category | Approved Standard | Forbidden Anti-Pattern |
 | :--- | :--- | :--- |
 | **Language** | Standard JavaScript (`.js`, `.jsx`). | TypeScript (`.ts`, `.tsx`), interfaces, or type annotations (`: string`, `<T>`). |
-| **Path Imports** | Root alias `@/` (`@/components/ui/button`, `@/services/addressService`). | Deep relative traversal (`../../components/ui/button`). |
+| **Path Imports** | Root alias `@/` (`@/components/ui/button`, `@/services/featureService`). | Deep relative traversal (`../../components/ui/button`). |
 | **Equality** | Strict identity checks (`===`, `!==`). | Loose comparison (`==`, `!=`). |
 | **Null Traversal** | Optional chaining (`?.`) and nullish coalescing (`??`). | Risky nested chaining (`a && a.b && a.b.c`) or falsy fallback (`a || b`). |
 | **State Mutation** | Pure updates via object spread (`...`), `.map()`, `.filter()`. | Direct in-place mutation (`state.items.push(x)`, `obj.prop = val`). |

@@ -21,7 +21,7 @@
    * Network-level API mocking using Mock Service Worker (MSW v2).
    * Exact emulation of the Laravel ADR-001 response envelope (`is_error`, `message`, `data`, `errors`).
    * Simulating 422 validation errors to test form error binding (`mapLaravelErrorsToForm`).
-   * Strict 2-verb mock alignment (`http.get` and `http.post` only; `http.put` and `http.delete` are forbidden).
+   * Mock alignment with Laravel endpoints (`http.get` and `http.post` only; inventing unrouted mock methods is forbidden).
 
 ---
 
@@ -35,5 +35,5 @@
 | **Async Elements** | Async `await screen.findByRole(...)` for elements loaded via TanStack Query. | Arbitrary `setTimeout` waits or accessing unrendered elements with `getByRole`. |
 | **API Mocking** | Mock Service Worker (MSW) intercepting network requests. | Mocking Axios module internals (`vi.mock('axios')`) creating brittle mocks. |
 | **Laravel Envelope** | MSW handlers return `{ is_error, message, data, errors }`. | Returning raw unwrapped objects or non-standard payloads in mock handlers. |
-| **HTTP Verbs** | Mock handlers use `http.get` and `http.post` exclusively. | Defining `http.put`, `http.patch`, or `http.delete` mock routes. |
+| **Mock Endpoints** | Mock handlers match backend endpoints (`http.get` and `http.post`). | Defining unrouted `http.put`, `http.patch`, or `http.delete` mock routes. |
 | **Query Client in Tests** | Fresh `QueryClient` per test with `{ queries: { retry: false } }`. | Sharing a global `QueryClient` with retries enabled across tests. |

@@ -30,6 +30,6 @@
 | **Tier 1: Page Shell** | Server Component (RSC), exports `metadata`, sets `<Suspense>` boundary. | Putting `'use client'` on `page.js`; data fetching directly in layout. |
 | **Tier 2: Feature Container** | Client boundary (`'use client'`), orchestrates query hooks and modal states. | Direct raw Axios calls; inline SQL-like mutations. |
 | **Tier 3: shadcn/ui & UI** | shadcn/ui primitives (`src/components/ui/`) + pure props in/out. Styled with Tailwind CSS v4 & `cn()`. | Importing stores, hooks, or API services directly into dumb UI; inventing custom raw buttons. |
-| **Tier 4: Query Hooks** | Centralized Query Key Factories (`featureKeys`), optimistic updates. | Hardcoded string query keys (`['addresses']`); uncoordinated refetches. |
-| **Tier 5: API Services** | Pure async functions wrapping Axios with AbortSignal and ADR-001 unwrapping. | Calling React hooks in services; using `PUT` or `DELETE` methods. |
+| **Tier 4: Query Hooks** | Centralized Query Key Factories (`featureKeys`), optimistic updates. | Hardcoded string query keys (`['items']`); uncoordinated refetches. |
+| **Tier 5: API Services** | Pure async functions wrapping Axios with AbortSignal and ADR-001 unwrapping. | Calling React hooks in services; inventing unrouted methods. |
 | **Directory Layout** | Flat, feature-scoped folders (`components/<feature>/`, `services/`). | Nested versioned folders (`components/v2/`, `services/v2/`). |

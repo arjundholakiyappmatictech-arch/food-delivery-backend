@@ -6,7 +6,7 @@
 
 ## 1. Directory Contents
 
-1. **[01 - Image Optimization & `next/image`](01-image-optimization.md):**
+1. **[01 - Image Optimization & Company Invariants](01-image-optimization.md):**
    * Mandatory use of Next.js `<Image />` component over raw HTML `<img>`.
    * Remote image domain authorization via `remotePatterns` in `next.config.mjs`.
    * Responsive layout sizing with `fill`, aspect ratios, and the `sizes` attribute.

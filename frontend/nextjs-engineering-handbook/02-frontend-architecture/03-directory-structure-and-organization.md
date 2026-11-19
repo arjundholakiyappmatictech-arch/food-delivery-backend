@@ -25,7 +25,7 @@ frontend/
 │   │   ├── (auth)/               # Route group for auth screens (login, register)
 │   │   │   ├── login/page.js
 │   │   │   └── register/page.js
-│   │   ├── <feature>/            # Domain feature routes (e.g. addresses, orders, items)
+│   │   ├── <feature>/            # Domain feature routes (e.g. items, orders)
 │   │   │   ├── page.js           # Server Component (RSC) entry point (metadata + Suspense)
 │   │   │   ├── loading.js        # Instant streaming skeleton fallback
 │   │   │   ├── error.js          # Segment error boundary

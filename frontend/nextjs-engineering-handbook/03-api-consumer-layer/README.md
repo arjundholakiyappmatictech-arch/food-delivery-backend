@@ -1,6 +1,6 @@
 # Module 03: API Consumer Layer & Laravel Contracts
 
-> **Axios transport architecture, 2-verb HTTP alignment, AbortSignal forwarding, and ADR-001 response envelope consumption.**
+> **Axios transport architecture, AbortSignal forwarding, and ADR-001 response envelope consumption.**
 
 ---
 
@@ -12,8 +12,8 @@
    * Mandatory request cancellation via `AbortSignal`.
    * Error normalization (`parseApiError`).
 
-2. **[02 - ADR-001 Envelope & 2-Verb Model](02-adr-001-envelope.md):**
-   * The strict 2-verb HTTP model (`GET` and `POST` only).
+2. **[02 - ADR-001 Response Envelope & Error Mapping](02-adr-001-envelope.md):**
+   * Backend endpoint integration matching the Laravel API.
    * Consistent ADR-001 envelope unwrapping (`response.data?.data`).
    * Automated Laravel 422 error bag mapping to React Hook Form.
 
@@ -24,7 +24,7 @@
 | Category | Approved Standard | Forbidden Anti-Pattern |
 | :--- | :--- | :--- |
 | **HTTP Client** | Centralized Axios instance (`src/lib/api/api.js`). | Ad-hoc `fetch()` calls or multiple unconfigured Axios instances. |
-| **HTTP Verbs** | Strict 2-verb model: `GET` for fetching, `POST` for mutations (`/store`, `/{id}/update`, `/{id}/destroy`). | Using `PUT`, `PATCH`, or `DELETE` methods; mutations on `GET` routes. |
+| **Backend Endpoints** | Consume endpoints as exposed by Laravel (`GET` for fetching, `POST` for mutations). | Inventing unrouted HTTP methods; performing mutations on `GET` routes. |
 | **Response Unwrapping** | Services unwrap and return `response.data?.data`. | Returning raw Axios response or full envelope to UI components. |
 | **Cancellation** | Accept `{ signal }` in services and forward to Axios. | Ignoring `signal`, causing race conditions on rapid navigation. |
 | **Validation Errors** | Map Laravel 422 error bags directly to fields via `mapLaravelErrorsToForm()`. | Showing generic toast alerts for form field validation errors. |

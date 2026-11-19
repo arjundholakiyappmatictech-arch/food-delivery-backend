@@ -12,7 +12,7 @@
    * Strict navigation package rules (`next/navigation` and `next/link` only; legacy `next/router` is forbidden).
    * Programmatic navigation and query parameter management.
 
-2. **[02 - Next.js Official Routing Patterns](02-routing-patterns.md):**
+2. **[02 - Routing Patterns & Architecture](02-routing-patterns.md):**
    * Mandatory core filesystem conventions (`page.js` and `layout.js`).
    * Mandatory single dynamic segments (`[id]`) with `await params`.
    * High-priority Route Groups `(folder)` for clean multi-layout organization.
